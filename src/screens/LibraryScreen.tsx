@@ -1,0 +1,380 @@
+import React, { useState, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  TextInput,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, borderRadius, typography } from '../theme';
+import { ExerciseCard } from '../components';
+import { useStore } from '../store/useStore';
+import { exercises, getExercisesByZone, getSafeExercises } from '../data/exercises';
+import { FaceZone } from '../types';
+
+interface LibraryScreenProps {
+  navigation: any;
+}
+
+type ZoneFilter = 'all' | FaceZone;
+
+const zoneOptions: { id: ZoneFilter; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { id: 'all', label: 'Tous', icon: 'grid-outline' },
+  { id: 'front', label: 'Front', icon: 'ellipse-outline' },
+  { id: 'yeux', label: 'Yeux', icon: 'eye-outline' },
+  { id: 'joues', label: 'Joues', icon: 'happy-outline' },
+  { id: 'bouche', label: 'Bouche', icon: 'chatbubble-outline' },
+  { id: 'ovale', label: 'Ovale', icon: 'scan-outline' },
+  { id: 'cou', label: 'Cou', icon: 'body-outline' },
+];
+
+export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
+  const [selectedZone, setSelectedZone] = useState<ZoneFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useStore();
+
+  // Get safe exercises based on user's contraindications
+  const safeExercises = useMemo(() => {
+    return getSafeExercises(user.healthInfo.contraindications);
+  }, [user.healthInfo.contraindications]);
+
+  // Filter exercises
+  const filteredExercises = useMemo(() => {
+    let result = safeExercises;
+
+    // Filter by zone
+    if (selectedZone !== 'all') {
+      result = result.filter((ex) => ex.zone === selectedZone);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (ex) =>
+          ex.name.toLowerCase().includes(query) ||
+          ex.description.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [safeExercises, selectedZone, searchQuery]);
+
+  // Check if exercise is completed
+  const isExerciseCompleted = (exerciseId: string): boolean => {
+    return user.progress.completedExercises.includes(exerciseId);
+  };
+
+  const handleExercisePress = (exerciseId: string) => {
+    navigation.navigate('ExerciseDetail', { exerciseId });
+  };
+
+  // Group exercises by zone for display
+  const groupedExercises = useMemo(() => {
+    if (selectedZone !== 'all') return null;
+
+    const groups: { [key: string]: typeof exercises } = {};
+    filteredExercises.forEach((ex) => {
+      if (!groups[ex.zone]) {
+        groups[ex.zone] = [];
+      }
+      groups[ex.zone].push(ex);
+    });
+    return groups;
+  }, [filteredExercises, selectedZone]);
+
+  const getZoneLabel = (zone: string): string => {
+    const option = zoneOptions.find((o) => o.id === zone);
+    return option?.label || zone;
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Bibliothèque</Text>
+        <Text style={styles.headerSubtitle}>
+          {safeExercises.length} exercices disponibles
+        </Text>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Ionicons
+            name="search-outline"
+            size={20}
+            color={colors.text.tertiary}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Rechercher un exercice..."
+            placeholderTextColor={colors.text.muted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons
+                name="close-circle"
+                size={20}
+                color={colors.text.tertiary}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* Zone Filters */}
+      <View style={styles.filtersContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContent}
+        >
+          {zoneOptions.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                styles.filterChip,
+                selectedZone === option.id && styles.filterChipActive,
+              ]}
+              onPress={() => setSelectedZone(option.id)}
+            >
+              <Ionicons
+                name={option.icon}
+                size={16}
+                color={
+                  selectedZone === option.id
+                    ? colors.background.primary
+                    : colors.text.secondary
+                }
+              />
+              <Text
+                style={[
+                  styles.filterLabel,
+                  selectedZone === option.id && styles.filterLabelActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Exercises List */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Contraindications Warning */}
+        {user.healthInfo.contraindications.length > 0 && (
+          <View style={styles.warningBanner}>
+            <Ionicons
+              name="shield-checkmark"
+              size={20}
+              color={colors.accent.teal}
+            />
+            <Text style={styles.warningText}>
+              Certains exercices ont été masqués selon vos contre-indications
+            </Text>
+          </View>
+        )}
+
+        {/* Grouped view (when "all" is selected) */}
+        {selectedZone === 'all' && groupedExercises && (
+          <>
+            {Object.entries(groupedExercises).map(([zone, zoneExercises]) => (
+              <View key={zone} style={styles.zoneSection}>
+                <View style={styles.zoneSectionHeader}>
+                  <Text style={styles.zoneSectionTitle}>
+                    {getZoneLabel(zone)}
+                  </Text>
+                  <Text style={styles.zoneSectionCount}>
+                    {zoneExercises.length} exercice(s)
+                  </Text>
+                </View>
+                {zoneExercises.map((exercise) => (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onPress={() => handleExercisePress(exercise.id)}
+                    completed={isExerciseCompleted(exercise.id)}
+                    showZone={false}
+                  />
+                ))}
+              </View>
+            ))}
+          </>
+        )}
+
+        {/* Flat view (when a specific zone is selected) */}
+        {selectedZone !== 'all' && (
+          <View style={styles.exercisesList}>
+            {filteredExercises.map((exercise) => (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                onPress={() => handleExercisePress(exercise.id)}
+                completed={isExerciseCompleted(exercise.id)}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Empty State */}
+        {filteredExercises.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons
+              name="search-outline"
+              size={48}
+              color={colors.text.muted}
+            />
+            <Text style={styles.emptyStateTitle}>Aucun exercice trouvé</Text>
+            <Text style={styles.emptyStateText}>
+              {searchQuery
+                ? 'Essayez avec d\'autres mots-clés'
+                : 'Aucun exercice disponible pour cette zone'}
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
+  // Header
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  headerTitle: {
+    ...typography.h1,
+    color: colors.text.primary,
+  },
+  headerSubtitle: {
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
+  // Search
+  searchContainer: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: spacing.md,
+    height: 48,
+  },
+  searchInput: {
+    flex: 1,
+    ...typography.body,
+    color: colors.text.primary,
+    marginLeft: spacing.sm,
+  },
+  // Filters
+  filtersContainer: {
+    marginBottom: spacing.md,
+  },
+  filtersContent: {
+    paddingHorizontal: spacing.lg,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.sm,
+  },
+  filterChipActive: {
+    backgroundColor: colors.accent.green,
+  },
+  filterLabel: {
+    ...typography.label,
+    color: colors.text.secondary,
+    marginLeft: spacing.xs,
+  },
+  filterLabelActive: {
+    color: colors.background.primary,
+  },
+  // Content
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.huge,
+  },
+  // Warning
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.accent.teal + '10',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.lg,
+  },
+  warningText: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    marginLeft: spacing.sm,
+    flex: 1,
+  },
+  // Zone Section
+  zoneSection: {
+    marginBottom: spacing.xl,
+  },
+  zoneSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  zoneSectionTitle: {
+    ...typography.h4,
+    color: colors.text.primary,
+  },
+  zoneSectionCount: {
+    ...typography.caption,
+    color: colors.text.tertiary,
+  },
+  // Exercises List
+  exercisesList: {
+    marginBottom: spacing.lg,
+  },
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.huge,
+  },
+  emptyStateTitle: {
+    ...typography.h4,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+  },
+  emptyStateText: {
+    ...typography.body,
+    color: colors.text.muted,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+});
+
+export default LibraryScreen;
