@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, ProgressCircle, BadgeComponent } from '../components';
 import { useStore } from '../store/useStore';
+import { badgeDefinitions, getNextBadgeToEarn, getBadgeProgress } from '../data/badges';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -188,6 +189,79 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Text style={styles.quickStatLabel}>Badges</Text>
             </View>
           </View>
+        </Card>
+
+        {/* Achievements Section */}
+        <Text style={styles.sectionTitle}>Vos Accomplissements</Text>
+        <Card variant="default" padding="large" style={styles.achievementsCard}>
+          {progress.badges.length > 0 ? (
+            <>
+              <View style={styles.badgesGrid}>
+                {progress.badges.slice(0, 6).map((badge) => (
+                  <View key={badge.id} style={styles.badgeItem}>
+                    <BadgeComponent badge={badge} size="small" showName />
+                  </View>
+                ))}
+              </View>
+              {progress.badges.length > 6 && (
+                <TouchableOpacity style={styles.viewAllBadges}>
+                  <Text style={styles.viewAllBadgesText}>
+                    Voir tous les {progress.badges.length} badges
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color={colors.accent.green} />
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <View style={styles.noBadgesContainer}>
+              <Ionicons name="ribbon-outline" size={48} color={colors.text.muted} />
+              <Text style={styles.noBadgesTitle}>Pas encore de badge</Text>
+              <Text style={styles.noBadgesText}>
+                Complétez des séances pour gagner vos premiers badges !
+              </Text>
+            </View>
+          )}
+
+          {/* Next badge to earn */}
+          {(() => {
+            const userStats = {
+              currentStreak: progress.currentStreak,
+              totalSessions: progress.totalSessions,
+              totalMinutes: progress.totalMinutes,
+              completedExercises: progress.completedExercises,
+              completedPrograms: progress.completedPrograms,
+              zonesExplored: [],
+            };
+            const nextBadge = getNextBadgeToEarn(
+              progress.badges.map((b) => b.id),
+              userStats
+            );
+
+            if (nextBadge) {
+              const progressPercent = getBadgeProgress(nextBadge, userStats);
+              return (
+                <View style={styles.nextBadgeContainer}>
+                  <Text style={styles.nextBadgeLabel}>Prochain badge</Text>
+                  <View style={styles.nextBadgeContent}>
+                    <View style={styles.nextBadgeInfo}>
+                      <Text style={styles.nextBadgeName}>{nextBadge.name}</Text>
+                      <Text style={styles.nextBadgeDescription}>
+                        {nextBadge.description}
+                      </Text>
+                    </View>
+                    <View style={styles.nextBadgeProgress}>
+                      <ProgressCircle
+                        progress={progressPercent}
+                        size={48}
+                        strokeWidth={4}
+                      />
+                    </View>
+                  </View>
+                </View>
+              );
+            }
+            return null;
+          })()}
         </Card>
 
         {/* Preferences Section */}
@@ -438,6 +512,82 @@ const styles = StyleSheet.create({
     width: 1,
     backgroundColor: colors.border.light,
   },
+  // Achievements
+  achievementsCard: {
+    marginBottom: spacing.md,
+  },
+  badgesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -spacing.sm,
+  },
+  badgeItem: {
+    width: '33.33%',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  viewAllBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  viewAllBadgesText: {
+    ...typography.label,
+    color: colors.accent.green,
+    marginRight: spacing.xs,
+  },
+  noBadgesContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  noBadgesTitle: {
+    ...typography.h4,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+  },
+  noBadgesText: {
+    ...typography.body,
+    color: colors.text.muted,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
+  nextBadgeContainer: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  nextBadgeLabel: {
+    ...typography.caption,
+    color: colors.text.tertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+  },
+  nextBadgeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  nextBadgeInfo: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  nextBadgeName: {
+    ...typography.label,
+    color: colors.text.primary,
+  },
+  nextBadgeDescription: {
+    ...typography.bodySmall,
+    color: colors.text.tertiary,
+    marginTop: spacing.xs,
+  },
+  nextBadgeProgress: {},
   // Section Title
   sectionTitle: {
     ...typography.label,
