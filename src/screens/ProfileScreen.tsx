@@ -153,14 +153,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
         {/* Profile Card */}
         <Card variant="elevated" padding="large" style={styles.profileCard}>
-          <View style={styles.profileHeader}>
+          <TouchableOpacity
+            style={styles.profileHeader}
+            onPress={() => navigation.navigate('EditProfile')}
+          >
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
                 <Ionicons name="person" size={40} color={colors.text.secondary} />
               </View>
-              <TouchableOpacity style={styles.editAvatarButton}>
-                <Ionicons name="camera" size={14} color={colors.background.primary} />
-              </TouchableOpacity>
+              <View style={styles.editAvatarButton}>
+                <Ionicons name="pencil" size={12} color={colors.background.primary} />
+              </View>
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>
@@ -169,8 +172,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Text style={styles.profileMeta}>
                 Membre depuis {formatJoinDate()}
               </Text>
+              <Text style={styles.editProfileHint}>Appuyez pour modifier</Text>
             </View>
-          </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
+          </TouchableOpacity>
 
           {/* Quick Stats */}
           <View style={styles.quickStats}>
@@ -486,6 +491,11 @@ const styles = StyleSheet.create({
   profileMeta: {
     ...typography.bodySmall,
     color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
+  editProfileHint: {
+    ...typography.caption,
+    color: colors.accent.green,
     marginTop: spacing.xs,
   },
   // Quick Stats

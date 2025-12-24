@@ -6,11 +6,17 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, ProgressCircle, BadgeComponent } from '../components';
 import { useStore } from '../store/useStore';
+import { FaceFeelRating } from '../types';
 
 interface JournalScreenProps {
   navigation: any;
@@ -21,8 +27,23 @@ type ViewMode = 'overview' | 'calendar' | 'achievements';
 export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
-  const { user, sessionHistory, dailyEntries } = useStore();
-  const { progress } = user;
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [dailyNote, setDailyNote] = useState('');
+  const [selectedFeeling, setSelectedFeeling] = useState<FaceFeelRating | null>(null);
+
+  const { user, sessionHistory, dailyEntries, updateDailyEntry, getTodayEntry } = useStore();
+  const { progress, settings } = user;
+
+  // Get today's entry
+  const todayEntry = getTodayEntry();
+
+  // Initialize state from today's entry
+  React.useEffect(() => {
+    if (todayEntry) {
+      setDailyNote(todayEntry.notes || '');
+      setSelectedFeeling(todayEntry.morningFeel || null);
+    }
+  }, [todayEntry]);
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -96,6 +117,38 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
     return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   };
 
+  const handleFeelingSelect = (feeling: FaceFeelRating) => {
+    if (settings.hapticEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setSelectedFeeling(feeling);
+    const today = new Date().toISOString().split('T')[0];
+    updateDailyEntry({
+      date: today,
+      morningFeel: feeling,
+    });
+  };
+
+  const handleSaveNotes = () => {
+    if (settings.hapticEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    const today = new Date().toISOString().split('T')[0];
+    updateDailyEntry({
+      date: today,
+      notes: dailyNote,
+    });
+    setShowNotesModal(false);
+  };
+
+  const getTodayDateFormatted = (): string => {
+    return new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  };
+
   const renderOverview = () => (
     <>
       {/* Main Stats */}
@@ -164,42 +217,59 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
       </Card>
 
       {/* Daily Notes CTA */}
-      <Card
-        variant="outlined"
-        padding="large"
-        style={styles.notesCard}
-        onPress={() => {/* Open daily notes */}}
-      >
-        <View style={styles.notesContent}>
-          <View style={styles.notesIcon}>
-            <Ionicons name="book" size={24} color={colors.accent.gold} />
+      <TouchableOpacity onPress={() => setShowNotesModal(true)}>
+        <Card
+          variant="outlined"
+          padding="large"
+          style={styles.notesCard}
+        >
+          <View style={styles.notesContent}>
+            <View style={styles.notesIcon}>
+              <Ionicons name="book" size={24} color={colors.accent.gold} />
+            </View>
+            <View style={styles.notesTextContainer}>
+              <Text style={styles.notesTitle}>Notes quotidiennes</Text>
+              <Text style={styles.notesDescription}>
+                {todayEntry?.notes
+                  ? todayEntry.notes.substring(0, 40) + (todayEntry.notes.length > 40 ? '...' : '')
+                  : 'Comment vous sentez-vous aujourd\'hui ?'}
+              </Text>
+            </View>
+            <Ionicons
+              name={todayEntry?.notes ? 'checkmark-circle' : 'chevron-forward'}
+              size={20}
+              color={todayEntry?.notes ? colors.accent.green : colors.text.tertiary}
+            />
           </View>
-          <View style={styles.notesTextContainer}>
-            <Text style={styles.notesTitle}>Notes quotidiennes</Text>
-            <Text style={styles.notesDescription}>
-              Comment vous sentez-vous aujourd'hui ?
-            </Text>
-          </View>
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color={colors.text.tertiary}
-          />
-        </View>
-      </Card>
+        </Card>
+      </TouchableOpacity>
 
       {/* How Face Feels */}
       <Text style={styles.sectionTitle}>Comment se sent votre visage ?</Text>
       <View style={styles.feelingsRow}>
-        {[
-          { id: 'tendu', label: 'Tendu', emoji: '😣' },
-          { id: 'normal', label: 'Normal', emoji: '😐' },
-          { id: 'detendu', label: 'Détendu', emoji: '😌' },
-          { id: 'revitalise', label: 'Revitalisé', emoji: '✨' },
-        ].map((feeling) => (
-          <TouchableOpacity key={feeling.id} style={styles.feelingButton}>
+        {([
+          { id: 'tendu' as FaceFeelRating, label: 'Tendu', emoji: '😣' },
+          { id: 'normal' as FaceFeelRating, label: 'Normal', emoji: '😐' },
+          { id: 'detendu' as FaceFeelRating, label: 'Détendu', emoji: '😌' },
+          { id: 'revitalise' as FaceFeelRating, label: 'Revitalisé', emoji: '✨' },
+        ]).map((feeling) => (
+          <TouchableOpacity
+            key={feeling.id}
+            style={[
+              styles.feelingButton,
+              selectedFeeling === feeling.id && styles.feelingButtonSelected,
+            ]}
+            onPress={() => handleFeelingSelect(feeling.id)}
+          >
             <Text style={styles.feelingEmoji}>{feeling.emoji}</Text>
-            <Text style={styles.feelingLabel}>{feeling.label}</Text>
+            <Text
+              style={[
+                styles.feelingLabel,
+                selectedFeeling === feeling.id && styles.feelingLabelSelected,
+              ]}
+            >
+              {feeling.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -396,6 +466,60 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
         {viewMode === 'calendar' && renderCalendar()}
         {viewMode === 'achievements' && renderAchievements()}
       </ScrollView>
+
+      {/* Daily Notes Modal */}
+      <Modal
+        visible={showNotesModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowNotesModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setShowNotesModal(false)}
+              >
+                <Ionicons name="close" size={24} color={colors.text.primary} />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Notes du jour</Text>
+              <TouchableOpacity
+                style={styles.modalSaveButton}
+                onPress={handleSaveNotes}
+              >
+                <Text style={styles.modalSaveText}>Enregistrer</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDate}>{getTodayDateFormatted()}</Text>
+
+            <View style={styles.modalContent}>
+              <Text style={styles.inputLabel}>Comment vous sentez-vous ?</Text>
+              <TextInput
+                style={styles.notesInput}
+                multiline
+                numberOfLines={6}
+                placeholder="Partagez vos pensées, ressentis, ou observations sur votre pratique d'aujourd'hui..."
+                placeholderTextColor={colors.text.muted}
+                value={dailyNote}
+                onChangeText={setDailyNote}
+                textAlignVertical="top"
+              />
+
+              <View style={styles.modalTips}>
+                <Ionicons name="bulb-outline" size={16} color={colors.accent.gold} />
+                <Text style={styles.modalTipsText}>
+                  Noter vos ressentis aide à suivre vos progrès et à rester motivé(e).
+                </Text>
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -564,6 +688,14 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.secondary,
   },
+  feelingButtonSelected: {
+    backgroundColor: colors.accent.green + '20',
+    borderWidth: 2,
+    borderColor: colors.accent.green,
+  },
+  feelingLabelSelected: {
+    color: colors.accent.green,
+  },
   // Calendar
   calendarHeader: {
     flexDirection: 'row',
@@ -708,6 +840,79 @@ const styles = StyleSheet.create({
   statisticValue: {
     ...typography.label,
     color: colors.text.primary,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: colors.background.secondary,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    paddingBottom: spacing.huge,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  modalCloseButton: {
+    padding: spacing.sm,
+  },
+  modalTitle: {
+    ...typography.h3,
+    color: colors.text.primary,
+  },
+  modalSaveButton: {
+    padding: spacing.sm,
+  },
+  modalSaveText: {
+    ...typography.label,
+    color: colors.accent.green,
+  },
+  modalDate: {
+    ...typography.body,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    paddingVertical: spacing.md,
+    textTransform: 'capitalize',
+  },
+  modalContent: {
+    paddingHorizontal: spacing.lg,
+  },
+  inputLabel: {
+    ...typography.label,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+  },
+  notesInput: {
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    ...typography.body,
+    color: colors.text.primary,
+    minHeight: 150,
+    marginBottom: spacing.lg,
+  },
+  modalTips: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.accent.gold + '10',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+  },
+  modalTipsText: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    marginLeft: spacing.sm,
+    flex: 1,
   },
 });
 

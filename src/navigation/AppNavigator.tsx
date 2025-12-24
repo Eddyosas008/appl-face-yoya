@@ -17,6 +17,7 @@ import {
   ExerciseDetailScreen,
   ProgramDetailScreen,
   SettingsScreen,
+  EditProfileScreen,
 } from '../screens';
 import { RootStackParamList, MainTabParamList } from '../types';
 
@@ -159,6 +160,13 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="Settings"
               component={SettingsScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
               options={{
                 animation: 'slide_from_right',
               }}
