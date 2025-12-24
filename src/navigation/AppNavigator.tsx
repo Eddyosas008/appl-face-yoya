@@ -13,6 +13,9 @@ import {
   JournalScreen,
   ProfileScreen,
   SafetyScreen,
+  SessionPlayerScreen,
+  ExerciseDetailScreen,
+  ProgramDetailScreen,
 } from '../screens';
 import { RootStackParamList, MainTabParamList } from '../types';
 
@@ -130,7 +133,28 @@ export const AppNavigator: React.FC = () => {
                 animation: 'slide_from_bottom',
               }}
             />
-            {/* Add other modal screens here */}
+            <Stack.Screen
+              name="SessionPlayer"
+              component={SessionPlayerScreen}
+              options={{
+                animation: 'slide_from_bottom',
+                gestureEnabled: false,
+              }}
+            />
+            <Stack.Screen
+              name="ExerciseDetail"
+              component={ExerciseDetailScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="ProgramDetail"
+              component={ProgramDetailScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
           </>
         )}
       </Stack.Navigator>
