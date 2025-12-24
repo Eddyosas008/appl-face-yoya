@@ -16,6 +16,7 @@ import {
   SessionPlayerScreen,
   ExerciseDetailScreen,
   ProgramDetailScreen,
+  SettingsScreen,
 } from '../screens';
 import { RootStackParamList, MainTabParamList } from '../types';
 
@@ -151,6 +152,13 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="ProgramDetail"
               component={ProgramDetailScreen}
+              options={{
+                animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
               options={{
                 animation: 'slide_from_right',
               }}

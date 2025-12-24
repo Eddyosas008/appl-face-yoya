@@ -8,3 +8,4 @@ export { default as SafetyScreen } from './SafetyScreen';
 export { default as SessionPlayerScreen } from './SessionPlayerScreen';
 export { default as ExerciseDetailScreen } from './ExerciseDetailScreen';
 export { default as ProgramDetailScreen } from './ProgramDetailScreen';
+export { default as SettingsScreen } from './SettingsScreen';

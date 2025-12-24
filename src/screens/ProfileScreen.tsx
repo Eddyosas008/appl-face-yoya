@@ -141,7 +141,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profil & Paramètres</Text>
+          <Text style={styles.headerTitle}>Profil</Text>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <Ionicons name="settings-outline" size={24} color={colors.text.primary} />
+          </TouchableOpacity>
         </View>
 
         {/* Profile Card */}
@@ -350,11 +356,17 @@ const styles = StyleSheet.create({
   },
   // Header
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: spacing.xl,
   },
   headerTitle: {
     ...typography.h1,
     color: colors.text.primary,
+  },
+  settingsButton: {
+    padding: spacing.sm,
   },
   // Profile Card
   profileCard: {
