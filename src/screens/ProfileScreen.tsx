@@ -20,7 +20,7 @@ interface ProfileScreenProps {
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
-  const { user, updateSettings, resetProgress, resetAllData } = useStore();
+  const { user, updateSettings, updatePreferences, resetProgress, resetAllData } = useStore();
   const { profile, preferences, progress, settings } = user;
 
   const handleResetProgress = () => {
@@ -276,19 +276,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             icon="body"
             label="Zones ciblées"
             value={`${preferences.focusZones.length} zone(s)`}
-            onPress={() => {/* Navigate to edit */}}
+            onPress={() => navigation.navigate('EditProfile')}
           />
           <MenuItem
             icon="time"
             label="Durée préférée"
             value={`${preferences.preferredDuration} min`}
-            onPress={() => {/* Navigate to edit */}}
+            onPress={() => navigation.navigate('Settings')}
           />
           <MenuItem
             icon="target"
             label="Objectif hebdomadaire"
             value={`${progress.weeklyGoal} séances`}
-            onPress={() => {/* Navigate to edit */}}
+            onPress={() => navigation.navigate('Settings')}
           />
         </Card>
 
@@ -299,13 +299,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             icon="notifications"
             label="Rappels quotidiens"
             value={preferences.reminderEnabled}
-            onValueChange={(value) => {/* Update preference */}}
+            onValueChange={(value) => updatePreferences({ reminderEnabled: value })}
           />
           <MenuItem
             icon="time-outline"
             label="Heure de rappel"
             value={preferences.reminderTime || '08:00'}
-            onPress={() => {/* Open time picker */}}
+            onPress={() => navigation.navigate('Settings')}
           />
         </Card>
 
@@ -343,7 +343,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 ? `${user.healthInfo.contraindications.length} déclarée(s)`
                 : 'Aucune'
             }
-            onPress={() => {/* Navigate to edit */}}
+            onPress={() => navigation.navigate('EditProfile')}
           />
           <MenuItem
             icon="shield-checkmark"
@@ -358,22 +358,37 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <MenuItem
             icon="help-circle"
             label="Aide & FAQ"
-            onPress={() => {/* Navigate to help */}}
+            onPress={() => Alert.alert(
+              'Aide & FAQ',
+              'Comment utiliser Face Yoga ?\n\n• Suivez les programmes quotidiens\n• Pratiquez dans un environnement calme\n• Écoutez votre corps\n• Soyez régulier pour de meilleurs résultats\n\nPour plus d\'aide, contactez-nous !'
+            )}
           />
           <MenuItem
             icon="mail"
             label="Nous contacter"
-            onPress={() => {/* Open contact */}}
+            onPress={() => Alert.alert(
+              'Nous contacter',
+              'Email : support@faceyoga.app\n\nNous répondons généralement sous 24-48h.',
+              [{ text: 'OK' }]
+            )}
           />
           <MenuItem
             icon="document-text"
             label="Politique de confidentialité"
-            onPress={() => {/* Navigate to privacy */}}
+            onPress={() => Alert.alert(
+              'Politique de confidentialité',
+              'Vos données restent sur votre appareil.\n\nNous ne collectons aucune donnée personnelle sans votre consentement explicite.\n\nLes données de progression sont stockées localement pour améliorer votre expérience.',
+              [{ text: 'Compris' }]
+            )}
           />
           <MenuItem
             icon="document"
             label="Conditions d'utilisation"
-            onPress={() => {/* Navigate to terms */}}
+            onPress={() => Alert.alert(
+              'Conditions d\'utilisation',
+              'En utilisant Face Yoga, vous acceptez que :\n\n• Cette application ne remplace pas un avis médical\n• Vous pratiquez sous votre propre responsabilité\n• Vous devez respecter vos contre-indications\n• Le contenu est protégé par le droit d\'auteur',
+              [{ text: 'Compris' }]
+            )}
           />
         </Card>
 

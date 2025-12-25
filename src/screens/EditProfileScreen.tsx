@@ -31,29 +31,34 @@ const zoneOptions: { id: FaceZone; label: string; icon: string }[] = [
 
 const goalOptions: { id: UserGoal; label: string; description: string }[] = [
   {
-    id: 'relaxation',
-    label: 'Relaxation',
-    description: 'Détendre les tensions du visage',
+    id: 'reduire_tensions',
+    label: 'Réduire les tensions',
+    description: 'Détendre les tensions (mâchoire, front)',
   },
   {
-    id: 'tonification',
-    label: 'Tonification',
-    description: 'Raffermir les muscles du visage',
+    id: 'definir_contours',
+    label: 'Définir les contours',
+    description: 'Sculpter et raffermir l\'ovale du visage',
   },
   {
-    id: 'anti_rides',
-    label: 'Anti-rides',
-    description: 'Prévenir et réduire les rides',
-  },
-  {
-    id: 'eclat',
-    label: 'Éclat du teint',
+    id: 'eclat_peau',
+    label: 'Éclat de la peau',
     description: 'Améliorer la circulation et la luminosité',
   },
   {
-    id: 'atm',
-    label: 'Soulagement ATM',
-    description: 'Apaiser les tensions de la mâchoire',
+    id: 'detente_globale',
+    label: 'Détente globale',
+    description: 'Relaxation complète du visage',
+  },
+  {
+    id: 'anti_age_doux',
+    label: 'Anti-âge doux',
+    description: 'Prévenir et réduire les signes de l\'âge',
+  },
+  {
+    id: 'routine_quotidienne',
+    label: 'Routine quotidienne',
+    description: 'Créer une habitude de soin régulière',
   },
 ];
 
@@ -61,11 +66,11 @@ const contraindicationOptions: { id: Contraindication; label: string }[] = [
   { id: 'atm', label: 'Troubles de l\'ATM (mâchoire)' },
   { id: 'douleurs_cervicales', label: 'Douleurs cervicales' },
   { id: 'post_chirurgie', label: 'Chirurgie récente du visage' },
-  { id: 'bruxisme', label: 'Bruxisme (grincement des dents)' },
-  { id: 'injections', label: 'Injections récentes (Botox, fillers)' },
-  { id: 'problemes_oculaires', label: 'Problèmes oculaires' },
-  { id: 'hypertension', label: 'Hypertension' },
-  { id: 'problemes_thyroide', label: 'Problèmes de thyroïde' },
+  { id: 'injections_recentes', label: 'Injections récentes (Botox, fillers)' },
+  { id: 'paralysie_faciale', label: 'Paralysie faciale' },
+  { id: 'hypertension', label: 'Hypertension non contrôlée' },
+  { id: 'glaucome', label: 'Glaucome' },
+  { id: 'problemes_dentaires', label: 'Problèmes dentaires aigus' },
 ];
 
 export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({
