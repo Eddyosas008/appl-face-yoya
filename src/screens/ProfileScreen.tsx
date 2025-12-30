@@ -90,7 +90,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         />
       </View>
       <View style={styles.menuItemContent}>
-        <Text style={[styles.menuItemLabel, color && { color }]}>{label}</Text>
+        <Text style={[styles.menuItemLabel, color ? { color } : undefined]}>{label}</Text>
         {value && <Text style={styles.menuItemValue}>{value}</Text>}
       </View>
       {showArrow && onPress && (
@@ -296,7 +296,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             onPress={() => navigation.navigate('Settings')}
           />
           <MenuItem
-            icon="target"
+            icon="flag"
             label="Objectif hebdomadaire"
             value={`${progress.weeklyGoal} séances`}
             onPress={() => navigation.navigate('Settings')}

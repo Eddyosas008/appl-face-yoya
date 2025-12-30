@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ViewStyle,
+  StyleProp,
 } from 'react-native';
 import { colors, spacing, borderRadius, shadows } from '../theme';
 
@@ -12,7 +13,7 @@ interface CardProps {
   onPress?: () => void;
   variant?: 'default' | 'elevated' | 'outlined';
   padding?: 'none' | 'small' | 'medium' | 'large';
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Card: React.FC<CardProps> = ({

@@ -369,7 +369,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
       </Text>
       <View style={styles.summaryBox}>
         <View style={styles.summaryRow}>
-          <Ionicons name="target" size={20} color={colors.accent.green} />
+          <Ionicons name="flag" size={20} color={colors.accent.green} />
           <Text style={styles.summaryLabel}>Objectifs :</Text>
           <Text style={styles.summaryValue}>{selectedGoals.length} sélectionné(s)</Text>
         </View>

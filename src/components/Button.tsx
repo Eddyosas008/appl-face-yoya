@@ -130,7 +130,7 @@ export const Button: React.FC<ButtonProps> = ({
       ) : (
         <>
           {icon && <>{icon}</>}
-          <Text style={[getTextStyle(), icon && { marginLeft: spacing.sm }, textStyle]}>
+          <Text style={[getTextStyle(), icon ? { marginLeft: spacing.sm } : undefined, textStyle]}>
             {title}
           </Text>
         </>

@@ -22,9 +22,9 @@ import { Exercise, ExerciseStep, FaceFeelRating } from '../types';
 const { width, height } = Dimensions.get('window');
 
 interface SessionPlayerScreenProps {
-  navigation: any;
-  route: {
-    params: {
+  navigation?: any;
+  route?: {
+    params?: {
       programId?: string;
       day?: number;
       exerciseIds?: string[];
@@ -38,7 +38,7 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { programId, day, exerciseIds } = route.params;
+  const { programId, day, exerciseIds } = route?.params || {};
   const {
     user,
     completeSession,

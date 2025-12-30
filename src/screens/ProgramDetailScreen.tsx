@@ -17,10 +17,10 @@ import { programs, getProgramById } from '../data/programs';
 import { getExerciseById } from '../data/exercises';
 
 interface ProgramDetailScreenProps {
-  navigation: any;
-  route: {
-    params: {
-      programId: string;
+  navigation?: any;
+  route?: {
+    params?: {
+      programId?: string;
     };
   };
 }
@@ -51,7 +51,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { programId } = route.params;
+  const programId = route?.params?.programId || '';
   const { user, startProgram, completeProgram } = useStore();
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 

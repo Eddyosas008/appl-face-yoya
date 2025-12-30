@@ -455,7 +455,6 @@ export const useStore = create<AppState>()(
             dailyEntries: [
               ...state.dailyEntries,
               {
-                date: entry.date,
                 sessionCompleted: false,
                 ...entry,
               } as DailyEntry,

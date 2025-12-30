@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Modal,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, Button } from '../components';
 import { useStore } from '../store/useStore';
@@ -387,15 +387,88 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
       </ScrollView>
 
       {/* Time Picker Modal */}
-      {showTimePicker && (
-        <DateTimePicker
-          value={reminderTime}
-          mode="time"
-          is24Hour={true}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleTimeChange}
-        />
-      )}
+      <Modal
+        visible={showTimePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTimePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Heure du rappel</Text>
+            <View style={styles.timePickerContainer}>
+              <View style={styles.timeColumn}>
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => {
+                    const newDate = new Date(reminderTime);
+                    newDate.setHours((reminderTime.getHours() + 1) % 24);
+                    setReminderTime(newDate);
+                  }}
+                >
+                  <Ionicons name="chevron-up" size={24} color={colors.text.primary} />
+                </TouchableOpacity>
+                <Text style={styles.timeValue}>
+                  {reminderTime.getHours().toString().padStart(2, '0')}
+                </Text>
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => {
+                    const newDate = new Date(reminderTime);
+                    newDate.setHours((reminderTime.getHours() - 1 + 24) % 24);
+                    setReminderTime(newDate);
+                  }}
+                >
+                  <Ionicons name="chevron-down" size={24} color={colors.text.primary} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.timeSeparator}>:</Text>
+              <View style={styles.timeColumn}>
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => {
+                    const newDate = new Date(reminderTime);
+                    newDate.setMinutes((reminderTime.getMinutes() + 5) % 60);
+                    setReminderTime(newDate);
+                  }}
+                >
+                  <Ionicons name="chevron-up" size={24} color={colors.text.primary} />
+                </TouchableOpacity>
+                <Text style={styles.timeValue}>
+                  {reminderTime.getMinutes().toString().padStart(2, '0')}
+                </Text>
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => {
+                    const newDate = new Date(reminderTime);
+                    newDate.setMinutes((reminderTime.getMinutes() - 5 + 60) % 60);
+                    setReminderTime(newDate);
+                  }}
+                >
+                  <Ionicons name="chevron-down" size={24} color={colors.text.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setShowTimePicker(false)}
+              >
+                <Text style={styles.modalButtonCancelText}>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonConfirm}
+                onPress={() => {
+                  handleTimeChange(null, reminderTime);
+                  setShowTimePicker(false);
+                }}
+              >
+                <Text style={styles.modalButtonConfirmText}>Confirmer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -513,6 +586,76 @@ const styles = StyleSheet.create({
     color: colors.text.muted,
     marginLeft: spacing.sm,
     flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    width: '80%',
+    maxWidth: 300,
+  },
+  modalTitle: {
+    ...typography.h4,
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
+  timePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  timeColumn: {
+    alignItems: 'center',
+  },
+  timeButton: {
+    padding: spacing.sm,
+  },
+  timeValue: {
+    ...typography.h1,
+    color: colors.text.primary,
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  timeSeparator: {
+    ...typography.h1,
+    color: colors.text.primary,
+    marginHorizontal: spacing.md,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButtonCancel: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    marginRight: spacing.sm,
+    backgroundColor: colors.background.elevated,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  modalButtonCancelText: {
+    ...typography.button,
+    color: colors.text.secondary,
+  },
+  modalButtonConfirm: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    marginLeft: spacing.sm,
+    backgroundColor: colors.accent.green,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+  },
+  modalButtonConfirmText: {
+    ...typography.button,
+    color: colors.background.primary,
   },
 });
 

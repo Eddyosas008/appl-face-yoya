@@ -55,6 +55,14 @@ export const colors = {
     info: '#60a5fa',
   },
 
+  // Alias semantic pour compatibilité
+  semantic: {
+    success: '#4ade80',
+    warning: '#fbbf24',
+    error: '#f87171',
+    info: '#60a5fa',
+  },
+
   // Bordures
   border: {
     light: '#2d4a2d',

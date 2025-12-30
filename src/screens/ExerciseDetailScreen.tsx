@@ -19,10 +19,10 @@ import { Exercise } from '../types';
 const { width } = Dimensions.get('window');
 
 interface ExerciseDetailScreenProps {
-  navigation: any;
-  route: {
-    params: {
-      exerciseId: string;
+  navigation?: any;
+  route?: {
+    params?: {
+      exerciseId?: string;
     };
   };
 }
@@ -64,7 +64,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { exerciseId } = route.params;
+  const exerciseId = route?.params?.exerciseId || '';
   const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
   const exercise = getExerciseById(exerciseId);
 
