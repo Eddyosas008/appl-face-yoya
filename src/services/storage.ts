@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { decode } from 'base64-arraybuffer';
 
 export type MediaType = 'avatar' | 'progress' | 'journal';
 
