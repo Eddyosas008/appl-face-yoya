@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Exercise } from '../types';
@@ -12,6 +12,8 @@ interface ExerciseCardProps {
   showZone?: boolean;
   completed?: boolean;
   compact?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (exerciseId: string) => void;
 }
 
 const zoneLabels: { [key: string]: string } = {
@@ -41,6 +43,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   showZone = true,
   completed = false,
   compact = false,
+  isFavorite = false,
+  onToggleFavorite,
 }) => {
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -131,16 +135,34 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           </Text>
         </View>
 
-        {/* Status indicator */}
-        {completed && (
-          <View style={styles.completedIndicator}>
-            <Ionicons
-              name="checkmark-circle"
-              size={24}
-              color={colors.accent.green}
-            />
-          </View>
-        )}
+        {/* Status indicators */}
+        <View style={styles.statusContainer}>
+          {onToggleFavorite && (
+            <TouchableOpacity
+              style={styles.favoriteButton}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                onToggleFavorite(exercise.id);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={22}
+                color={isFavorite ? colors.accent.coral : colors.text.muted}
+              />
+            </TouchableOpacity>
+          )}
+          {completed && (
+            <View style={styles.completedIndicator}>
+              <Ionicons
+                name="checkmark-circle"
+                size={22}
+                color={colors.accent.green}
+              />
+            </View>
+          )}
+        </View>
       </View>
     </Card>
   );
@@ -201,10 +223,17 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.text.tertiary,
   },
+  statusContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: spacing.sm,
+  },
+  favoriteButton: {
+    padding: spacing.xs,
+  },
   completedIndicator: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
+    marginTop: spacing.xs,
   },
   // Compact styles
   compactCard: {

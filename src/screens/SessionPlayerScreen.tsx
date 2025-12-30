@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card } from '../components';
+import { Button, Card, BreathingCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises, getExerciseById } from '../data/exercises';
 import { programs } from '../data/programs';
@@ -80,13 +80,19 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
   const [sessionStartTime] = useState(Date.now());
-  const [showBreathing, setShowBreathing] = useState(false);
+  const [selectedFeeling, setSelectedFeeling] = useState<FaceFeelRating | null>(null);
+  const [restCountdown, setRestCountdown] = useState(5);
 
   // Animation refs
   const progressAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const breathingAnim = useRef(new Animated.Value(0)).current;
+
+  // Get breathing phase from current step
+  const getBreathingPhase = (): 'inhale' | 'hold' | 'exhale' | 'rest' => {
+    if (!currentStep?.breathingCue) return 'rest';
+    return currentStep.breathingCue;
+  };
 
   const currentExercise = sessionExercises[currentExerciseIndex];
   const currentStep = currentExercise?.steps[currentStepIndex];
@@ -121,26 +127,22 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
     }
   }, [timeRemaining, currentStep]);
 
-  // Breathing animation
+  // Rest countdown timer
   useEffect(() => {
-    if (showBreathing && currentStep?.breathingCue) {
-      const duration = currentStep.breathingCue === 'hold' ? 1000 : 2000;
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(breathingAnim, {
-            toValue: 1,
-            duration: duration,
-            useNativeDriver: true,
-          }),
-          Animated.timing(breathingAnim, {
-            toValue: 0,
-            duration: duration,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    }
-  }, [showBreathing, currentStep]);
+    if (sessionState !== 'rest') return;
+
+    setRestCountdown(5);
+    const timer = setInterval(() => {
+      setRestCountdown((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [sessionState]);
 
   const handleStepComplete = useCallback(() => {
     if (user.settings.hapticEnabled) {
@@ -505,9 +507,18 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const renderRest = () => (
     <View style={styles.restContainer}>
       <View style={styles.restContent}>
-        <Ionicons name="cafe" size={64} color={colors.accent.teal} />
-        <Text style={styles.restTitle}>Petite pause</Text>
-        <Text style={styles.restSubtitle}>Prochain exercice dans quelques secondes...</Text>
+        <BreathingCircle
+          phase="exhale"
+          size={140}
+          isActive={true}
+          showLabel={false}
+          color={colors.accent.teal}
+        />
+        <Text style={styles.restTitle}>Respirez profondément</Text>
+        <View style={styles.restCountdownContainer}>
+          <Text style={styles.restCountdownNumber}>{restCountdown}</Text>
+          <Text style={styles.restCountdownLabel}>secondes</Text>
+        </View>
 
         <View style={styles.nextExercisePreview}>
           <Text style={styles.nextExerciseLabel}>Exercice suivant</Text>
@@ -560,22 +571,36 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
             <Text style={styles.feelingTitle}>Comment se sent votre visage ?</Text>
             <View style={styles.feelingsRow}>
               {[
-                { id: 'tendu', emoji: '😣', label: 'Tendu' },
-                { id: 'normal', emoji: '😐', label: 'Normal' },
-                { id: 'detendu', emoji: '😌', label: 'Détendu' },
-                { id: 'revitalise', emoji: '✨', label: 'Revitalisé' },
+                { id: 'tendu' as FaceFeelRating, emoji: '😣', label: 'Tendu' },
+                { id: 'normal' as FaceFeelRating, emoji: '😐', label: 'Normal' },
+                { id: 'detendu' as FaceFeelRating, emoji: '😌', label: 'Détendu' },
+                { id: 'revitalise' as FaceFeelRating, emoji: '✨', label: 'Revitalisé' },
               ].map((feeling) => (
                 <TouchableOpacity
                   key={feeling.id}
-                  style={styles.feelingButton}
+                  style={[
+                    styles.feelingButton,
+                    selectedFeeling === feeling.id && styles.feelingButtonSelected,
+                  ]}
                   onPress={() => {
                     if (user.settings.hapticEnabled) {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }
+                    setSelectedFeeling(feeling.id);
+                    // Save feeling to daily entry
+                    const today = new Date().toISOString().split('T')[0];
+                    useStore.getState().updateDailyEntry({
+                      date: today,
+                      eveningFeel: feeling.id,
+                      sessionCompleted: true,
+                    });
                   }}
                 >
                   <Text style={styles.feelingEmoji}>{feeling.emoji}</Text>
-                  <Text style={styles.feelingLabel}>{feeling.label}</Text>
+                  <Text style={[
+                    styles.feelingLabel,
+                    selectedFeeling === feeling.id && styles.feelingLabelSelected,
+                  ]}>{feeling.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -895,13 +920,20 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.text.primary,
     marginTop: spacing.xl,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
-  restSubtitle: {
-    ...typography.body,
-    color: colors.text.secondary,
-    textAlign: 'center',
+  restCountdownContainer: {
+    alignItems: 'center',
     marginBottom: spacing.xl,
+  },
+  restCountdownNumber: {
+    ...typography.h1,
+    fontSize: 56,
+    color: colors.accent.teal,
+  },
+  restCountdownLabel: {
+    ...typography.caption,
+    color: colors.text.tertiary,
   },
   nextExercisePreview: {
     backgroundColor: colors.background.tertiary,
@@ -980,6 +1012,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  feelingButtonSelected: {
+    borderColor: colors.accent.green,
+    backgroundColor: colors.accent.green + '20',
   },
   feelingEmoji: {
     fontSize: 28,
@@ -988,6 +1026,10 @@ const styles = StyleSheet.create({
   feelingLabel: {
     ...typography.caption,
     color: colors.text.secondary,
+  },
+  feelingLabelSelected: {
+    color: colors.accent.green,
+    fontWeight: '600',
   },
   motivationQuote: {
     ...typography.body,

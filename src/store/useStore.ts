@@ -87,6 +87,7 @@ interface AppState {
   user: User;
   sessionHistory: SessionHistory[];
   dailyEntries: DailyEntry[];
+  favoriteExercises: string[];
 
   // UI State
   isLoading: boolean;
@@ -131,6 +132,10 @@ interface AppState {
   // Actions - Settings
   updateSettings: (settings: Partial<UserSettings>) => void;
 
+  // Actions - Favorites
+  toggleFavoriteExercise: (exerciseId: string) => void;
+  isFavoriteExercise: (exerciseId: string) => boolean;
+
   // Actions - Utility
   resetProgress: () => void;
   resetAllData: () => void;
@@ -146,6 +151,7 @@ export const useStore = create<AppState>()(
       user: initialUser,
       sessionHistory: [],
       dailyEntries: [],
+      favoriteExercises: [],
       isLoading: false,
       currentSessionId: null,
 
@@ -533,6 +539,23 @@ export const useStore = create<AppState>()(
         })),
 
       // ==========================================
+      // FAVORITES ACTIONS
+      // ==========================================
+      toggleFavoriteExercise: (exerciseId) =>
+        set((state) => {
+          const isFavorite = state.favoriteExercises.includes(exerciseId);
+          return {
+            favoriteExercises: isFavorite
+              ? state.favoriteExercises.filter((id) => id !== exerciseId)
+              : [...state.favoriteExercises, exerciseId],
+          };
+        }),
+
+      isFavoriteExercise: (exerciseId) => {
+        return get().favoriteExercises.includes(exerciseId);
+      },
+
+      // ==========================================
       // UTILITY ACTIONS
       // ==========================================
       resetProgress: () =>
@@ -564,6 +587,7 @@ export const useStore = create<AppState>()(
         user: state.user,
         sessionHistory: state.sessionHistory,
         dailyEntries: state.dailyEntries,
+        favoriteExercises: state.favoriteExercises,
       }),
     }
   )

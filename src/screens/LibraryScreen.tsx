@@ -9,17 +9,20 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { ExerciseCard } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises, getExercisesByZone, getSafeExercises } from '../data/exercises';
-import { FaceZone } from '../types';
+import { FaceZone, DifficultyLevel } from '../types';
 
 interface LibraryScreenProps {
   navigation: any;
 }
 
 type ZoneFilter = 'all' | FaceZone;
+type DifficultyFilter = 'all' | DifficultyLevel;
+type SpecialFilter = 'favorites' | 'completed' | null;
 
 const zoneOptions: { id: ZoneFilter; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { id: 'all', label: 'Tous', icon: 'grid-outline' },
@@ -31,10 +34,19 @@ const zoneOptions: { id: ZoneFilter; label: string; icon: keyof typeof Ionicons.
   { id: 'cou', label: 'Cou', icon: 'body-outline' },
 ];
 
+const difficultyOptions: { id: DifficultyFilter; label: string; color: string }[] = [
+  { id: 'all', label: 'Tous niveaux', color: colors.text.secondary },
+  { id: 'debutant', label: 'Débutant', color: colors.accent.green },
+  { id: 'intermediaire', label: 'Intermédiaire', color: colors.accent.gold },
+  { id: 'avance', label: 'Avancé', color: colors.accent.coral },
+];
+
 export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
   const [selectedZone, setSelectedZone] = useState<ZoneFilter>('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilter>('all');
+  const [specialFilter, setSpecialFilter] = useState<SpecialFilter>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { user } = useStore();
+  const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
 
   // Get safe exercises based on user's contraindications
   const safeExercises = useMemo(() => {
@@ -50,6 +62,18 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
       result = result.filter((ex) => ex.zone === selectedZone);
     }
 
+    // Filter by difficulty
+    if (selectedDifficulty !== 'all') {
+      result = result.filter((ex) => ex.difficulty === selectedDifficulty);
+    }
+
+    // Filter by special (favorites/completed)
+    if (specialFilter === 'favorites') {
+      result = result.filter((ex) => favoriteExercises.includes(ex.id));
+    } else if (specialFilter === 'completed') {
+      result = result.filter((ex) => user.progress.completedExercises.includes(ex.id));
+    }
+
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -61,7 +85,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     }
 
     return result;
-  }, [safeExercises, selectedZone, searchQuery]);
+  }, [safeExercises, selectedZone, selectedDifficulty, specialFilter, searchQuery, favoriteExercises, user.progress.completedExercises]);
 
   // Check if exercise is completed
   const isExerciseCompleted = (exerciseId: string): boolean => {
@@ -70,6 +94,17 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
 
   const handleExercisePress = (exerciseId: string) => {
     navigation.navigate('ExerciseDetail', { exerciseId });
+  };
+
+  const handleToggleFavorite = (exerciseId: string) => {
+    if (user.settings.hapticEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    toggleFavoriteExercise(exerciseId);
+  };
+
+  const isFavorite = (exerciseId: string): boolean => {
+    return favoriteExercises.includes(exerciseId);
   };
 
   // Group exercises by zone for display
@@ -128,6 +163,49 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
         </View>
       </View>
 
+      {/* Special Filters (Favorites/Completed) */}
+      <View style={styles.specialFiltersContainer}>
+        <TouchableOpacity
+          style={[
+            styles.specialFilterChip,
+            specialFilter === 'favorites' && styles.specialFilterChipActive,
+          ]}
+          onPress={() => setSpecialFilter(specialFilter === 'favorites' ? null : 'favorites')}
+        >
+          <Ionicons
+            name={specialFilter === 'favorites' ? 'heart' : 'heart-outline'}
+            size={18}
+            color={specialFilter === 'favorites' ? colors.accent.coral : colors.text.secondary}
+          />
+          <Text style={[
+            styles.specialFilterLabel,
+            specialFilter === 'favorites' && styles.specialFilterLabelActive,
+          ]}>
+            Favoris ({favoriteExercises.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.specialFilterChip,
+            specialFilter === 'completed' && styles.specialFilterChipActive,
+          ]}
+          onPress={() => setSpecialFilter(specialFilter === 'completed' ? null : 'completed')}
+        >
+          <Ionicons
+            name={specialFilter === 'completed' ? 'checkmark-circle' : 'checkmark-circle-outline'}
+            size={18}
+            color={specialFilter === 'completed' ? colors.accent.green : colors.text.secondary}
+          />
+          <Text style={[
+            styles.specialFilterLabel,
+            specialFilter === 'completed' && styles.specialFilterLabelActive,
+          ]}>
+            Complétés ({user.progress.completedExercises.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Zone Filters */}
       <View style={styles.filtersContainer}>
         <ScrollView
@@ -166,6 +244,35 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
         </ScrollView>
       </View>
 
+      {/* Difficulty Filters */}
+      <View style={styles.filtersContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContent}
+        >
+          {difficultyOptions.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                styles.difficultyChip,
+                selectedDifficulty === option.id && { backgroundColor: option.color },
+              ]}
+              onPress={() => setSelectedDifficulty(option.id)}
+            >
+              <Text
+                style={[
+                  styles.difficultyLabel,
+                  selectedDifficulty === option.id && styles.difficultyLabelActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       {/* Exercises List */}
       <ScrollView
         style={styles.scrollView}
@@ -186,8 +293,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
           </View>
         )}
 
-        {/* Grouped view (when "all" is selected) */}
-        {selectedZone === 'all' && groupedExercises && (
+        {/* Grouped view (when "all" is selected and no special filter) */}
+        {selectedZone === 'all' && specialFilter === null && groupedExercises && (
           <>
             {Object.entries(groupedExercises).map(([zone, zoneExercises]) => (
               <View key={zone} style={styles.zoneSection}>
@@ -206,6 +313,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
                     onPress={() => handleExercisePress(exercise.id)}
                     completed={isExerciseCompleted(exercise.id)}
                     showZone={false}
+                    isFavorite={isFavorite(exercise.id)}
+                    onToggleFavorite={handleToggleFavorite}
                   />
                 ))}
               </View>
@@ -213,8 +322,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
           </>
         )}
 
-        {/* Flat view (when a specific zone is selected) */}
-        {selectedZone !== 'all' && (
+        {/* Flat view (when a specific zone is selected or special filter active) */}
+        {(selectedZone !== 'all' || specialFilter !== null) && (
           <View style={styles.exercisesList}>
             {filteredExercises.map((exercise) => (
               <ExerciseCard
@@ -222,6 +331,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
                 exercise={exercise}
                 onPress={() => handleExercisePress(exercise.id)}
                 completed={isExerciseCompleted(exercise.id)}
+                isFavorite={isFavorite(exercise.id)}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </View>
@@ -287,6 +398,32 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginLeft: spacing.sm,
   },
+  // Special Filters
+  specialFiltersContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  specialFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.sm,
+  },
+  specialFilterChipActive: {
+    backgroundColor: colors.background.elevated,
+  },
+  specialFilterLabel: {
+    ...typography.label,
+    color: colors.text.secondary,
+    marginLeft: spacing.xs,
+  },
+  specialFilterLabelActive: {
+    color: colors.text.primary,
+  },
   // Filters
   filtersContainer: {
     marginBottom: spacing.md,
@@ -312,6 +449,21 @@ const styles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
   filterLabelActive: {
+    color: colors.background.primary,
+  },
+  // Difficulty chips
+  difficultyChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: borderRadius.full,
+    marginRight: spacing.sm,
+  },
+  difficultyLabel: {
+    ...typography.label,
+    color: colors.text.secondary,
+  },
+  difficultyLabelActive: {
     color: colors.background.primary,
   },
   // Content

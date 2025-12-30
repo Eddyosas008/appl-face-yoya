@@ -10,3 +10,4 @@ export { default as ExerciseDetailScreen } from './ExerciseDetailScreen';
 export { default as ProgramDetailScreen } from './ProgramDetailScreen';
 export { default as SettingsScreen } from './SettingsScreen';
 export { default as EditProfileScreen } from './EditProfileScreen';
+export { default as StatsScreen } from './StatsScreen';

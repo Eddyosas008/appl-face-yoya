@@ -293,6 +293,7 @@ export type RootStackParamList = {
   Settings: undefined;
   Safety: undefined;
   EditProfile: undefined;
+  Stats: undefined;
 };
 
 export type MainTabParamList = {

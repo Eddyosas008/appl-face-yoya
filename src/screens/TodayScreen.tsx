@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,47 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card, ProgressCircle, ExerciseCard } from '../components';
+import { Button, Card, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
 import { programs } from '../data/programs';
-import { getRandomMessage } from '../data/badges';
+
+// Daily tips for face yoga practice
+const dailyTips = [
+  "Pratiquez de préférence devant un miroir pour vérifier vos mouvements et assurer une bonne symétrie faciale.",
+  "Hydratez-vous bien avant et après votre séance pour optimiser les bienfaits sur votre peau.",
+  "Respirez profondément pendant les exercices - l'oxygénation améliore les résultats.",
+  "Maintenez une posture droite pendant vos exercices pour éviter les tensions au cou.",
+  "Lavez-vous les mains avant de toucher votre visage pendant les exercices.",
+  "Pratiquez à jeun ou 2h après un repas pour plus de confort.",
+  "Soyez doux avec votre peau - les mouvements brusques peuvent causer des irritations.",
+  "La régularité est plus importante que l'intensité - quelques minutes chaque jour valent mieux qu'une longue séance occasionnelle.",
+  "Écoutez votre corps et ne forcez jamais un mouvement qui cause de la douleur.",
+  "Détendez votre mâchoire avant de commencer - beaucoup de tensions s'y accumulent.",
+  "Faites vos exercices de préférence le matin pour réveiller votre visage.",
+  "Appliquez une crème hydratante avant les exercices pour faciliter les mouvements.",
+  "Terminez toujours par quelques respirations profondes pour vous relaxer.",
+  "Les résultats apparaissent généralement après 2 à 4 semaines de pratique régulière.",
+  "Évitez de pratiquer juste avant de dormir - les exercices peuvent être stimulants.",
+  "Combinez le face yoga avec un bon sommeil pour des résultats optimaux.",
+  "Relâchez les tensions de vos épaules avant de commencer votre séance.",
+  "Souriez naturellement entre les exercices - c'est aussi un excellent travail pour le visage !",
+  "Massez légèrement votre visage après les exercices pour détendre les muscles.",
+  "La constance est la clé : même 5 minutes par jour peuvent faire une différence.",
+  "Évitez les exercices intenses si vous avez des inflammations ou irritations cutanées.",
+  "Buvez un verre d'eau tiède le matin avant votre séance pour stimuler la circulation.",
+  "Pratiquez dans un endroit calme pour mieux vous concentrer sur vos sensations.",
+  "Tenez un journal de vos progrès pour rester motivé(e).",
+  "Adaptez l'intensité des exercices selon votre niveau d'énergie du jour.",
+  "Les mouvements lents et contrôlés sont plus efficaces que les mouvements rapides.",
+  "Prenez une photo de votre visage chaque semaine pour suivre vos progrès.",
+  "N'oubliez pas de travailler aussi les muscles du cou pour un résultat harmonieux.",
+  "Faites une pause si vous ressentez une fatigue musculaire inhabituelle.",
+  "Célébrez chaque petite victoire - la régularité mérite d'être récompensée !",
+];
 
 interface TodayScreenProps {
   navigation: any;
@@ -51,6 +83,12 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
 
   // Quick stats
   const weekProgress = progress.weeklyProgress / progress.weeklyGoal;
+
+  // Get daily tip based on current day
+  const dailyTip = useMemo(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    return dailyTips[dayOfYear % dailyTips.length];
+  }, []);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -193,9 +231,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
               <View style={styles.tipIcon}>
                 <Ionicons name="bulb" size={24} color={colors.accent.gold} />
               </View>
-              <Text style={styles.tipText}>
-                Pratiquez de préférence devant un miroir pour vérifier vos mouvements et assurer une bonne symétrie faciale.
-              </Text>
+              <Text style={styles.tipText}>{dailyTip}</Text>
             </View>
           </Card>
         </View>

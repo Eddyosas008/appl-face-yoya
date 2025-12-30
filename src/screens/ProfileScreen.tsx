@@ -269,6 +269,17 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           })()}
         </Card>
 
+        {/* Analytics Section */}
+        <Text style={styles.sectionTitle}>Analyse</Text>
+        <Card variant="default" padding="none" style={styles.menuCard}>
+          <MenuItem
+            icon="bar-chart"
+            label="Statistiques & Insights"
+            value="Voir vos progrès détaillés"
+            onPress={() => navigation.navigate('Stats')}
+          />
+        </Card>
+
         {/* Preferences Section */}
         <Text style={styles.sectionTitle}>Préférences</Text>
         <Card variant="default" padding="none" style={styles.menuCard}>
