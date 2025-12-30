@@ -1,2 +1,11 @@
 export * from './notifications';
 export { default as NotificationService } from './notifications';
+export * from './auth';
+export { default as AuthService } from './auth';
+export * from './database';
+export { default as DatabaseService } from './database';
+export * from './sync';
+export { default as SyncService } from './sync';
+export * from './storage';
+export { default as StorageService } from './storage';
+export { supabase } from './supabase';

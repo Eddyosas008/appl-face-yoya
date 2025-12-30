@@ -282,6 +282,7 @@ export interface OnboardingAnswer {
 // ============================================
 export type RootStackParamList = {
   Onboarding: undefined;
+  Auth: undefined;
   MainTabs: undefined;
   ExerciseDetail: { exerciseId: string };
   ProgramDetail: { programId: string };
