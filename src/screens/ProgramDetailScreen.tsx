@@ -172,6 +172,33 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* Resume Banner - Shows prominently when program is in progress */}
+        {isCurrentProgram && !isCompleted && (
+          <TouchableOpacity
+            style={styles.resumeBanner}
+            onPress={handleContinueProgram}
+            activeOpacity={0.8}
+          >
+            <View style={styles.resumeBannerContent}>
+              <View style={styles.resumeBannerLeft}>
+                <View style={styles.resumeIconContainer}>
+                  <Ionicons name="play-circle" size={32} color={colors.background.primary} />
+                </View>
+                <View style={styles.resumeTextContainer}>
+                  <Text style={styles.resumeTitle}>Reprendre votre progression</Text>
+                  <Text style={styles.resumeSubtitle}>
+                    Jour {currentDay} sur {program.duration} · {program.days[currentDay - 1]?.title}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color={colors.background.primary} />
+            </View>
+            <View style={styles.resumeProgressBar}>
+              <View style={[styles.resumeProgressFill, { width: `${progress * 100}%` }]} />
+            </View>
+          </TouchableOpacity>
+        )}
+
         {/* Program Header Card */}
         <Card variant="elevated" padding="large" style={styles.programCard}>
           <View style={styles.programHeader}>
@@ -762,6 +789,54 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text.muted,
     marginVertical: spacing.lg,
+  },
+  // Resume Banner
+  resumeBanner: {
+    backgroundColor: colors.accent.green,
+    borderRadius: borderRadius.lg,
+    marginBottom: spacing.xl,
+    overflow: 'hidden',
+  },
+  resumeBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.lg,
+  },
+  resumeBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  resumeIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  resumeTextContainer: {
+    flex: 1,
+  },
+  resumeTitle: {
+    ...typography.label,
+    color: colors.background.primary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  resumeSubtitle: {
+    ...typography.bodySmall,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  resumeProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  resumeProgressFill: {
+    height: '100%',
+    backgroundColor: colors.background.primary,
   },
 });
 

@@ -65,7 +65,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
   route,
 }) => {
   const { exerciseId } = route.params;
-  const { user } = useStore();
+  const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
   const exercise = getExerciseById(exerciseId);
 
   const [activeTab, setActiveTab] = useState<'steps' | 'tips'>('steps');
@@ -83,9 +83,17 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
   }
 
   const isCompleted = user.progress.completedExercises.includes(exerciseId);
+  const isFavorite = favoriteExercises.includes(exerciseId);
   const hasContraindication = exercise.contraindications.some((c) =>
     user.healthInfo.contraindications.includes(c)
   );
+
+  const handleToggleFavorite = () => {
+    if (user.settings.hapticEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    toggleFavoriteExercise(exerciseId);
+  };
 
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds} secondes`;
@@ -148,6 +156,16 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
               <Text style={styles.completedText}>Complété</Text>
             </View>
           )}
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={handleToggleFavorite}
+          >
+            <Ionicons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isFavorite ? colors.accent.coral : colors.text.secondary}
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -413,6 +431,10 @@ const styles = StyleSheet.create({
     ...typography.labelSmall,
     color: colors.accent.green,
     marginLeft: spacing.xs,
+  },
+  favoriteButton: {
+    padding: spacing.sm,
+    marginLeft: spacing.sm,
   },
   // Content
   scrollView: {

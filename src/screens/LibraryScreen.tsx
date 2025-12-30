@@ -46,6 +46,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilter>('all');
   const [specialFilter, setSpecialFilter] = useState<SpecialFilter>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
 
   // Get safe exercises based on user's contraindications
@@ -107,6 +109,52 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     return favoriteExercises.includes(exerciseId);
   };
 
+  // Selection mode handlers
+  const toggleSelectionMode = () => {
+    if (user.settings.hapticEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      setSelectedExercises([]);
+    }
+  };
+
+  const toggleExerciseSelection = (exerciseId: string) => {
+    if (user.settings.hapticEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setSelectedExercises((prev) =>
+      prev.includes(exerciseId)
+        ? prev.filter((id) => id !== exerciseId)
+        : [...prev, exerciseId]
+    );
+  };
+
+  const isSelected = (exerciseId: string): boolean => {
+    return selectedExercises.includes(exerciseId);
+  };
+
+  const handleStartCustomSession = () => {
+    if (selectedExercises.length === 0) return;
+    if (user.settings.hapticEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+    navigation.navigate('SessionPlayer', {
+      exerciseIds: selectedExercises,
+    });
+    setIsSelectionMode(false);
+    setSelectedExercises([]);
+  };
+
+  // Calculate total duration of selected exercises
+  const selectedTotalDuration = useMemo(() => {
+    return selectedExercises.reduce((sum, id) => {
+      const exercise = exercises.find((ex) => ex.id === id);
+      return sum + (exercise?.duration || 0);
+    }, 0);
+  }, [selectedExercises]);
+
   // Group exercises by zone for display
   const groupedExercises = useMemo(() => {
     if (selectedZone !== 'all') return null;
@@ -130,10 +178,35 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bibliothèque</Text>
-        <Text style={styles.headerSubtitle}>
-          {safeExercises.length} exercices disponibles
-        </Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>Bibliothèque</Text>
+            <Text style={styles.headerSubtitle}>
+              {safeExercises.length} exercices disponibles
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.selectionModeButton,
+              isSelectionMode && styles.selectionModeButtonActive,
+            ]}
+            onPress={toggleSelectionMode}
+          >
+            <Ionicons
+              name={isSelectionMode ? 'close' : 'checkbox-outline'}
+              size={20}
+              color={isSelectionMode ? colors.background.primary : colors.text.secondary}
+            />
+            <Text
+              style={[
+                styles.selectionModeText,
+                isSelectionMode && styles.selectionModeTextActive,
+              ]}
+            >
+              {isSelectionMode ? 'Annuler' : 'Créer séance'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -307,15 +380,30 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
                   </Text>
                 </View>
                 {zoneExercises.map((exercise) => (
-                  <ExerciseCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    onPress={() => handleExercisePress(exercise.id)}
-                    completed={isExerciseCompleted(exercise.id)}
-                    showZone={false}
-                    isFavorite={isFavorite(exercise.id)}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
+                  <View key={exercise.id} style={styles.exerciseCardWrapper}>
+                    {isSelectionMode && (
+                      <TouchableOpacity
+                        style={styles.selectionCheckbox}
+                        onPress={() => toggleExerciseSelection(exercise.id)}
+                      >
+                        <Ionicons
+                          name={isSelected(exercise.id) ? 'checkbox' : 'square-outline'}
+                          size={24}
+                          color={isSelected(exercise.id) ? colors.accent.green : colors.text.tertiary}
+                        />
+                      </TouchableOpacity>
+                    )}
+                    <View style={styles.exerciseCardContent}>
+                      <ExerciseCard
+                        exercise={exercise}
+                        onPress={() => isSelectionMode ? toggleExerciseSelection(exercise.id) : handleExercisePress(exercise.id)}
+                        completed={isExerciseCompleted(exercise.id)}
+                        showZone={false}
+                        isFavorite={isFavorite(exercise.id)}
+                        onToggleFavorite={isSelectionMode ? undefined : handleToggleFavorite}
+                      />
+                    </View>
+                  </View>
                 ))}
               </View>
             ))}
@@ -326,14 +414,29 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
         {(selectedZone !== 'all' || specialFilter !== null) && (
           <View style={styles.exercisesList}>
             {filteredExercises.map((exercise) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                onPress={() => handleExercisePress(exercise.id)}
-                completed={isExerciseCompleted(exercise.id)}
-                isFavorite={isFavorite(exercise.id)}
-                onToggleFavorite={handleToggleFavorite}
-              />
+              <View key={exercise.id} style={styles.exerciseCardWrapper}>
+                {isSelectionMode && (
+                  <TouchableOpacity
+                    style={styles.selectionCheckbox}
+                    onPress={() => toggleExerciseSelection(exercise.id)}
+                  >
+                    <Ionicons
+                      name={isSelected(exercise.id) ? 'checkbox' : 'square-outline'}
+                      size={24}
+                      color={isSelected(exercise.id) ? colors.accent.green : colors.text.tertiary}
+                    />
+                  </TouchableOpacity>
+                )}
+                <View style={styles.exerciseCardContent}>
+                  <ExerciseCard
+                    exercise={exercise}
+                    onPress={() => isSelectionMode ? toggleExerciseSelection(exercise.id) : handleExercisePress(exercise.id)}
+                    completed={isExerciseCompleted(exercise.id)}
+                    isFavorite={isFavorite(exercise.id)}
+                    onToggleFavorite={isSelectionMode ? undefined : handleToggleFavorite}
+                  />
+                </View>
+              </View>
             ))}
           </View>
         )}
@@ -355,6 +458,27 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
+
+      {/* Selection Mode Action Bar */}
+      {isSelectionMode && selectedExercises.length > 0 && (
+        <View style={styles.selectionActionBar}>
+          <View style={styles.selectionInfo}>
+            <Text style={styles.selectionCount}>
+              {selectedExercises.length} exercice(s)
+            </Text>
+            <Text style={styles.selectionDuration}>
+              {Math.ceil(selectedTotalDuration / 60)} min
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.startSessionButton}
+            onPress={handleStartCustomSession}
+          >
+            <Ionicons name="play" size={20} color={colors.background.primary} />
+            <Text style={styles.startSessionText}>Démarrer</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -370,6 +494,11 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   headerTitle: {
     ...typography.h1,
     color: colors.text.primary,
@@ -378,6 +507,25 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text.secondary,
     marginTop: spacing.xs,
+  },
+  selectionModeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.background.tertiary,
+  },
+  selectionModeButtonActive: {
+    backgroundColor: colors.accent.coral,
+  },
+  selectionModeText: {
+    ...typography.label,
+    color: colors.text.secondary,
+    marginLeft: spacing.xs,
+  },
+  selectionModeTextActive: {
+    color: colors.background.primary,
   },
   // Search
   searchContainer: {
@@ -510,6 +658,54 @@ const styles = StyleSheet.create({
   // Exercises List
   exercisesList: {
     marginBottom: spacing.lg,
+  },
+  // Selection Mode Styles
+  exerciseCardWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  selectionCheckbox: {
+    paddingTop: spacing.md,
+    paddingRight: spacing.sm,
+  },
+  exerciseCardContent: {
+    flex: 1,
+  },
+  selectionActionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingBottom: spacing.xl,
+    backgroundColor: colors.background.secondary,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.dark,
+  },
+  selectionInfo: {
+    flex: 1,
+  },
+  selectionCount: {
+    ...typography.h4,
+    color: colors.text.primary,
+  },
+  selectionDuration: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
+  startSessionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.accent.green,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
+  },
+  startSessionText: {
+    ...typography.label,
+    color: colors.background.primary,
+    marginLeft: spacing.sm,
   },
   // Empty State
   emptyState: {
