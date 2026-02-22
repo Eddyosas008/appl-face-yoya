@@ -1,13 +1,17 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import { useColorScheme } from 'react-native';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useSync } from '../hooks/useSync';
 import { useWeeklyReset } from '../hooks/useWeeklyReset';
+import { ThemeContext, resolveIsDark, getThemeColors } from '../hooks/useTheme';
+import { useStore } from '../store/useStore';
+import { ThemeMode } from '../theme';
 
 // ============================================
 // APP CONTEXT
 // ============================================
 // Centralized provider for cross-cutting concerns:
-// network status, sync state, auth state
+// network status, sync state, auth state, theme
 
 interface AppContextType {
   // Network
@@ -33,9 +37,27 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const network = useNetworkStatus();
   const sync = useSync();
+  const systemScheme = useColorScheme();
+  const { user, updateSettings } = useStore();
 
   // Automatically reset weekly progress on Monday
   useWeeklyReset();
+
+  // Theme management
+  const themeMode = (user.settings.theme || 'dark') as ThemeMode;
+  const isDark = resolveIsDark(themeMode, systemScheme);
+  const themeColors = useMemo(() => getThemeColors(isDark), [isDark]);
+
+  const setThemeMode = (mode: ThemeMode) => {
+    updateSettings({ theme: mode });
+  };
+
+  const themeValue = useMemo(() => ({
+    themeMode,
+    isDark,
+    themeColors,
+    setThemeMode,
+  }), [themeMode, isDark, themeColors]);
 
   const contextValue: AppContextType = {
     // Network
@@ -54,7 +76,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   return (
     <AppContext.Provider value={contextValue}>
-      {children}
+      <ThemeContext.Provider value={themeValue}>
+        {children}
+      </ThemeContext.Provider>
     </AppContext.Provider>
   );
 };

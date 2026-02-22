@@ -7,6 +7,7 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { AppProvider } from './src/providers/AppProvider';
 import { NetworkStatusBar } from './src/components/NetworkStatus';
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
+import { useTheme } from './src/hooks/useTheme';
 import { colors, typography } from './src/theme';
 
 // Suppress non-critical warnings in production
@@ -16,12 +17,13 @@ if (!__DEV__) {
 
 function AppContent() {
   const { isConnected } = useNetworkStatus();
+  const { isDark } = useTheme();
 
   return (
     <>
       <NetworkStatusBar isConnected={isConnected} />
       <AppNavigator />
-      <StatusBar style="light" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
     </>
   );
 }

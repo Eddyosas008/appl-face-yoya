@@ -16,7 +16,9 @@ import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, Button } from '../components';
 import { useStore } from '../store/useStore';
+import { useTheme } from '../hooks/useTheme';
 import NotificationService from '../services/notifications';
+import { ThemeMode } from '../theme';
 
 import { RootStackNavigationProp } from '../types';
 
@@ -63,9 +65,16 @@ const SettingItem: React.FC<SettingItemProps> = ({
   </TouchableOpacity>
 );
 
+const themeOptions: { value: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: 'dark', label: 'Sombre', icon: 'moon' },
+  { value: 'light', label: 'Clair', icon: 'sunny' },
+  { value: 'auto', label: 'Auto', icon: 'phone-portrait' },
+];
+
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const { user, updateSettings, updatePreferences, resetProgress } = useStore();
   const { settings, preferences } = user;
+  const { themeMode, setThemeMode } = useTheme();
 
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [reminderTime, setReminderTime] = useState<Date>(() => {
@@ -230,6 +239,46 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
               />
             )}
           </Card>
+        </View>
+
+        {/* Appearance Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Apparence</Text>
+          <View style={styles.durationGrid}>
+            {themeOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.durationButton,
+                  themeMode === option.value && styles.durationButtonActive,
+                ]}
+                onPress={() => {
+                  if (settings.hapticEnabled) {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setThemeMode(option.value);
+                }}
+                accessibilityRole="radio"
+                accessibilityLabel={`Thème ${option.label}`}
+                accessibilityState={{ selected: themeMode === option.value }}
+              >
+                <Ionicons
+                  name={option.icon}
+                  size={20}
+                  color={themeMode === option.value ? colors.background.primary : colors.text.secondary}
+                  style={{ marginBottom: spacing.xs }}
+                />
+                <Text
+                  style={[
+                    styles.durationText,
+                    themeMode === option.value && styles.durationTextActive,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Preferences Section */}

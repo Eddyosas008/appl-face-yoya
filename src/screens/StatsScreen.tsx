@@ -149,8 +149,42 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
     return result;
   }, [progress, zoneStats]);
 
+  // Calculate monthly trend (last 4 weeks)
+  const monthlyTrend = useMemo(() => {
+    const now = new Date();
+    const weeks: { label: string; sessions: number; minutes: number }[] = [];
+
+    for (let i = 3; i >= 0; i--) {
+      const weekEnd = new Date(now);
+      weekEnd.setDate(now.getDate() - i * 7);
+      const weekStart = new Date(weekEnd);
+      weekStart.setDate(weekEnd.getDate() - 6);
+
+      const weekSessions = sessionHistory.filter((s) => {
+        const d = new Date(s.date);
+        return d >= weekStart && d <= weekEnd;
+      });
+
+      weeks.push({
+        label: `S${4 - i}`,
+        sessions: weekSessions.length,
+        minutes: weekSessions.reduce((sum, s) => sum + s.totalDuration, 0),
+      });
+    }
+
+    return weeks;
+  }, [sessionHistory]);
+
+  // Calculate average mood from sessions
+  const averageMood = useMemo(() => {
+    const moodSessions = sessionHistory.filter((s) => s.mood && s.mood > 0);
+    if (moodSessions.length === 0) return null;
+    return (moodSessions.reduce((sum, s) => sum + (s.mood || 0), 0) / moodSessions.length).toFixed(1);
+  }, [sessionHistory]);
+
   // Max minutes for chart scaling
   const maxMinutes = Math.max(...weeklyActivity.map((d) => d.minutes), 1);
+  const maxWeeklyMinutes = Math.max(...monthlyTrend.map((w) => w.minutes), 1);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -232,6 +266,87 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
             ))}
           </View>
         </Card>
+
+        {/* Monthly Trend */}
+        <Text style={styles.sectionTitle}>Tendance mensuelle</Text>
+        <Card variant="default" padding="large" style={styles.chartCard}>
+          <View style={styles.chartContainer}>
+            {monthlyTrend.map((week, index) => (
+              <View key={index} style={styles.chartBar}>
+                <View style={styles.barContainer}>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: week.minutes > 0 ? (week.minutes / maxWeeklyMinutes) * 100 : 4,
+                        backgroundColor: index === 3 ? colors.accent.green : colors.accent.gold,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.chartLabel,
+                    index === 3 && styles.chartLabelActive,
+                  ]}
+                >
+                  {week.label}
+                </Text>
+                {week.sessions > 0 && (
+                  <Text style={styles.chartValue}>{week.sessions}x</Text>
+                )}
+              </View>
+            ))}
+          </View>
+          <View style={styles.trendSummary}>
+            <Ionicons
+              name={
+                monthlyTrend[3].minutes >= monthlyTrend[2].minutes
+                  ? 'trending-up'
+                  : 'trending-down'
+              }
+              size={18}
+              color={
+                monthlyTrend[3].minutes >= monthlyTrend[2].minutes
+                  ? colors.accent.green
+                  : colors.accent.coral
+              }
+            />
+            <Text style={styles.trendText}>
+              {monthlyTrend[3].minutes >= monthlyTrend[2].minutes
+                ? 'En progression cette semaine !'
+                : 'Un peu moins actif cette semaine'}
+            </Text>
+          </View>
+        </Card>
+
+        {/* Average Mood */}
+        {averageMood && (
+          <>
+            <Text style={styles.sectionTitle}>Humeur moyenne</Text>
+            <Card variant="outlined" padding="large" style={styles.moodCard}>
+              <View style={styles.moodContent}>
+                <Text style={styles.moodEmoji}>
+                  {Number(averageMood) >= 4 ? '😊' : Number(averageMood) >= 3 ? '😌' : '😐'}
+                </Text>
+                <View style={styles.moodInfo}>
+                  <Text style={styles.moodValue}>{averageMood} / 5</Text>
+                  <Text style={styles.moodLabel}>
+                    Basé sur {sessionHistory.filter((s) => s.mood).length} séances
+                  </Text>
+                </View>
+                <View style={styles.moodBarContainer}>
+                  <View
+                    style={[
+                      styles.moodBar,
+                      { width: `${(Number(averageMood) / 5) * 100}%` },
+                    ]}
+                  />
+                </View>
+              </View>
+            </Card>
+          </>
+        )}
 
         {/* Zone Distribution */}
         {zoneStats.length > 0 && (
@@ -543,6 +658,59 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.coral + '20',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Trend
+  trendSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+  },
+  trendText: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    marginLeft: spacing.sm,
+  },
+  // Mood
+  moodCard: {
+    marginBottom: spacing.md,
+    borderColor: colors.accent.gold + '30',
+  },
+  moodContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  moodEmoji: {
+    fontSize: 36,
+    marginRight: spacing.md,
+  },
+  moodInfo: {
+    flex: 1,
+  },
+  moodValue: {
+    ...typography.h4,
+    color: colors.text.primary,
+  },
+  moodLabel: {
+    ...typography.caption,
+    color: colors.text.tertiary,
+    marginTop: 2,
+  },
+  moodBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: colors.background.elevated,
+    borderRadius: 2,
+  },
+  moodBar: {
+    height: '100%',
+    backgroundColor: colors.accent.gold,
+    borderRadius: 2,
   },
 });
 

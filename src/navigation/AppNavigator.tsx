@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { useStore } from '../store/useStore';
+import { useTheme } from '../hooks/useTheme';
 import {
   OnboardingScreen,
   TodayScreen,
@@ -121,18 +122,32 @@ MainTabs.displayName = 'MainTabs';
 export const AppNavigator: React.FC = () => {
   const { user } = useStore();
   const isOnboarded = user.profile.onboardingCompleted;
+  const { isDark, themeColors } = useTheme();
 
   const handleOnboardingComplete = useCallback(() => {
     // Navigation will automatically switch due to state change
   }, []);
 
+  // Dynamic navigation theme based on user preference
+  const navigationTheme = useMemo(() => ({
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme : DefaultTheme).colors,
+      primary: themeColors.accent.green,
+      background: themeColors.background.primary,
+      card: themeColors.background.secondary,
+      text: themeColors.text.primary,
+      border: themeColors.border.dark,
+    },
+  }), [isDark, themeColors]);
+
   return (
     <ErrorBoundary>
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.background.primary },
+          contentStyle: { backgroundColor: themeColors.background.primary },
           animation: 'slide_from_right',
         }}
       >

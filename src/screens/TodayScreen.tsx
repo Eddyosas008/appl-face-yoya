@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  RefreshControl,
   AccessibilityInfo,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -59,6 +60,7 @@ interface TodayScreenProps {
 export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
   const { user, checkAndResetWeeklyProgress } = useStore();
   const { profile, preferences, progress } = user;
+  const [refreshing, setRefreshing] = useState(false);
 
   // Reset weekly progress if a new week has started
   useEffect(() => {
@@ -106,6 +108,14 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
     return 'Bonsoir';
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    checkAndResetWeeklyProgress();
+    // Brief delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 600));
+    setRefreshing(false);
+  }, [checkAndResetWeeklyProgress]);
+
   const handleStartSession = useCallback(() => {
     navigation.navigate('SessionPlayer', {
       programId: currentProgram?.id,
@@ -120,6 +130,14 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accent.green}
+            colors={[colors.accent.green]}
+          />
+        }
       >
         {/* Header */}
         <View style={styles.header}>

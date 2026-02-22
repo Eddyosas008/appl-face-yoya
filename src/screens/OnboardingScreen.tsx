@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Dimensions,
   SafeAreaView,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
@@ -65,19 +67,65 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const currentStepIndex = steps.indexOf(step);
   const progress = (currentStepIndex + 1) / steps.length;
 
+  // Swipe animation
+  const swipeAnim = useRef(new Animated.Value(0)).current;
+
   const goNext = () => {
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
-      setStep(steps[nextIndex]);
+      Animated.timing(swipeAnim, {
+        toValue: -width,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        setStep(steps[nextIndex]);
+        swipeAnim.setValue(width);
+        Animated.timing(swipeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
     }
   };
 
   const goBack = () => {
     const prevIndex = currentStepIndex - 1;
     if (prevIndex >= 0) {
-      setStep(steps[prevIndex]);
+      Animated.timing(swipeAnim, {
+        toValue: width,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        setStep(steps[prevIndex]);
+        swipeAnim.setValue(-width);
+        Animated.timing(swipeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
     }
   };
+
+  // Swipe gesture handler
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 40;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const SWIPE_THRESHOLD = 80;
+        if (gestureState.dx < -SWIPE_THRESHOLD) {
+          // Swipe left -> next
+          goNext();
+        } else if (gestureState.dx > SWIPE_THRESHOLD && currentStepIndex > 0) {
+          // Swipe right -> back
+          goBack();
+        }
+      },
+    })
+  ).current;
 
   const handleComplete = () => {
     // Save all preferences
@@ -430,13 +478,18 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
         </View>
       )}
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
+      <Animated.View
+        style={{ flex: 1, transform: [{ translateX: swipeAnim }] }}
+        {...panResponder.panHandlers}
       >
-        {renderStep()}
-      </ScrollView>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {renderStep()}
+        </ScrollView>
+      </Animated.View>
 
       <View style={styles.footer}>
         {step === 'ready' ? (

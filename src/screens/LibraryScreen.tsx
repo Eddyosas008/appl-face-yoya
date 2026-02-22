@@ -47,16 +47,25 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyFilter>('all');
   const [specialFilter, setSpecialFilter] = useState<SpecialFilter>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
+
+  // Debounce search to avoid filtering on every keystroke
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Get safe exercises based on user's contraindications
   const safeExercises = useMemo(() => {
     return getSafeExercises(user.healthInfo.contraindications);
   }, [user.healthInfo.contraindications]);
 
-  // Filter exercises
+  // Filter exercises (uses debounced search for performance)
   const filteredExercises = useMemo(() => {
     let result = safeExercises;
 
@@ -77,9 +86,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
       result = result.filter((ex) => user.progress.completedExercises.includes(ex.id));
     }
 
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
+    // Filter by search query (debounced)
+    if (debouncedSearch.trim()) {
+      const query = debouncedSearch.toLowerCase().trim();
       result = result.filter(
         (ex) =>
           ex.name.toLowerCase().includes(query) ||
@@ -88,7 +97,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     }
 
     return result;
-  }, [safeExercises, selectedZone, selectedDifficulty, specialFilter, searchQuery, favoriteExercises, user.progress.completedExercises]);
+  }, [safeExercises, selectedZone, selectedDifficulty, specialFilter, debouncedSearch, favoriteExercises, user.progress.completedExercises]);
 
   // Check if exercise is completed
   const isExerciseCompleted = (exerciseId: string): boolean => {

@@ -78,6 +78,45 @@ export const colors = {
   },
 };
 
+// ============================================
+// THÈME CLAIR
+// ============================================
+export const lightColors: typeof colors = {
+  primary: { ...colors.primary },
+
+  background: {
+    primary: '#f8faf8',
+    secondary: '#f0f5f0',
+    tertiary: '#e8f0e8',
+    elevated: '#ffffff',
+    input: '#e8f0e8',
+  },
+
+  text: {
+    primary: '#1a2e1a',
+    secondary: '#4a6b4a',
+    tertiary: '#6b8b6b',
+    muted: '#a8c5a8',
+    inverse: '#ffffff',
+  },
+
+  accent: { ...colors.accent },
+  state: { ...colors.state },
+  semantic: { ...colors.semantic },
+
+  border: {
+    light: '#d4e4d4',
+    medium: '#b8d0b8',
+    dark: '#e8f0e8',
+  },
+
+  overlay: {
+    light: 'rgba(0, 0, 0, 0.03)',
+    medium: 'rgba(0, 0, 0, 0.06)',
+    dark: 'rgba(0, 0, 0, 0.4)',
+  },
+};
+
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -203,4 +242,17 @@ export const theme = {
   shadows,
 };
 
+export const lightTheme = {
+  colors: lightColors,
+  spacing,
+  borderRadius,
+  typography,
+  shadows: {
+    sm: { ...shadows.sm, shadowOpacity: 0.08 },
+    md: { ...shadows.md, shadowOpacity: 0.12 },
+    lg: { ...shadows.lg, shadowOpacity: 0.15 },
+  },
+};
+
 export type Theme = typeof theme;
+export type ThemeMode = 'dark' | 'light' | 'auto';
