@@ -7,3 +7,8 @@ export { default as ProgramCard } from './ProgramCard';
 export { BreathingCircle, GuidedBreathing } from './BreathingCircle';
 export { AvatarPicker } from './AvatarPicker';
 export { PhotoGallery } from './PhotoGallery';
+export { ErrorBoundary } from './ErrorBoundary';
+export { NetworkStatusBar } from './NetworkStatus';
+export { LoadingOverlay } from './LoadingOverlay';
+export { EmptyState } from './EmptyState';
+export { SkeletonLoader, CardSkeleton, ListItemSkeleton } from './SkeletonLoader';

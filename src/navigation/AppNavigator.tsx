@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -21,12 +22,44 @@ import {
   StatsScreen,
 } from '../screens';
 import { RootStackParamList, MainTabParamList } from '../types';
+import { adaptive } from '../utils/responsive';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Main Tab Navigator
+// Tab icon mapping for cleaner code
+const TAB_ICONS: Record<keyof MainTabParamList, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
+  Today: { active: 'home', inactive: 'home-outline' },
+  Programs: { active: 'calendar', inactive: 'calendar-outline' },
+  Library: { active: 'grid', inactive: 'grid-outline' },
+  Journal: { active: 'book', inactive: 'book-outline' },
+  Profile: { active: 'person', inactive: 'person-outline' },
+};
+
+const TAB_LABELS: Record<keyof MainTabParamList, string> = {
+  Today: 'Aujourd\'hui',
+  Programs: 'Programmes',
+  Library: 'Exercices',
+  Journal: 'Journal',
+  Profile: 'Profil',
+};
+
+// Main Tab Navigator with responsive tab bar
 const MainTabs: React.FC = () => {
+  const tabBarHeight = adaptive({
+    small: 56,
+    medium: 60,
+    large: 64,
+    default: 60,
+  });
+
+  const iconSize = adaptive({
+    small: 20,
+    medium: 22,
+    large: 24,
+    default: 22,
+  });
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -35,67 +68,48 @@ const MainTabs: React.FC = () => {
           backgroundColor: colors.background.secondary,
           borderTopColor: colors.border.dark,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: tabBarHeight,
+          paddingBottom: Platform.OS === 'ios' ? 8 : 6,
+          paddingTop: 6,
         },
         tabBarActiveTintColor: colors.accent.green,
         tabBarInactiveTintColor: colors.text.tertiary,
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
+          fontSize: adaptive({ small: 10, default: 11 }),
+          fontWeight: '500' as const,
         },
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-
-          switch (route.name) {
-            case 'Today':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Programs':
-              iconName = focused ? 'calendar' : 'calendar-outline';
-              break;
-            case 'Library':
-              iconName = focused ? 'grid' : 'grid-outline';
-              break;
-            case 'Journal':
-              iconName = focused ? 'book' : 'book-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
-            default:
-              iconName = 'ellipse';
-          }
-
-          return <Ionicons name={iconName} size={22} color={color} />;
+        tabBarAccessibilityLabel: TAB_LABELS[route.name],
+        tabBarIcon: ({ focused, color }) => {
+          const icons = TAB_ICONS[route.name];
+          const iconName = focused ? icons.active : icons.inactive;
+          return <Ionicons name={iconName} size={iconSize} color={color} />;
         },
       })}
     >
       <Tab.Screen
         name="Today"
         component={TodayScreen}
-        options={{ tabBarLabel: 'Aujourd\'hui' }}
+        options={{ tabBarLabel: TAB_LABELS.Today }}
       />
       <Tab.Screen
         name="Programs"
         component={ProgramsScreen}
-        options={{ tabBarLabel: 'Programmes' }}
+        options={{ tabBarLabel: TAB_LABELS.Programs }}
       />
       <Tab.Screen
         name="Library"
         component={LibraryScreen}
-        options={{ tabBarLabel: 'Exercices' }}
+        options={{ tabBarLabel: TAB_LABELS.Library }}
       />
       <Tab.Screen
         name="Journal"
         component={JournalScreen}
-        options={{ tabBarLabel: 'Journal' }}
+        options={{ tabBarLabel: TAB_LABELS.Journal }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Profil' }}
+        options={{ tabBarLabel: TAB_LABELS.Profile }}
       />
     </Tab.Navigator>
   );
@@ -105,6 +119,10 @@ const MainTabs: React.FC = () => {
 export const AppNavigator: React.FC = () => {
   const { user } = useStore();
   const isOnboarded = user.profile.onboardingCompleted;
+
+  const handleOnboardingComplete = useCallback(() => {
+    // Navigation will automatically switch due to state change
+  }, []);
 
   return (
     <NavigationContainer>
@@ -120,9 +138,7 @@ export const AppNavigator: React.FC = () => {
             {(props) => (
               <OnboardingScreen
                 {...props}
-                onComplete={() => {
-                  // Navigation will automatically switch due to state change
-                }}
+                onComplete={handleOnboardingComplete}
               />
             )}
           </Stack.Screen>
