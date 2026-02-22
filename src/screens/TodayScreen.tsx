@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -48,13 +48,20 @@ const dailyTips = [
   "Célébrez chaque petite victoire - la régularité mérite d'être récompensée !",
 ];
 
+import { MainTabScreenNavigationProp } from '../types';
+
 interface TodayScreenProps {
-  navigation: any;
+  navigation: MainTabScreenNavigationProp;
 }
 
 export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
-  const { user } = useStore();
+  const { user, checkAndResetWeeklyProgress } = useStore();
   const { profile, preferences, progress } = user;
+
+  // Reset weekly progress if a new week has started
+  useEffect(() => {
+    checkAndResetWeeklyProgress();
+  }, []);
 
   // Get current program info
   const currentProgram = progress.currentProgramId
@@ -243,6 +250,8 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.quickAccessItem}
               onPress={() => navigation.navigate('Library')}
+              accessibilityRole="button"
+              accessibilityLabel="Ouvrir la bibliothèque d'exercices"
             >
               <View style={[styles.quickAccessIcon, { backgroundColor: colors.accent.green + '20' }]}>
                 <Ionicons name="grid" size={24} color={colors.accent.green} />
@@ -253,6 +262,8 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.quickAccessItem}
               onPress={() => navigation.navigate('Programs')}
+              accessibilityRole="button"
+              accessibilityLabel="Voir les programmes"
             >
               <View style={[styles.quickAccessIcon, { backgroundColor: colors.accent.teal + '20' }]}>
                 <Ionicons name="calendar" size={24} color={colors.accent.teal} />
@@ -263,6 +274,8 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.quickAccessItem}
               onPress={() => navigation.navigate('Journal')}
+              accessibilityRole="button"
+              accessibilityLabel="Ouvrir le journal de suivi"
             >
               <View style={[styles.quickAccessIcon, { backgroundColor: colors.accent.gold + '20' }]}>
                 <Ionicons name="book" size={24} color={colors.accent.gold} />
@@ -273,6 +286,8 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
             <TouchableOpacity
               style={styles.quickAccessItem}
               onPress={() => navigation.navigate('Safety')}
+              accessibilityRole="button"
+              accessibilityLabel="Consulter les précautions de sécurité"
             >
               <View style={[styles.quickAccessIcon, { backgroundColor: colors.accent.coral + '20' }]}>
                 <Ionicons name="shield-checkmark" size={24} color={colors.accent.coral} />

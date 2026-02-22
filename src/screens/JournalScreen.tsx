@@ -16,10 +16,10 @@ import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, ProgressCircle, BadgeComponent } from '../components';
 import { useStore } from '../store/useStore';
-import { FaceFeelRating } from '../types';
+import { FaceFeelRating, MainTabScreenNavigationProp } from '../types';
 
 interface JournalScreenProps {
-  navigation: any;
+  navigation: MainTabScreenNavigationProp;
 }
 
 type ViewMode = 'overview' | 'calendar' | 'achievements';

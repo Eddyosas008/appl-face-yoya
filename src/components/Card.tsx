@@ -14,6 +14,7 @@ interface CardProps {
   variant?: 'default' | 'elevated' | 'outlined';
   padding?: 'none' | 'small' | 'medium' | 'large';
   style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -22,6 +23,7 @@ export const Card: React.FC<CardProps> = ({
   variant = 'default',
   padding = 'medium',
   style,
+  accessibilityLabel,
 }) => {
   const getCardStyle = (): ViewStyle => {
     const base: ViewStyle = {
@@ -69,6 +71,8 @@ export const Card: React.FC<CardProps> = ({
         style={[cardStyle, style]}
         onPress={onPress}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
       >
         {children}
       </TouchableOpacity>

@@ -14,10 +14,10 @@ import { colors, spacing, borderRadius, typography } from '../theme';
 import { ExerciseCard } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises, getExercisesByZone, getSafeExercises } from '../data/exercises';
-import { FaceZone, DifficultyLevel } from '../types';
+import { FaceZone, DifficultyLevel, MainTabScreenNavigationProp } from '../types';
 
 interface LibraryScreenProps {
-  navigation: any;
+  navigation: MainTabScreenNavigationProp;
 }
 
 type ZoneFilter = 'all' | FaceZone;

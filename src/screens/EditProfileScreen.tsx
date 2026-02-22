@@ -16,8 +16,10 @@ import { Button, Card } from '../components';
 import { useStore } from '../store/useStore';
 import { FaceZone, UserGoal, Contraindication } from '../types';
 
+import { RootStackNavigationProp } from '../types';
+
 interface EditProfileScreenProps {
-  navigation: any;
+  navigation: RootStackNavigationProp;
 }
 
 const zoneOptions: { id: FaceZone; label: string; icon: string }[] = [

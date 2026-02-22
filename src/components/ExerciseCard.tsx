@@ -36,6 +36,18 @@ const zoneIcons: { [key: string]: keyof typeof Ionicons.glyphMap } = {
   global: 'body-outline',
 };
 
+const difficultyLabels: { [key: string]: string } = {
+  debutant: 'Débutant',
+  intermediaire: 'Intermédiaire',
+  avance: 'Avancé',
+};
+
+const difficultyColors: { [key: string]: string } = {
+  debutant: colors.accent.green,
+  intermediaire: colors.accent.gold,
+  avance: colors.accent.coral,
+};
+
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   exercise,
   onPress,
@@ -89,8 +101,16 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
     );
   }
 
+  const diffColor = difficultyColors[exercise.difficulty] || colors.text.secondary;
+
   return (
-    <Card onPress={onPress} variant="default" padding="medium" style={styles.card}>
+    <Card
+      onPress={onPress}
+      variant="default"
+      padding="medium"
+      style={styles.card}
+      accessibilityLabel={`${exercise.name}, ${zoneLabels[exercise.zone]}, ${difficultyLabels[exercise.difficulty]}, ${formatDuration(exercise.duration)}`}
+    >
       <View style={styles.content}>
         {/* Image placeholder */}
         <View style={styles.imageContainer}>
@@ -115,6 +135,12 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 <Text style={styles.zoneText}>{zoneLabels[exercise.zone]}</Text>
               </View>
             )}
+
+            <View style={[styles.difficultyBadge, { backgroundColor: diffColor + '20' }]}>
+              <Text style={[styles.difficultyText, { color: diffColor }]}>
+                {difficultyLabels[exercise.difficulty]}
+              </Text>
+            </View>
 
             {showDuration && (
               <View style={styles.durationContainer}>
@@ -145,6 +171,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 onToggleFavorite(exercise.id);
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             >
               <Ionicons
                 name={isFavorite ? 'heart' : 'heart-outline'}
@@ -154,7 +182,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             </TouchableOpacity>
           )}
           {completed && (
-            <View style={styles.completedIndicator}>
+            <View style={styles.completedIndicator} accessibilityLabel="Exercice complété">
               <Ionicons
                 name="checkmark-circle"
                 size={22}
@@ -209,6 +237,15 @@ const styles = StyleSheet.create({
   zoneText: {
     ...typography.labelSmall,
     color: colors.accent.green,
+  },
+  difficultyBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+    marginRight: spacing.sm,
+  },
+  difficultyText: {
+    ...typography.labelSmall,
   },
   durationContainer: {
     flexDirection: 'row',

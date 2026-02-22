@@ -14,17 +14,13 @@ import { colors, spacing, borderRadius, typography } from '../theme';
 import { Button, Card } from '../components';
 import { useStore } from '../store/useStore';
 import { getExerciseById } from '../data/exercises';
-import { Exercise } from '../types';
+import { Exercise, RootStackNavigationProp, RootStackRouteProp } from '../types';
 
 const { width } = Dimensions.get('window');
 
 interface ExerciseDetailScreenProps {
-  navigation?: any;
-  route?: {
-    params?: {
-      exerciseId?: string;
-    };
-  };
+  navigation: RootStackNavigationProp;
+  route: RootStackRouteProp<'ExerciseDetail'>;
 }
 
 const zoneLabels: { [key: string]: string } = {
@@ -64,7 +60,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
   navigation,
   route,
 }) => {
-  const exerciseId = route?.params?.exerciseId || '';
+  const exerciseId = route.params.exerciseId;
   const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
   const exercise = getExerciseById(exerciseId);
 

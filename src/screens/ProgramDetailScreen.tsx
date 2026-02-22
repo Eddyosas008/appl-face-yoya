@@ -16,13 +16,11 @@ import { useStore } from '../store/useStore';
 import { programs, getProgramById } from '../data/programs';
 import { getExerciseById } from '../data/exercises';
 
+import { RootStackNavigationProp, RootStackRouteProp } from '../types';
+
 interface ProgramDetailScreenProps {
-  navigation?: any;
-  route?: {
-    params?: {
-      programId?: string;
-    };
-  };
+  navigation: RootStackNavigationProp;
+  route: RootStackRouteProp<'ProgramDetail'>;
 }
 
 const difficultyLabels: { [key: string]: string } = {
@@ -51,7 +49,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
   navigation,
   route,
 }) => {
-  const programId = route?.params?.programId || '';
+  const programId = route.params.programId;
   const { user, startProgram, completeProgram } = useStore();
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 

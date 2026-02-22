@@ -20,6 +20,7 @@ import {
   EditProfileScreen,
   StatsScreen,
 } from '../screens';
+import { ErrorBoundary } from '../components';
 import { RootStackParamList, MainTabParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -107,6 +108,7 @@ export const AppNavigator: React.FC = () => {
   const isOnboarded = user.profile.onboardingCompleted;
 
   return (
+    <ErrorBoundary>
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
@@ -183,6 +185,7 @@ export const AppNavigator: React.FC = () => {
         )}
       </Stack.Navigator>
     </NavigationContainer>
+    </ErrorBoundary>
   );
 };
 
