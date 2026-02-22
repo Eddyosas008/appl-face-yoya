@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { ExerciseCard } from '../components';
+import { ExerciseCard, EmptyState } from '../components';
 import { useStore } from '../store/useStore';
-import { exercises, getExercisesByZone, getSafeExercises } from '../data/exercises';
+import { exercises, getSafeExercises } from '../data/exercises';
 import { FaceZone, DifficultyLevel } from '../types';
 
 interface LibraryScreenProps {
@@ -94,33 +94,33 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     return user.progress.completedExercises.includes(exerciseId);
   };
 
-  const handleExercisePress = (exerciseId: string) => {
+  const handleExercisePress = useCallback((exerciseId: string) => {
     navigation.navigate('ExerciseDetail', { exerciseId });
-  };
+  }, [navigation]);
 
-  const handleToggleFavorite = (exerciseId: string) => {
+  const handleToggleFavorite = useCallback((exerciseId: string) => {
     if (user.settings.hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     toggleFavoriteExercise(exerciseId);
-  };
+  }, [user.settings.hapticEnabled, toggleFavoriteExercise]);
 
-  const isFavorite = (exerciseId: string): boolean => {
+  const isFavorite = useCallback((exerciseId: string): boolean => {
     return favoriteExercises.includes(exerciseId);
-  };
+  }, [favoriteExercises]);
 
   // Selection mode handlers
-  const toggleSelectionMode = () => {
+  const toggleSelectionMode = useCallback(() => {
     if (user.settings.hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    setIsSelectionMode(!isSelectionMode);
-    if (isSelectionMode) {
-      setSelectedExercises([]);
-    }
-  };
+    setIsSelectionMode((prev) => {
+      if (prev) setSelectedExercises([]);
+      return !prev;
+    });
+  }, [user.settings.hapticEnabled]);
 
-  const toggleExerciseSelection = (exerciseId: string) => {
+  const toggleExerciseSelection = useCallback((exerciseId: string) => {
     if (user.settings.hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -129,13 +129,13 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
         ? prev.filter((id) => id !== exerciseId)
         : [...prev, exerciseId]
     );
-  };
+  }, [user.settings.hapticEnabled]);
 
-  const isSelected = (exerciseId: string): boolean => {
+  const isSelected = useCallback((exerciseId: string): boolean => {
     return selectedExercises.includes(exerciseId);
-  };
+  }, [selectedExercises]);
 
-  const handleStartCustomSession = () => {
+  const handleStartCustomSession = useCallback(() => {
     if (selectedExercises.length === 0) return;
     if (user.settings.hapticEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -145,7 +145,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     });
     setIsSelectionMode(false);
     setSelectedExercises([]);
-  };
+  }, [selectedExercises, user.settings.hapticEnabled, navigation]);
 
   // Calculate total duration of selected exercises
   const selectedTotalDuration = useMemo(() => {
@@ -443,19 +443,13 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
 
         {/* Empty State */}
         {filteredExercises.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons
-              name="search-outline"
-              size={48}
-              color={colors.text.muted}
-            />
-            <Text style={styles.emptyStateTitle}>Aucun exercice trouvé</Text>
-            <Text style={styles.emptyStateText}>
-              {searchQuery
-                ? 'Essayez avec d\'autres mots-clés'
-                : 'Aucun exercice disponible pour cette zone'}
-            </Text>
-          </View>
+          <EmptyState
+            icon="search-outline"
+            title="Aucun exercice trouvé"
+            description={searchQuery
+              ? 'Essayez avec d\'autres mots-clés'
+              : 'Aucun exercice disponible pour cette zone'}
+          />
         )}
       </ScrollView>
 

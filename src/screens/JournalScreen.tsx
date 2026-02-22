@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card, ProgressCircle, BadgeComponent } from '../components';
+import { Card, ProgressCircle, BadgeComponent, EmptyState } from '../components';
 import { useStore } from '../store/useStore';
 import { FaceFeelRating } from '../types';
+import { sanitizeNotes } from '../utils/validation';
 
 interface JournalScreenProps {
   navigation: any;
@@ -107,17 +108,11 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
     return days;
   }, [selectedMonth, sessionHistory]);
 
-  const changeMonth = (direction: number) => {
-    const newMonth = new Date(selectedMonth);
-    newMonth.setMonth(newMonth.getMonth() + direction);
-    setSelectedMonth(newMonth);
-  };
-
-  const formatMonth = (date: Date): string => {
+  const formatMonth = useCallback((date: Date): string => {
     return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-  };
+  }, []);
 
-  const handleFeelingSelect = (feeling: FaceFeelRating) => {
+  const handleFeelingSelect = useCallback((feeling: FaceFeelRating) => {
     if (settings.hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -127,27 +122,34 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
       date: today,
       morningFeel: feeling,
     });
-  };
+  }, [settings.hapticEnabled, updateDailyEntry]);
 
-  const handleSaveNotes = () => {
+  const handleSaveNotes = useCallback(() => {
     if (settings.hapticEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
     const today = new Date().toISOString().split('T')[0];
+    const sanitizedNote = sanitizeNotes(dailyNote);
     updateDailyEntry({
       date: today,
-      notes: dailyNote,
+      notes: sanitizedNote,
     });
     setShowNotesModal(false);
-  };
+  }, [settings.hapticEnabled, dailyNote, updateDailyEntry]);
 
-  const getTodayDateFormatted = (): string => {
+  const handleChangeMonth = useCallback((direction: number) => {
+    const newMonth = new Date(selectedMonth);
+    newMonth.setMonth(newMonth.getMonth() + direction);
+    setSelectedMonth(newMonth);
+  }, [selectedMonth]);
+
+  const todayDateFormatted = useMemo((): string => {
     return new Date().toLocaleDateString('fr-FR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
     });
-  };
+  }, []);
 
   const renderOverview = () => (
     <>
@@ -282,14 +284,14 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
       <View style={styles.calendarHeader}>
         <TouchableOpacity
           style={styles.monthNavButton}
-          onPress={() => changeMonth(-1)}
+          onPress={() => handleChangeMonth(-1)}
         >
           <Ionicons name="chevron-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.monthTitle}>{formatMonth(selectedMonth)}</Text>
         <TouchableOpacity
           style={styles.monthNavButton}
-          onPress={() => changeMonth(1)}
+          onPress={() => handleChangeMonth(1)}
         >
           <Ionicons name="chevron-forward" size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -379,12 +381,11 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
           ))}
         </View>
       ) : (
-        <Card variant="outlined" padding="large" style={styles.emptyBadgesCard}>
-          <Ionicons name="ribbon-outline" size={48} color={colors.text.muted} />
-          <Text style={styles.emptyBadgesText}>
-            Commencez à pratiquer pour débloquer des badges !
-          </Text>
-        </Card>
+        <EmptyState
+          icon="ribbon-outline"
+          title="Pas encore de badges"
+          description="Commencez à pratiquer pour débloquer des badges !"
+        />
       )}
 
       {/* Statistics */}
@@ -495,7 +496,7 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalDate}>{getTodayDateFormatted()}</Text>
+            <Text style={styles.modalDate}>{todayDateFormatted}</Text>
 
             <View style={styles.modalContent}>
               <Text style={styles.inputLabel}>Comment vous sentez-vous ?</Text>

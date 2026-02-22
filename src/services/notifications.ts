@@ -358,6 +358,44 @@ export function setupNotificationListeners(
   };
 }
 
+// Send session completion congratulation
+export async function sendSessionCompleteNotification(
+  sessionMinutes: number,
+  currentStreak: number
+): Promise<void> {
+  let body = `Bravo ! Vous avez complété ${sessionMinutes} minutes de face yoga.`;
+  if (currentStreak > 1) {
+    body += ` Streak : ${currentStreak} jours !`;
+  }
+  await sendImmediateNotification('Séance terminée ! 🎉', body, 'motivation');
+}
+
+// Update all scheduled notifications based on user preferences
+export async function syncNotificationPreferences(preferences: {
+  reminderEnabled: boolean;
+  reminderTime?: string;
+  streakRemindersEnabled?: boolean;
+}): Promise<void> {
+  try {
+    if (preferences.reminderEnabled && preferences.reminderTime) {
+      const [hours, minutes] = preferences.reminderTime.split(':').map(Number);
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        await scheduleDailyReminder(hours, minutes);
+      }
+    } else {
+      await cancelNotification('daily_reminder');
+    }
+
+    if (preferences.streakRemindersEnabled !== false) {
+      await scheduleStreakReminder();
+    } else {
+      await cancelNotification('streak_reminder');
+    }
+  } catch (error) {
+    console.error('Error syncing notification preferences:', error);
+  }
+}
+
 export default {
   requestPermissions,
   scheduleDailyReminder,
@@ -365,6 +403,8 @@ export default {
   sendImmediateNotification,
   sendStreakMilestoneNotification,
   sendBadgeNotification,
+  sendSessionCompleteNotification,
+  syncNotificationPreferences,
   cancelNotification,
   cancelAllNotifications,
   getScheduledNotifications,

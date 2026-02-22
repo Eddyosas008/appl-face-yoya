@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Switch,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card, ProgressCircle, BadgeComponent } from '../components';
+import { Card, ProgressCircle, BadgeComponent, MenuItem, ToggleItem } from '../components';
 import { useStore } from '../store/useStore';
-import { badgeDefinitions, getNextBadgeToEarn, getBadgeProgress } from '../data/badges';
+import { getNextBadgeToEarn, getBadgeProgress } from '../data/badges';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -23,7 +22,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { user, updateSettings, updatePreferences, resetProgress, resetAllData } = useStore();
   const { profile, preferences, progress, settings } = user;
 
-  const handleResetProgress = () => {
+  const handleResetProgress = useCallback(() => {
     Alert.alert(
       'Réinitialiser la progression',
       'Êtes-vous sûr de vouloir réinitialiser toute votre progression ? Cette action est irréversible.',
@@ -36,9 +35,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         },
       ]
     );
-  };
+  }, [resetProgress]);
 
-  const handleResetAllData = () => {
+  const handleResetAllData = useCallback(() => {
     Alert.alert(
       'Supprimer toutes les données',
       'Êtes-vous sûr de vouloir supprimer toutes vos données ? Vous devrez recommencer l\'onboarding.',
@@ -49,89 +48,39 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           style: 'destructive',
           onPress: () => {
             resetAllData();
-            // Navigation to onboarding would happen here
           },
         },
       ]
     );
-  };
+  }, [resetAllData]);
 
-  const formatJoinDate = (): string => {
+  const formatJoinDate = useMemo((): string => {
     const date = new Date(user.createdAt);
     return date.toLocaleDateString('fr-FR', {
       month: 'long',
       year: 'numeric',
     });
-  };
+  }, [user.createdAt]);
 
-  const MenuItem: React.FC<{
-    icon: keyof typeof Ionicons.glyphMap;
-    label: string;
-    value?: string;
-    onPress?: () => void;
-    showArrow?: boolean;
-    color?: string;
-  }> = ({ icon, label, value, onPress, showArrow = true, color }) => (
-    <TouchableOpacity
-      style={styles.menuItem}
-      onPress={onPress}
-      disabled={!onPress}
-    >
-      <View
-        style={[
-          styles.menuItemIcon,
-          { backgroundColor: (color || colors.accent.green) + '20' },
-        ]}
-      >
-        <Ionicons
-          name={icon}
-          size={20}
-          color={color || colors.accent.green}
-        />
-      </View>
-      <View style={styles.menuItemContent}>
-        <Text style={[styles.menuItemLabel, color ? { color } : undefined]}>{label}</Text>
-        {value && <Text style={styles.menuItemValue}>{value}</Text>}
-      </View>
-      {showArrow && onPress && (
-        <Ionicons
-          name="chevron-forward"
-          size={20}
-          color={colors.text.tertiary}
-        />
-      )}
-    </TouchableOpacity>
-  );
-
-  const ToggleItem: React.FC<{
-    icon: keyof typeof Ionicons.glyphMap;
-    label: string;
-    value: boolean;
-    onValueChange: (value: boolean) => void;
-  }> = ({ icon, label, value, onValueChange }) => (
-    <View style={styles.menuItem}>
-      <View
-        style={[
-          styles.menuItemIcon,
-          { backgroundColor: colors.accent.green + '20' },
-        ]}
-      >
-        <Ionicons name={icon} size={20} color={colors.accent.green} />
-      </View>
-      <View style={styles.menuItemContent}>
-        <Text style={styles.menuItemLabel}>{label}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{
-          false: colors.background.elevated,
-          true: colors.accent.green + '50',
-        }}
-        thumbColor={value ? colors.accent.green : colors.text.muted}
-      />
-    </View>
-  );
+  const nextBadgeData = useMemo(() => {
+    const userStats = {
+      currentStreak: progress.currentStreak,
+      totalSessions: progress.totalSessions,
+      totalMinutes: progress.totalMinutes,
+      completedExercises: progress.completedExercises,
+      completedPrograms: progress.completedPrograms,
+      zonesExplored: [],
+    };
+    const nextBadge = getNextBadgeToEarn(
+      progress.badges.map((b) => b.id),
+      userStats
+    );
+    if (!nextBadge) return null;
+    return {
+      badge: nextBadge,
+      progress: getBadgeProgress(nextBadge, userStats),
+    };
+  }, [progress]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -170,7 +119,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 {profile.firstName || 'Utilisateur'}
               </Text>
               <Text style={styles.profileMeta}>
-                Membre depuis {formatJoinDate()}
+                Membre depuis {formatJoinDate}
               </Text>
               <Text style={styles.editProfileHint}>Appuyez pour modifier</Text>
             </View>
@@ -228,45 +177,26 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           )}
 
           {/* Next badge to earn */}
-          {(() => {
-            const userStats = {
-              currentStreak: progress.currentStreak,
-              totalSessions: progress.totalSessions,
-              totalMinutes: progress.totalMinutes,
-              completedExercises: progress.completedExercises,
-              completedPrograms: progress.completedPrograms,
-              zonesExplored: [],
-            };
-            const nextBadge = getNextBadgeToEarn(
-              progress.badges.map((b) => b.id),
-              userStats
-            );
-
-            if (nextBadge) {
-              const progressPercent = getBadgeProgress(nextBadge, userStats);
-              return (
-                <View style={styles.nextBadgeContainer}>
-                  <Text style={styles.nextBadgeLabel}>Prochain badge</Text>
-                  <View style={styles.nextBadgeContent}>
-                    <View style={styles.nextBadgeInfo}>
-                      <Text style={styles.nextBadgeName}>{nextBadge.name}</Text>
-                      <Text style={styles.nextBadgeDescription}>
-                        {nextBadge.description}
-                      </Text>
-                    </View>
-                    <View style={styles.nextBadgeProgress}>
-                      <ProgressCircle
-                        progress={progressPercent}
-                        size={48}
-                        strokeWidth={4}
-                      />
-                    </View>
-                  </View>
+          {nextBadgeData && (
+            <View style={styles.nextBadgeContainer}>
+              <Text style={styles.nextBadgeLabel}>Prochain badge</Text>
+              <View style={styles.nextBadgeContent}>
+                <View style={styles.nextBadgeInfo}>
+                  <Text style={styles.nextBadgeName}>{nextBadgeData.badge.name}</Text>
+                  <Text style={styles.nextBadgeDescription}>
+                    {nextBadgeData.badge.description}
+                  </Text>
                 </View>
-              );
-            }
-            return null;
-          })()}
+                <View style={styles.nextBadgeProgress}>
+                  <ProgressCircle
+                    progress={nextBadgeData.progress}
+                    size={48}
+                    strokeWidth={4}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
         </Card>
 
         {/* Analytics Section */}
@@ -637,33 +567,6 @@ const styles = StyleSheet.create({
   menuCard: {
     overflow: 'hidden',
     marginBottom: spacing.md,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-  },
-  menuItemIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  menuItemContent: {
-    flex: 1,
-  },
-  menuItemLabel: {
-    ...typography.body,
-    color: colors.text.primary,
-  },
-  menuItemValue: {
-    ...typography.bodySmall,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
   },
   // Version
   versionContainer: {

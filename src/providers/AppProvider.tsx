@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useSync } from '../hooks/useSync';
+import { useWeeklyReset } from '../hooks/useWeeklyReset';
 
 // ============================================
 // APP CONTEXT
@@ -32,6 +33,9 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const network = useNetworkStatus();
   const sync = useSync();
+
+  // Automatically reset weekly progress on Monday
+  useWeeklyReset();
 
   const contextValue: AppContextType = {
     // Network

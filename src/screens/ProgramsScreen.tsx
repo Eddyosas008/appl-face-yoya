@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card, ProgramCard, Button, ProgressCircle } from '../components';
+import { Card, ProgramCard, Button, ProgressCircle, EmptyState } from '../components';
 import { useStore } from '../store/useStore';
 import { programs } from '../data/programs';
 
@@ -25,12 +25,15 @@ export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) =>
   const { progress } = user;
 
   // Get current program
-  const currentProgram = progress.currentProgramId
-    ? programs.find((p) => p.id === progress.currentProgramId)
-    : null;
+  const currentProgram = useMemo(
+    () => progress.currentProgramId
+      ? programs.find((p) => p.id === progress.currentProgramId) ?? null
+      : null,
+    [progress.currentProgramId]
+  );
 
-  // Filter programs
-  const getFilteredPrograms = () => {
+  // Filter programs with memoization
+  const filteredPrograms = useMemo(() => {
     switch (activeFilter) {
       case 'debutant':
         return programs.filter((p) => p.difficulty === 'debutant');
@@ -41,12 +44,10 @@ export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) =>
       default:
         return programs;
     }
-  };
-
-  const filteredPrograms = getFilteredPrograms();
+  }, [activeFilter]);
 
   // Calculate program progress
-  const getProgramProgress = (programId: string): number => {
+  const getProgramProgress = useCallback((programId: string): number => {
     if (progress.completedPrograms.includes(programId)) {
       return 1;
     }
@@ -60,16 +61,16 @@ export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) =>
       }
     }
     return 0;
-  };
+  }, [progress.completedPrograms, progress.currentProgramId, progress.currentProgramProgress]);
 
-  const handleProgramPress = (programId: string) => {
+  const handleProgramPress = useCallback((programId: string) => {
     navigation.navigate('ProgramDetail', { programId });
-  };
+  }, [navigation]);
 
-  const handleStartProgram = (programId: string) => {
+  const handleStartProgram = useCallback((programId: string) => {
     startProgram(programId);
     navigation.navigate('ProgramDetail', { programId });
-  };
+  }, [startProgram, navigation]);
 
   const filters: { id: FilterType; label: string }[] = [
     { id: 'all', label: 'Tous' },
@@ -198,16 +199,11 @@ export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) =>
 
         {/* Empty State */}
         {filteredPrograms.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons
-              name="search-outline"
-              size={48}
-              color={colors.text.muted}
-            />
-            <Text style={styles.emptyStateText}>
-              Aucun programme ne correspond à ce filtre
-            </Text>
-          </View>
+          <EmptyState
+            icon="search-outline"
+            title="Aucun résultat"
+            description="Aucun programme ne correspond à ce filtre"
+          />
         )}
 
         {/* Info Card */}
@@ -337,17 +333,6 @@ const styles = StyleSheet.create({
   // Programs List
   programsList: {
     marginBottom: spacing.xl,
-  },
-  // Empty State
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing.huge,
-  },
-  emptyStateText: {
-    ...typography.body,
-    color: colors.text.muted,
-    marginTop: spacing.md,
-    textAlign: 'center',
   },
   // Info Card
   infoCard: {
