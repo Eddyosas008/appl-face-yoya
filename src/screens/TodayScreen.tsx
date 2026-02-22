@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  AccessibilityInfo,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
@@ -13,6 +14,7 @@ import { Button, Card, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
 import { programs } from '../data/programs';
+import { adaptive } from '../utils/responsive';
 
 // Daily tips for face yoga practice
 const dailyTips = [
@@ -104,13 +106,13 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
     return 'Bonsoir';
   };
 
-  const handleStartSession = () => {
+  const handleStartSession = useCallback(() => {
     navigation.navigate('SessionPlayer', {
       programId: currentProgram?.id,
       day: currentDay,
       exerciseIds: todayExercises.map((e) => e?.id).filter(Boolean),
     });
-  };
+  }, [navigation, currentProgram, currentDay, todayExercises]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -130,6 +132,8 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.profileButton}
             onPress={() => navigation.navigate('Profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Voir mon profil"
           >
             <View style={styles.avatarPlaceholder}>
               <Ionicons name="person" size={20} color={colors.text.secondary} />
@@ -140,7 +144,11 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
         {/* Streak & Stats Card */}
         <Card variant="elevated" padding="large" style={styles.statsCard}>
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
+            <View
+              style={styles.statItem}
+              accessible
+              accessibilityLabel={`Série actuelle : ${progress.currentStreak} jours consécutifs`}
+            >
               <View style={styles.streakContainer}>
                 <Ionicons name="flame" size={28} color={colors.accent.gold} />
                 <Text style={styles.streakNumber}>{progress.currentStreak}</Text>
@@ -150,7 +158,11 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
 
             <View style={styles.statDivider} />
 
-            <View style={styles.statItem}>
+            <View
+              style={styles.statItem}
+              accessible
+              accessibilityLabel={`Progrès hebdomadaire : ${progress.weeklyProgress} séances sur ${progress.weeklyGoal}`}
+            >
               <ProgressCircle
                 progress={weekProgress}
                 size={50}
@@ -167,7 +179,11 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
 
             <View style={styles.statDivider} />
 
-            <View style={styles.statItem}>
+            <View
+              style={styles.statItem}
+              accessible
+              accessibilityLabel={`${progress.totalMinutes} minutes de pratique au total`}
+            >
               <Text style={styles.totalMinutes}>{progress.totalMinutes}</Text>
               <Text style={styles.statLabel}>Minutes totales</Text>
             </View>
@@ -495,11 +511,13 @@ const styles = StyleSheet.create({
   },
   quickAccessItem: {
     alignItems: 'center',
-    width: '22%',
+    flex: 1,
+    minWidth: 60,
+    maxWidth: 90,
   },
   quickAccessIcon: {
-    width: 56,
-    height: 56,
+    width: adaptive({ small: 48, medium: 56, large: 60, default: 56 }),
+    height: adaptive({ small: 48, medium: 56, large: 60, default: 56 }),
     borderRadius: borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',

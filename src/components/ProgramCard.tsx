@@ -26,7 +26,7 @@ const difficultyColors: { [key: string]: string } = {
   avance: colors.accent.coral,
 };
 
-export const ProgramCard: React.FC<ProgramCardProps> = ({
+const ProgramCardInner: React.FC<ProgramCardProps> = ({
   program,
   onPress,
   progress = 0,
@@ -132,6 +132,9 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({
   );
 };
 
+export const ProgramCard = React.memo(ProgramCardInner);
+ProgramCard.displayName = 'ProgramCard';
+
 const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.md,
@@ -222,3 +225,4 @@ const styles = StyleSheet.create({
 });
 
 export default ProgramCard;
+

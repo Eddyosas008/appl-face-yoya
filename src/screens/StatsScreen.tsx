@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,14 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card, ProgressCircle } from '../components';
+import { Card, ProgressCircle, EmptyState } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
-import { FaceZone, RootStackNavigationProp } from '../types';
-
-const { width } = Dimensions.get('window');
+import { RootStackNavigationProp } from '../types';
 
 interface StatsScreenProps {
   navigation: RootStackNavigationProp;
@@ -42,8 +40,11 @@ const zoneColors: { [key: string]: string } = {
 };
 
 export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
+  const { width } = useWindowDimensions();
   const { user, sessionHistory, favoriteExercises } = useStore();
   const { progress } = user;
+
+  const handleGoBack = useCallback(() => navigation.goBack(), [navigation]);
 
   // Calculate zone statistics
   const zoneStats = useMemo(() => {
@@ -157,7 +158,9 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleGoBack}
+          accessibilityLabel="Retour"
+          accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
@@ -339,13 +342,11 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
 
         {/* Empty state if no data */}
         {sessionHistory.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="bar-chart-outline" size={64} color={colors.text.muted} />
-            <Text style={styles.emptyStateTitle}>Pas encore de données</Text>
-            <Text style={styles.emptyStateText}>
-              Complétez quelques séances pour voir vos statistiques ici !
-            </Text>
-          </View>
+          <EmptyState
+            icon="bar-chart-outline"
+            title="Pas encore de données"
+            description="Complétez quelques séances pour voir vos statistiques ici !"
+          />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -394,7 +395,8 @@ const styles = StyleSheet.create({
     marginHorizontal: -spacing.xs,
   },
   overviewCard: {
-    width: (width - spacing.lg * 2 - spacing.xs * 4) / 2,
+    flex: 1,
+    minWidth: 140,
     marginHorizontal: spacing.xs,
     marginBottom: spacing.sm,
     alignItems: 'center',
@@ -541,22 +543,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.coral + '20',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  // Empty state
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing.huge,
-  },
-  emptyStateTitle: {
-    ...typography.h4,
-    color: colors.text.secondary,
-    marginTop: spacing.md,
-  },
-  emptyStateText: {
-    ...typography.body,
-    color: colors.text.muted,
-    marginTop: spacing.sm,
-    textAlign: 'center',
   },
 });
 
