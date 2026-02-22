@@ -19,6 +19,53 @@ export interface DatabaseUser {
   settings: UserSettings;
 }
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [1000, 2000, 4000]; // exponential backoff
+
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  operationName: string
+): Promise<T> {
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      const isRetryable = error?.message?.includes('network') ||
+        error?.message?.includes('timeout') ||
+        error?.message?.includes('fetch') ||
+        error?.code === 'PGRST301';
+
+      if (!isRetryable || attempt === MAX_RETRIES) {
+        throw error;
+      }
+      console.warn(
+        `${operationName} failed (attempt ${attempt + 1}/${MAX_RETRIES + 1}), retrying...`
+      );
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]));
+    }
+  }
+  throw lastError;
+}
+
+// Batch size for bulk operations
+const BATCH_SIZE = 10;
+
+async function processBatch<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+  }
+  return results;
+}
+
 export class DatabaseService {
   static async getUserProfile(userId: string) {
     const { data, error } = await supabase
@@ -353,24 +400,36 @@ export class DatabaseService {
     dailyEntries: DailyEntry[]
   ) {
     try {
-      await Promise.all([
-        this.createOrUpdateProfile(userId, user.profile),
-        this.createOrUpdatePreferences(userId, user.preferences),
-        this.createOrUpdateHealthInfo(userId, user.healthInfo),
-        this.createOrUpdateProgress(userId, user.progress),
-        this.createOrUpdateSettings(userId, user.settings),
-      ]);
+      // Upload user data in parallel with retry
+      await withRetry(
+        () => Promise.all([
+          this.createOrUpdateProfile(userId, user.profile),
+          this.createOrUpdatePreferences(userId, user.preferences),
+          this.createOrUpdateHealthInfo(userId, user.healthInfo),
+          this.createOrUpdateProgress(userId, user.progress),
+          this.createOrUpdateSettings(userId, user.settings),
+        ]),
+        'uploadUserData'
+      );
 
+      // Upload sessions in batches (parallel within each batch)
       if (sessionHistory.length > 0) {
-        for (const session of sessionHistory) {
-          await this.createSession(userId, session);
-        }
+        await processBatch(sessionHistory, (session) =>
+          withRetry(
+            () => this.createSession(userId, session),
+            `createSession-${session.date}`
+          )
+        );
       }
 
+      // Upload daily entries in batches
       if (dailyEntries.length > 0) {
-        for (const entry of dailyEntries) {
-          await this.createOrUpdateDailyEntry(userId, entry);
-        }
+        await processBatch(dailyEntries, (entry) =>
+          withRetry(
+            () => this.createOrUpdateDailyEntry(userId, entry),
+            `updateDailyEntry-${entry.date}`
+          )
+        );
       }
 
       return true;

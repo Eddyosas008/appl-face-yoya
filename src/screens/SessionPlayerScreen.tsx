@@ -81,6 +81,16 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const progressAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const restTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (restTimeoutRef.current) {
+        clearTimeout(restTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Get breathing phase from current step
   const getBreathingPhase = (): 'inhale' | 'hold' | 'exhale' | 'rest' => {
@@ -92,14 +102,18 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const currentStep = currentExercise?.steps[currentStepIndex];
   const totalDuration = sessionExercises.reduce((sum, ex) => sum + ex.duration, 0);
 
-  // Timer effect
+  // Timer effect - uses ref to avoid stale closure over handleStepComplete
+  const handleStepCompleteRef = useRef(handleStepComplete);
+  handleStepCompleteRef.current = handleStepComplete;
+
   useEffect(() => {
     if (sessionState !== 'exercise' || isPaused || timeRemaining <= 0) return;
 
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          handleStepComplete();
+          // Defer to next tick to avoid state update during render
+          setTimeout(() => handleStepCompleteRef.current(), 0);
           return 0;
         }
         return prev - 1;
@@ -158,7 +172,7 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
       if (currentExerciseIndex < sessionExercises.length - 1) {
         // Show rest screen then next exercise
         setSessionState('rest');
-        setTimeout(() => {
+        restTimeoutRef.current = setTimeout(() => {
           fadeTransition(() => {
             setCurrentExerciseIndex((prev) => prev + 1);
             setCurrentStepIndex(0);

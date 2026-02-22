@@ -1,11 +1,18 @@
-import React, { Component, ErrorInfo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: ReactNode;
+  fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -23,15 +30,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('ErrorBoundary caught:', error, errorInfo);
+    this.props.onError?.(error, errorInfo);
   }
 
-  handleReset = () => {
+  handleRetry = (): void => {
     this.setState({ hasError: false, error: null });
   };
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -47,9 +55,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <Text style={styles.description}>
               Une erreur inattendue est survenue. Essayez de relancer cette section.
             </Text>
-            <TouchableOpacity style={styles.retryButton} onPress={this.handleReset}>
+            {__DEV__ && this.state.error && (
+              <View style={styles.errorDetails}>
+                <Text style={styles.errorText}>
+                  {this.state.error.message}
+                </Text>
+              </View>
+            )}
+            <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
               <Ionicons name="refresh" size={20} color={colors.background.primary} />
-              <Text style={styles.retryText}>Réessayer</Text>
+              <Text style={styles.retryButtonText}>Réessayer</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -78,7 +93,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.coral + '15',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   title: {
     ...typography.h3,
@@ -92,15 +107,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing.xxl,
   },
+  errorDetails: {
+    backgroundColor: colors.background.tertiary,
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xxl,
+    maxWidth: '100%',
+  },
+  errorText: {
+    ...typography.bodySmall,
+    color: colors.accent.coral,
+    fontFamily: 'monospace',
+  },
   retryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.accent.green,
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.xxl,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.lg,
   },
-  retryText: {
+  retryButtonText: {
     ...typography.button,
     color: colors.background.primary,
     marginLeft: spacing.sm,

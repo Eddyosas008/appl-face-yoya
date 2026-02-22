@@ -16,6 +16,8 @@ import { Button } from '../components';
 import { AuthService } from '../services';
 import { useStore } from '../store/useStore';
 
+import { validateEmail as validateEmailInput, validatePassword as validatePasswordInput } from '../utils/validation';
+
 interface AuthScreenProps {
   navigation: any;
   onAuthSuccess?: () => void;
@@ -31,19 +33,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
 
   const { user, sessionHistory, dailyEntries } = useStore();
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleSignUp = async () => {
-    if (!validateEmail(email)) {
-      Alert.alert('Erreur', 'Veuillez entrer une adresse email valide');
+    const emailValidation = validateEmailInput(email);
+    if (!emailValidation.isValid) {
+      Alert.alert('Erreur', emailValidation.error);
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+    const passwordValidation = validatePasswordInput(password);
+    if (!passwordValidation.isValid) {
+      Alert.alert('Erreur', passwordValidation.error);
       return;
     }
 
@@ -81,13 +80,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
   };
 
   const handleLogin = async () => {
-    if (!validateEmail(email)) {
-      Alert.alert('Erreur', 'Veuillez entrer une adresse email valide');
+    const emailValidation = validateEmailInput(email);
+    if (!emailValidation.isValid) {
+      Alert.alert('Erreur', emailValidation.error);
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+    if (!password) {
+      Alert.alert('Erreur', 'Le mot de passe est requis');
       return;
     }
 
@@ -115,7 +115,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
   };
 
   const handleForgotPassword = () => {
-    if (!validateEmail(email)) {
+    const emailValidation = validateEmailInput(email);
+    if (!emailValidation.isValid) {
       Alert.alert('Information', 'Veuillez entrer votre adresse email pour réinitialiser votre mot de passe');
       return;
     }

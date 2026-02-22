@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  AccessibilityInfo,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
@@ -13,6 +14,7 @@ import { Button, Card, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
 import { programs } from '../data/programs';
+import { adaptive } from '../utils/responsive';
 
 // Daily tips for face yoga practice
 const dailyTips = [
@@ -104,13 +106,13 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
     return 'Bonsoir';
   };
 
-  const handleStartSession = () => {
+  const handleStartSession = useCallback(() => {
     navigation.navigate('SessionPlayer', {
       programId: currentProgram?.id,
       day: currentDay,
       exerciseIds: todayExercises.map((e) => e?.id).filter(Boolean),
     });
-  };
+  }, [navigation, currentProgram, currentDay, todayExercises]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -495,11 +497,13 @@ const styles = StyleSheet.create({
   },
   quickAccessItem: {
     alignItems: 'center',
-    width: '22%',
+    flex: 1,
+    minWidth: 60,
+    maxWidth: 90,
   },
   quickAccessIcon: {
-    width: 56,
-    height: 56,
+    width: adaptive({ small: 48, medium: 56, large: 60, default: 56 }),
+    height: adaptive({ small: 48, medium: 56, large: 60, default: 56 }),
     borderRadius: borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
