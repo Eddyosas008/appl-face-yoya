@@ -132,6 +132,8 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.profileButton}
             onPress={() => navigation.navigate('Profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Voir mon profil"
           >
             <View style={styles.avatarPlaceholder}>
               <Ionicons name="person" size={20} color={colors.text.secondary} />
@@ -142,7 +144,11 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
         {/* Streak & Stats Card */}
         <Card variant="elevated" padding="large" style={styles.statsCard}>
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
+            <View
+              style={styles.statItem}
+              accessible
+              accessibilityLabel={`Série actuelle : ${progress.currentStreak} jours consécutifs`}
+            >
               <View style={styles.streakContainer}>
                 <Ionicons name="flame" size={28} color={colors.accent.gold} />
                 <Text style={styles.streakNumber}>{progress.currentStreak}</Text>
@@ -152,7 +158,11 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
 
             <View style={styles.statDivider} />
 
-            <View style={styles.statItem}>
+            <View
+              style={styles.statItem}
+              accessible
+              accessibilityLabel={`Progrès hebdomadaire : ${progress.weeklyProgress} séances sur ${progress.weeklyGoal}`}
+            >
               <ProgressCircle
                 progress={weekProgress}
                 size={50}
@@ -169,7 +179,11 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
 
             <View style={styles.statDivider} />
 
-            <View style={styles.statItem}>
+            <View
+              style={styles.statItem}
+              accessible
+              accessibilityLabel={`${progress.totalMinutes} minutes de pratique au total`}
+            >
               <Text style={styles.totalMinutes}>{progress.totalMinutes}</Text>
               <Text style={styles.statLabel}>Minutes totales</Text>
             </View>

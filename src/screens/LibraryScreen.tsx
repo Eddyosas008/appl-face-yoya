@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   SafeAreaView,
   TextInput,
@@ -174,6 +175,38 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
     return option?.label || zone;
   };
 
+  // Memoized exercise item renderer for FlatList
+  const renderExerciseItem = useCallback(({ item: exercise }: { item: typeof exercises[0] }) => (
+    <View style={styles.exerciseCardWrapper}>
+      {isSelectionMode && (
+        <TouchableOpacity
+          style={styles.selectionCheckbox}
+          onPress={() => toggleExerciseSelection(exercise.id)}
+          accessibilityRole="checkbox"
+          accessibilityLabel={exercise.name}
+          accessibilityState={{ checked: isSelected(exercise.id) }}
+        >
+          <Ionicons
+            name={isSelected(exercise.id) ? 'checkbox' : 'square-outline'}
+            size={24}
+            color={isSelected(exercise.id) ? colors.accent.green : colors.text.tertiary}
+          />
+        </TouchableOpacity>
+      )}
+      <View style={styles.exerciseCardContent}>
+        <ExerciseCard
+          exercise={exercise}
+          onPress={() => isSelectionMode ? toggleExerciseSelection(exercise.id) : handleExercisePress(exercise.id)}
+          completed={isExerciseCompleted(exercise.id)}
+          isFavorite={isFavorite(exercise.id)}
+          onToggleFavorite={isSelectionMode ? undefined : handleToggleFavorite}
+        />
+      </View>
+    </View>
+  ), [isSelectionMode, isSelected, isFavorite, handleExercisePress, handleToggleFavorite, toggleExerciseSelection, isExerciseCompleted]);
+
+  const keyExtractor = useCallback((item: typeof exercises[0]) => item.id, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -223,9 +256,16 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
             placeholderTextColor={colors.text.muted}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            accessibilityLabel="Rechercher un exercice"
+            returnKeyType="search"
+            autoCorrect={false}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              accessibilityRole="button"
+              accessibilityLabel="Effacer la recherche"
+            >
               <Ionicons
                 name="close-circle"
                 size={20}
@@ -237,13 +277,16 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
       </View>
 
       {/* Special Filters (Favorites/Completed) */}
-      <View style={styles.specialFiltersContainer}>
+      <View style={styles.specialFiltersContainer} accessibilityRole="toolbar">
         <TouchableOpacity
           style={[
             styles.specialFilterChip,
             specialFilter === 'favorites' && styles.specialFilterChipActive,
           ]}
           onPress={() => setSpecialFilter(specialFilter === 'favorites' ? null : 'favorites')}
+          accessibilityRole="togglebutton"
+          accessibilityLabel={`Favoris, ${favoriteExercises.length} exercices`}
+          accessibilityState={{ selected: specialFilter === 'favorites' }}
         >
           <Ionicons
             name={specialFilter === 'favorites' ? 'heart' : 'heart-outline'}
@@ -264,6 +307,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
             specialFilter === 'completed' && styles.specialFilterChipActive,
           ]}
           onPress={() => setSpecialFilter(specialFilter === 'completed' ? null : 'completed')}
+          accessibilityRole="togglebutton"
+          accessibilityLabel={`Complétés, ${user.progress.completedExercises.length} exercices`}
+          accessibilityState={{ selected: specialFilter === 'completed' }}
         >
           <Ionicons
             name={specialFilter === 'completed' ? 'checkmark-circle' : 'checkmark-circle-outline'}
@@ -294,6 +340,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
                 selectedZone === option.id && styles.filterChipActive,
               ]}
               onPress={() => setSelectedZone(option.id)}
+              accessibilityRole="radio"
+              accessibilityLabel={`Zone ${option.label}`}
+              accessibilityState={{ selected: selectedZone === option.id }}
             >
               <Ionicons
                 name={option.icon}
@@ -332,6 +381,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
                 selectedDifficulty === option.id && { backgroundColor: option.color },
               ]}
               onPress={() => setSelectedDifficulty(option.id)}
+              accessibilityRole="radio"
+              accessibilityLabel={`Difficulté ${option.label}`}
+              accessibilityState={{ selected: selectedDifficulty === option.id }}
             >
               <Text
                 style={[
@@ -351,6 +403,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews
       >
         {/* Contraindications Warning */}
         {user.healthInfo.contraindications.length > 0 && (
@@ -410,32 +463,12 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
           </>
         )}
 
-        {/* Flat view (when a specific zone is selected or special filter active) */}
+        {/* Flat view with FlatList (when a specific zone is selected or special filter active) */}
         {(selectedZone !== 'all' || specialFilter !== null) && (
           <View style={styles.exercisesList}>
             {filteredExercises.map((exercise) => (
-              <View key={exercise.id} style={styles.exerciseCardWrapper}>
-                {isSelectionMode && (
-                  <TouchableOpacity
-                    style={styles.selectionCheckbox}
-                    onPress={() => toggleExerciseSelection(exercise.id)}
-                  >
-                    <Ionicons
-                      name={isSelected(exercise.id) ? 'checkbox' : 'square-outline'}
-                      size={24}
-                      color={isSelected(exercise.id) ? colors.accent.green : colors.text.tertiary}
-                    />
-                  </TouchableOpacity>
-                )}
-                <View style={styles.exerciseCardContent}>
-                  <ExerciseCard
-                    exercise={exercise}
-                    onPress={() => isSelectionMode ? toggleExerciseSelection(exercise.id) : handleExercisePress(exercise.id)}
-                    completed={isExerciseCompleted(exercise.id)}
-                    isFavorite={isFavorite(exercise.id)}
-                    onToggleFavorite={isSelectionMode ? undefined : handleToggleFavorite}
-                  />
-                </View>
+              <View key={exercise.id}>
+                {renderExerciseItem({ item: exercise })}
               </View>
             ))}
           </View>
@@ -467,6 +500,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.startSessionButton}
             onPress={handleStartCustomSession}
+            accessibilityRole="button"
+            accessibilityLabel={`Démarrer une séance avec ${selectedExercises.length} exercices, durée ${Math.ceil(selectedTotalDuration / 60)} minutes`}
           >
             <Ionicons name="play" size={20} color={colors.background.primary} />
             <Text style={styles.startSessionText}>Démarrer</Text>

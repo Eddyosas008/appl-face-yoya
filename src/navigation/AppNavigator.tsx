@@ -45,8 +45,8 @@ const TAB_LABELS: Record<keyof MainTabParamList, string> = {
   Profile: 'Profil',
 };
 
-// Main Tab Navigator with responsive tab bar
-const MainTabs: React.FC = () => {
+// Main Tab Navigator with responsive tab bar - memoized to prevent unnecessary re-renders
+const MainTabs: React.FC = React.memo(() => {
   const tabBarHeight = adaptive({
     small: 56,
     medium: 60,
@@ -114,7 +114,8 @@ const MainTabs: React.FC = () => {
       />
     </Tab.Navigator>
   );
-};
+});
+MainTabs.displayName = 'MainTabs';
 
 // Root Navigator
 export const AppNavigator: React.FC = () => {

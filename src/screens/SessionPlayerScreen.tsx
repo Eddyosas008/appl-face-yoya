@@ -371,17 +371,31 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
     <Animated.View style={[styles.exerciseContainer, { opacity: fadeAnim }]}>
       {/* Header */}
       <View style={styles.exerciseHeader}>
-        <TouchableOpacity style={styles.closeButton} onPress={exitSession}>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={exitSession}
+          accessibilityRole="button"
+          accessibilityLabel="Quitter la séance"
+        >
           <Ionicons name="close" size={28} color={colors.text.primary} />
         </TouchableOpacity>
 
-        <View style={styles.progressIndicator}>
+        <View
+          style={styles.progressIndicator}
+          accessible
+          accessibilityLabel={`Exercice ${currentExerciseIndex + 1} sur ${sessionExercises.length}`}
+        >
           <Text style={styles.progressText}>
             {currentExerciseIndex + 1} / {sessionExercises.length}
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.skipButton} onPress={skipExercise}>
+        <TouchableOpacity
+          style={styles.skipButton}
+          onPress={skipExercise}
+          accessibilityRole="button"
+          accessibilityLabel="Passer cet exercice"
+        >
           <Ionicons name="play-skip-forward" size={24} color={colors.text.secondary} />
         </TouchableOpacity>
       </View>
@@ -417,7 +431,13 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
         </View>
 
         {/* Timer circle */}
-        <View style={styles.timerContainer}>
+        <View
+          style={styles.timerContainer}
+          accessible
+          accessibilityRole="timer"
+          accessibilityLabel={`${formatTime(timeRemaining)} restantes${currentStep?.breathingCue ? `, ${getBreathingText()}` : ''}`}
+          accessibilityLiveRegion="polite"
+        >
           <View style={styles.timerCircle}>
             <Animated.View
               style={[
@@ -468,7 +488,7 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
       </ScrollView>
 
       {/* Controls */}
-      <View style={styles.controlsContainer}>
+      <View style={styles.controlsContainer} accessibilityRole="toolbar">
         <TouchableOpacity
           style={styles.controlButton}
           onPress={() => {
@@ -478,6 +498,10 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
               setTimeRemaining(prevStep.duration || 5);
             }
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Étape précédente"
+          disabled={currentStepIndex === 0}
+          accessibilityState={{ disabled: currentStepIndex === 0 }}
         >
           <Ionicons name="play-back" size={28} color={colors.text.secondary} />
         </TouchableOpacity>
@@ -485,6 +509,8 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
         <TouchableOpacity
           style={[styles.controlButton, styles.pauseButton]}
           onPress={togglePause}
+          accessibilityRole="button"
+          accessibilityLabel={isPaused ? 'Reprendre' : 'Pause'}
         >
           <Ionicons
             name={isPaused ? 'play' : 'pause'}
@@ -504,6 +530,8 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
               handleStepComplete();
             }
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Étape suivante"
         >
           <Ionicons name="play-forward" size={28} color={colors.text.secondary} />
         </TouchableOpacity>
@@ -590,6 +618,9 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
                     styles.feelingButton,
                     selectedFeeling === feeling.id && styles.feelingButtonSelected,
                   ]}
+                  accessibilityRole="radio"
+                  accessibilityLabel={feeling.label}
+                  accessibilityState={{ selected: selectedFeeling === feeling.id }}
                   onPress={() => {
                     if (user.settings.hapticEnabled) {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

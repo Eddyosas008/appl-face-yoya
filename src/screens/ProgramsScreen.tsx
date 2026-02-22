@@ -171,6 +171,9 @@ export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) =>
                   activeFilter === filter.id && styles.filterChipActive,
                 ]}
                 onPress={() => setActiveFilter(filter.id)}
+                accessibilityRole="radio"
+                accessibilityLabel={`Filtre ${filter.label}`}
+                accessibilityState={{ selected: activeFilter === filter.id }}
               >
                 <Text
                   style={[

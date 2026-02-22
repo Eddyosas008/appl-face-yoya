@@ -48,7 +48,7 @@ const difficultyColors: { [key: string]: string } = {
   avance: colors.accent.coral,
 };
 
-export const ExerciseCard: React.FC<ExerciseCardProps> = ({
+const ExerciseCardInner: React.FC<ExerciseCardProps> = ({
   exercise,
   onPress,
   showDuration = true,
@@ -196,6 +196,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   );
 };
 
+export const ExerciseCard = React.memo(ExerciseCardInner);
+
 const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.md,
@@ -303,3 +305,4 @@ const styles = StyleSheet.create({
 });
 
 export default ExerciseCard;
+ExerciseCard.displayName = 'ExerciseCard';
