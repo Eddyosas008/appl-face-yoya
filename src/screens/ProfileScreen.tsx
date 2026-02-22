@@ -14,9 +14,10 @@ import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, ProgressCircle, BadgeComponent } from '../components';
 import { useStore } from '../store/useStore';
 import { badgeDefinitions, getNextBadgeToEarn, getBadgeProgress } from '../data/badges';
+import { MainTabScreenNavigationProp } from '../types';
 
 interface ProfileScreenProps {
-  navigation: any;
+  navigation: MainTabScreenNavigationProp;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {

@@ -18,8 +18,10 @@ import { Card, Button } from '../components';
 import { useStore } from '../store/useStore';
 import NotificationService from '../services/notifications';
 
+import { RootStackNavigationProp } from '../types';
+
 interface SettingsScreenProps {
-  navigation: any;
+  navigation: RootStackNavigationProp;
 }
 
 interface SettingItemProps {

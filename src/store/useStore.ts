@@ -17,6 +17,7 @@ import {
   FaceFeelRating,
 } from '../types';
 import { badgeDefinitions, checkBadgeEarned } from '../data/badges';
+import { getExerciseById } from '../data/exercises';
 
 // ============================================
 // ÉTAT INITIAL DE L'UTILISATEUR
@@ -92,6 +93,7 @@ interface AppState {
   // UI State
   isLoading: boolean;
   currentSessionId: string | null;
+  lastWeekResetDate: string | null;
 
   // Actions - Profile
   updateProfile: (profile: Partial<UserProfile>) => void;
@@ -139,6 +141,7 @@ interface AppState {
   // Actions - Utility
   resetProgress: () => void;
   resetAllData: () => void;
+  checkAndResetWeeklyProgress: () => void;
 }
 
 // ============================================
@@ -154,6 +157,7 @@ export const useStore = create<AppState>()(
       favoriteExercises: [],
       isLoading: false,
       currentSessionId: null,
+      lastWeekResetDate: null,
 
       // ==========================================
       // PROFILE ACTIONS
@@ -474,13 +478,13 @@ export const useStore = create<AppState>()(
         const state = get();
         const earnedBadgeIds = state.user.progress.badges.map((b) => b.id);
 
-        // Calculer les zones explorées
+        // Calculer les zones explorées à partir de l'historique
         const zonesExplored = new Set<string>();
-        state.sessionHistory.forEach((session) => {
-          // Note: Dans une implémentation réelle, on récupérerait les zones des exercices
-          session.exercises.forEach(() => {
-            // Simplification pour l'exemple
-          });
+        state.user.progress.completedExercises.forEach((exerciseId) => {
+          const exercise = getExerciseById(exerciseId);
+          if (exercise) {
+            zonesExplored.add(exercise.zone);
+          }
         });
 
         const userStats = {
@@ -576,8 +580,33 @@ export const useStore = create<AppState>()(
           },
           sessionHistory: [],
           dailyEntries: [],
+          favoriteExercises: [],
           currentSessionId: null,
+          lastWeekResetDate: null,
         }),
+
+      checkAndResetWeeklyProgress: () => {
+        const state = get();
+        const now = new Date();
+        const currentMonday = new Date(now);
+        const dayOfWeek = currentMonday.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        currentMonday.setDate(currentMonday.getDate() - diff);
+        const mondayStr = currentMonday.toISOString().split('T')[0];
+
+        if (state.lastWeekResetDate !== mondayStr) {
+          set((s) => ({
+            lastWeekResetDate: mondayStr,
+            user: {
+              ...s.user,
+              progress: {
+                ...s.user.progress,
+                weeklyProgress: 0,
+              },
+            },
+          }));
+        }
+      },
     }),
     {
       name: 'face-yoga-storage',
@@ -587,6 +616,7 @@ export const useStore = create<AppState>()(
         sessionHistory: state.sessionHistory,
         dailyEntries: state.dailyEntries,
         favoriteExercises: state.favoriteExercises,
+        lastWeekResetDate: state.lastWeekResetDate,
       }),
     }
   )

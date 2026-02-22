@@ -280,6 +280,10 @@ export interface OnboardingAnswer {
 // ============================================
 // NAVIGATION TYPES
 // ============================================
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
+
 export type RootStackParamList = {
   Onboarding: undefined;
   Auth: undefined;
@@ -304,3 +308,15 @@ export type MainTabParamList = {
   Journal: undefined;
   Profile: undefined;
 };
+
+// Navigation prop helpers for stack screens
+export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+// Navigation prop helpers for tab screens (composited with parent stack)
+export type MainTabScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
+
+// Route prop helpers
+export type RootStackRouteProp<T extends keyof RootStackParamList> = RouteProp<RootStackParamList, T>;

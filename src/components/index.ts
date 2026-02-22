@@ -7,3 +7,4 @@ export { default as ProgramCard } from './ProgramCard';
 export { BreathingCircle, GuidedBreathing } from './BreathingCircle';
 export { AvatarPicker } from './AvatarPicker';
 export { PhotoGallery } from './PhotoGallery';
+export { ErrorBoundary } from './ErrorBoundary';

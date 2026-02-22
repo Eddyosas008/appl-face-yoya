@@ -10,9 +10,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card } from '../components';
+import { RootStackNavigationProp } from '../types';
 
 interface SafetyScreenProps {
-  navigation: any;
+  navigation: RootStackNavigationProp;
 }
 
 const contraindicationsData = [

@@ -13,8 +13,10 @@ import { Card, ProgramCard, Button, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { programs } from '../data/programs';
 
+import { MainTabScreenNavigationProp } from '../types';
+
 interface ProgramsScreenProps {
-  navigation: any;
+  navigation: MainTabScreenNavigationProp;
 }
 
 type FilterType = 'all' | 'debutant' | 'intermediaire' | 'short';

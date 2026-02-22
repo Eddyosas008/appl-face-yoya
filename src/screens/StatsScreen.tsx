@@ -13,12 +13,12 @@ import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
-import { FaceZone } from '../types';
+import { FaceZone, RootStackNavigationProp } from '../types';
 
 const { width } = Dimensions.get('window');
 
 interface StatsScreenProps {
-  navigation: any;
+  navigation: RootStackNavigationProp;
 }
 
 const zoneLabels: { [key: string]: string } = {

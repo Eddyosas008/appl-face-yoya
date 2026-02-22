@@ -17,19 +17,13 @@ import { Button, Card, BreathingCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises, getExerciseById } from '../data/exercises';
 import { programs } from '../data/programs';
-import { Exercise, ExerciseStep, FaceFeelRating } from '../types';
+import { Exercise, ExerciseStep, FaceFeelRating, RootStackNavigationProp, RootStackRouteProp } from '../types';
 
 const { width, height } = Dimensions.get('window');
 
 interface SessionPlayerScreenProps {
-  navigation?: any;
-  route?: {
-    params?: {
-      programId?: string;
-      day?: number;
-      exerciseIds?: string[];
-    };
-  };
+  navigation: RootStackNavigationProp;
+  route: RootStackRouteProp<'SessionPlayer'>;
 }
 
 type SessionState = 'intro' | 'exercise' | 'rest' | 'completed';
@@ -38,7 +32,7 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   navigation,
   route,
 }) => {
-  const { programId, day, exerciseIds } = route?.params || {};
+  const { programId, day, exerciseIds } = route.params ?? {};
   const {
     user,
     completeSession,
