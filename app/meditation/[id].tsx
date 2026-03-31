@@ -12,15 +12,26 @@ import { useUser } from '@/lib/user-context';
 import { MEDITATIONS, CATEGORY_LABELS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PremiumBadge } from '@/components/ui/premium-badge';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function MeditationPlayerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useColors();
-  const { favorites, toggleFavorite, profile, addSessionHistory } = useUser();
+  const { profile } = useUser();
+  const { isAuthenticated } = useAuth();
+
+  // Backend mutations
+  const completeSessionMutation = trpc.sessions.complete.useMutation();
+  const toggleFavMutation = trpc.favorites.toggle.useMutation();
+  const { data: favList = [], refetch: refetchFavs } = trpc.favorites.list.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
 
   const meditation = MEDITATIONS.find((m) => m.id === id);
   const isLocked = meditation?.isPremium && !profile?.isPremium;
-  const isFav = meditation ? favorites.includes(meditation.id) : false;
+  const isFav = meditation ? favList.includes(meditation.id) : false;
   const [hasCompleted, setHasCompleted] = useState(false);
   const completedRef = useRef(false);
 
@@ -82,7 +93,15 @@ export default function MeditationPlayerScreen() {
 
   async function handleComplete(minutes: number) {
     if (!meditation) return;
-    await addSessionHistory({ meditationId: meditation.id, duration: minutes || 1 });
+    if (isAuthenticated) {
+      await completeSessionMutation.mutateAsync({
+        meditationId: meditation.id,
+        meditationTitle: meditation.title,
+        category: meditation.category,
+        duration: minutes || 1,
+        completed: true,
+      });
+    }
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
@@ -149,7 +168,12 @@ export default function MeditationPlayerScreen() {
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.favButton, { backgroundColor: `${colors.background}CC`, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => toggleFavorite(meditation.id)}
+            onPress={async () => {
+              if (isAuthenticated) {
+                await toggleFavMutation.mutateAsync({ meditationId: meditation.id });
+                refetchFavs();
+              }
+            }}
           >
             <IconSymbol name={isFav ? 'heart.fill' : 'heart'} size={20} color={isFav ? '#F43F5E' : colors.foreground} />
           </Pressable>

@@ -1,39 +1,30 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, Pressable, TextInput,
+  FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+} from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import type { ChatMessage } from '@/shared/wellness-types';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/hooks/use-auth';
 
 const QUICK_PROMPTS = [
   'Je me sens submergée',
-  'Je n\'arrive pas à dormir',
+  "Je n'arrive pas à dormir",
   'Je rumine trop',
-  'J\'ai besoin de réconfort',
+  "J'ai besoin de réconfort",
   'Je suis épuisée émotionnellement',
 ];
 
-const AI_RESPONSES: Record<string, string> = {
-  default: 'Je vous entends. Vos émotions sont valides. Prenez une grande inspiration et sachez que vous n\'êtes pas seule dans ce que vous ressentez. Que puis-je faire pour vous aider en ce moment ?',
-  submergée: 'Quand tout semble trop lourd, c\'est normal de se sentir submergée. Votre corps et votre esprit vous envoient un signal : vous avez besoin de ralentir. Essayons ensemble une respiration apaisante. Inspirez lentement pendant 4 secondes... retenez 4 secondes... expirez doucement pendant 6 secondes. Comment vous sentez-vous maintenant ?',
-  dormir: 'Les nuits difficiles peuvent être épuisantes. Votre esprit cherche peut-être à traiter quelque chose. Avez-vous essayé notre méditation "Nuit étoilée" ? Elle aide beaucoup à calmer les pensées avant de dormir. En attendant, essayez de vous concentrer sur 5 choses que vous pouvez voir autour de vous — cela ancre dans le présent.',
-  rumine: 'La rumination est comme un disque rayé — votre esprit tourne en boucle sans trouver de solution. C\'est épuisant. Une technique qui aide : notez vos pensées sur papier pour "les sortir" de votre tête. Ensuite, demandez-vous : "Cette pensée est-elle un fait ou une interprétation ?" Souvent, c\'est une interprétation.',
-  réconfort: 'Je suis là. Vous méritez d\'être entendue et soutenue. Parfois, nous avons juste besoin que quelqu\'un nous dise que tout va bien se passer. Alors voilà : vous traversez quelque chose de difficile, mais vous êtes plus forte que vous ne le pensez. Qu\'est-ce qui vous ferait du bien en ce moment ?',
-  épuisée: 'L\'épuisement émotionnel est réel et sérieux. Ce n\'est pas de la faiblesse — c\'est le signe que vous avez donné beaucoup de vous-même. Il est temps de vous recharger. Commencez par une chose simple : accordez-vous 10 minutes juste pour vous, sans obligation. Qu\'est-ce qui vous ressource habituellement ?',
+type LocalMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
 };
 
-function getAIResponse(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes('submerg') || lower.includes('trop')) return AI_RESPONSES.submergée;
-  if (lower.includes('dorm') || lower.includes('nuit') || lower.includes('sommeil')) return AI_RESPONSES.dormir;
-  if (lower.includes('rumin') || lower.includes('boucle') || lower.includes('pens')) return AI_RESPONSES.rumine;
-  if (lower.includes('réconfort') || lower.includes('seule') || lower.includes('besoin')) return AI_RESPONSES.réconfort;
-  if (lower.includes('épuis') || lower.includes('fatig') || lower.includes('drain')) return AI_RESPONSES.épuisée;
-  return AI_RESPONSES.default;
-}
-
-function ChatBubble({ message, colors }: { message: ChatMessage; colors: ReturnType<typeof useColors> }) {
+function ChatBubble({ message, colors }: { message: LocalMessage; colors: ReturnType<typeof useColors> }) {
   const isUser = message.role === 'user';
   return (
     <View style={[styles.bubbleRow, isUser && styles.bubbleRowUser]}>
@@ -60,41 +51,112 @@ function ChatBubble({ message, colors }: { message: ChatMessage; colors: ReturnT
 
 export default function ChatScreen() {
   const colors = useColors();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '0',
-      role: 'assistant',
-      content: 'Bonjour 🌸 Je suis votre assistante bien-être. Je suis là pour vous écouter et vous soutenir. Comment vous sentez-vous aujourd\'hui ?\n\n⚠️ Je suis un outil de soutien au bien-être, pas un professionnel de santé. En cas de détresse sévère, veuillez contacter un professionnel.',
-      timestamp: new Date(),
-    },
-  ]);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const { isAuthenticated } = useAuth();
   const flatListRef = useRef<FlatList>(null);
+  const [input, setInput] = useState('');
+  const [localMessages, setLocalMessages] = useState<LocalMessage[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
-  function sendMessage(text: string) {
-    if (!text.trim()) return;
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: text.trim(),
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
+  // Load chat history from backend (authenticated users)
+  const { data: historyData, isLoading: historyLoading } = trpc.chat.history.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
+  // Send message mutation
+  const sendMutation = trpc.chat.send.useMutation();
+
+  // Clear history mutation
+  const clearMutation = trpc.chat.clear.useMutation({
+    onSuccess: () => setLocalMessages([]),
+  });
+
+  // Sync history into local state on load
+  useEffect(() => {
+    if (historyData && historyData.length > 0) {
+      setLocalMessages(
+        historyData.map((m) => ({
+          id: m.id.toString(),
+          role: m.role,
+          content: m.content,
+        }))
+      );
+    } else if (!historyLoading && localMessages.length === 0) {
+      // Show welcome message if no history
+      setLocalMessages([{
+        id: 'welcome',
+        role: 'assistant',
+        content: "Bonjour 🌸 Je suis Yoya, ton assistante bien-être. Je suis là pour t'écouter et te soutenir. Comment te sens-tu aujourd'hui ?\n\n⚠️ Je suis un outil de soutien au bien-être, pas un professionnel de santé. En cas de détresse sévère, contacte un professionnel.",
+      }]);
+    }
+  }, [historyData, historyLoading]);
+
+  async function sendMessage(text: string) {
+    if (!text.trim() || isTyping) return;
+    const trimmed = text.trim();
     setInput('');
+
+    // Optimistic: add user message immediately
+    const tempId = Date.now().toString();
+    setLocalMessages((prev) => [...prev, { id: tempId, role: 'user', content: trimmed }]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: getAIResponse(text),
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMsg]);
+    try {
+      if (isAuthenticated) {
+        // Real AI via tRPC
+        const result = await sendMutation.mutateAsync({ message: trimmed });
+        setLocalMessages((prev) => [
+          ...prev,
+          { id: (Date.now() + 1).toString(), role: 'assistant', content: result.reply },
+        ]);
+      } else {
+        // Fallback for unauthenticated users
+        await new Promise((r) => setTimeout(r, 1000));
+        setLocalMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: "Pour accéder à l'assistante IA personnalisée, connecte-toi à ton compte. Je suis là pour toi ! 🌸",
+          },
+        ]);
+      }
+    } catch {
+      setLocalMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: "Je suis momentanément indisponible. Prends une grande inspiration — tu n'es pas seule. 🌸",
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   }
+
+  function confirmClear() {
+    Alert.alert(
+      'Effacer la conversation',
+      'Es-tu sûre de vouloir effacer tout l\'historique ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Effacer',
+          style: 'destructive',
+          onPress: () => {
+            if (isAuthenticated) {
+              clearMutation.mutate();
+            } else {
+              setLocalMessages([]);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  const showQuickPrompts = localMessages.length <= 1;
 
   return (
     <ScreenContainer edges={['top', 'left', 'right']}>
@@ -114,17 +176,32 @@ export default function ChatScreen() {
           <View style={styles.headerCenter}>
             <Text style={[styles.headerTitle, { color: colors.foreground }]}>Soutien bien-être</Text>
             <View style={styles.onlineIndicator}>
-              <View style={[styles.onlineDot, { backgroundColor: colors.success }]} />
-              <Text style={[styles.onlineText, { color: colors.muted }]}>Disponible</Text>
+              <View style={[styles.onlineDot, { backgroundColor: isAuthenticated ? colors.success : colors.warning }]} />
+              <Text style={[styles.onlineText, { color: colors.muted }]}>
+                {isAuthenticated ? 'IA connectée' : 'Mode hors ligne'}
+              </Text>
             </View>
           </View>
-          <View style={{ width: 24 }} />
+          <Pressable
+            style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+            onPress={confirmClear}
+          >
+            <IconSymbol name="trash" size={20} color={colors.muted} />
+          </Pressable>
         </View>
+
+        {/* Loading state */}
+        {historyLoading && (
+          <View style={styles.loadingRow}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.muted }]}>Chargement de l'historique...</Text>
+          </View>
+        )}
 
         {/* Messages */}
         <FlatList
           ref={flatListRef}
-          data={messages}
+          data={localMessages}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ChatBubble message={item} colors={colors} />}
           contentContainerStyle={styles.messagesList}
@@ -144,7 +221,7 @@ export default function ChatScreen() {
         />
 
         {/* Quick prompts */}
-        {messages.length <= 1 && (
+        {showQuickPrompts && (
           <View style={styles.quickPrompts}>
             <FlatList
               horizontal
@@ -174,7 +251,7 @@ export default function ChatScreen() {
               styles.textInput,
               { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground },
             ]}
-            placeholder="Exprimez-vous librement..."
+            placeholder="Exprime-toi librement..."
             placeholderTextColor={colors.muted}
             value={input}
             onChangeText={setInput}
@@ -187,14 +264,17 @@ export default function ChatScreen() {
             style={({ pressed }) => [
               styles.sendButton,
               {
-                backgroundColor: input.trim() ? colors.primary : colors.border,
+                backgroundColor: input.trim() && !isTyping ? colors.primary : colors.border,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
             onPress={() => sendMessage(input)}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isTyping}
           >
-            <IconSymbol name="paperplane.fill" size={18} color="#FFFFFF" />
+            {isTyping
+              ? <ActivityIndicator size="small" color="#FFFFFF" />
+              : <IconSymbol name="paperplane.fill" size={18} color="#FFFFFF" />
+            }
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -210,108 +290,32 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 0.5,
   },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  onlineIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  onlineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  onlineText: {
-    fontSize: 11,
-  },
-  messagesList: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  bubbleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
-    marginBottom: 8,
-  },
-  bubbleRowUser: {
-    justifyContent: 'flex-end',
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarEmoji: {
-    fontSize: 16,
-  },
-  bubble: {
-    maxWidth: '78%',
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  bubbleText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  typingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
-    marginTop: 4,
-  },
-  typingDots: {
-    fontSize: 14,
-    letterSpacing: 2,
-  },
-  quickPrompts: {
-    paddingVertical: 10,
-  },
-  quickPrompt: {
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1.5,
-  },
-  quickPromptText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
+  headerCenter: { flex: 1, alignItems: 'center' },
+  headerTitle: { fontSize: 16, fontWeight: '700' },
+  onlineIndicator: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  onlineDot: { width: 6, height: 6, borderRadius: 3 },
+  onlineText: { fontSize: 11 },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 8 },
+  loadingText: { fontSize: 13 },
+  messagesList: { paddingHorizontal: 16, paddingVertical: 16, gap: 12 },
+  bubbleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginBottom: 8 },
+  bubbleRowUser: { justifyContent: 'flex-end' },
+  avatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  avatarEmoji: { fontSize: 16 },
+  bubble: { maxWidth: '78%', borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10 },
+  bubbleText: { fontSize: 14, lineHeight: 20 },
+  typingIndicator: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginTop: 4 },
+  typingDots: { fontSize: 14, letterSpacing: 2 },
+  quickPrompts: { paddingVertical: 10 },
+  quickPrompt: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1.5 },
+  quickPromptText: { fontSize: 13, fontWeight: '500' },
   inputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderTopWidth: 0.5,
-    gap: 10,
-    paddingBottom: 20,
+    flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16,
+    paddingVertical: 10, borderTopWidth: 0.5, gap: 10, paddingBottom: 20,
   },
   textInput: {
-    flex: 1,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
-    maxHeight: 100,
+    flex: 1, borderRadius: 20, borderWidth: 1.5,
+    paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, maxHeight: 100,
   },
-  sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  sendButton: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
 });

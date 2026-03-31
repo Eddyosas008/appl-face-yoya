@@ -1,6 +1,20 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import {
+  InsertUser,
+  users,
+  userProfiles,
+  checkIns,
+  journalEntries,
+  sessionHistory,
+  favorites,
+  chatMessages,
+  type InsertUserProfile,
+  type InsertCheckIn,
+  type InsertJournalEntry,
+  type InsertSessionHistory,
+  type InsertChatMessage,
+} from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +103,191 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ─── User Profiles ────────────────────────────────────────────────────────────────
+
+export async function getUserProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function upsertUserProfile(data: InsertUserProfile) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateSet: Partial<InsertUserProfile> = { ...data };
+  delete (updateSet as Record<string, unknown>).userId;
+  await db.insert(userProfiles).values(data).onDuplicateKeyUpdate({ set: updateSet });
+}
+
+export async function updateUserProfile(userId: number, data: Partial<InsertUserProfile>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(userProfiles).set({ ...data, updatedAt: new Date() }).where(eq(userProfiles.userId, userId));
+}
+
+export async function incrementSessionStats(userId: number, durationMinutes: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const profile = await getUserProfile(userId);
+  if (!profile) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const lastSession = profile.lastSessionDate ? new Date(profile.lastSessionDate) : null;
+  const lastSessionDay = lastSession ? new Date(lastSession.setHours(0, 0, 0, 0)) : null;
+
+  let newStreak = profile.currentStreak;
+  if (!lastSessionDay) {
+    newStreak = 1;
+  } else {
+    const diffDays = Math.round((today.getTime() - lastSessionDay.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) {
+      // same day, streak unchanged
+    } else if (diffDays === 1) {
+      newStreak = profile.currentStreak + 1;
+    } else {
+      newStreak = 1;
+    }
+  }
+
+  await db.update(userProfiles).set({
+    totalSessions: profile.totalSessions + 1,
+    totalMinutes: profile.totalMinutes + durationMinutes,
+    currentStreak: newStreak,
+    longestStreak: Math.max(profile.longestStreak, newStreak),
+    lastSessionDate: new Date(),
+    updatedAt: new Date(),
+  }).where(eq(userProfiles.userId, userId));
+}
+
+// ─── Check-Ins ─────────────────────────────────────────────────────────────────────
+
+export async function getCheckIns(userId: number, limit = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(checkIns)
+    .where(eq(checkIns.userId, userId))
+    .orderBy(desc(checkIns.createdAt))
+    .limit(limit);
+}
+
+export async function createCheckIn(data: InsertCheckIn) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(checkIns).values(data);
+  return result[0].insertId;
+}
+
+// ─── Journal Entries ──────────────────────────────────────────────────────────
+
+export async function getJournalEntries(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(journalEntries)
+    .where(eq(journalEntries.userId, userId))
+    .orderBy(desc(journalEntries.createdAt))
+    .limit(limit);
+}
+
+export async function createJournalEntry(data: InsertJournalEntry) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(journalEntries).values(data);
+  return result[0].insertId;
+}
+
+export async function updateJournalEntry(id: number, userId: number, data: Partial<InsertJournalEntry>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(journalEntries)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(journalEntries.id, id), eq(journalEntries.userId, userId)));
+}
+
+export async function deleteJournalEntry(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(journalEntries)
+    .where(and(eq(journalEntries.id, id), eq(journalEntries.userId, userId)));
+}
+
+// ─── Session History ──────────────────────────────────────────────────────────
+
+export async function getSessionHistory(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(sessionHistory)
+    .where(eq(sessionHistory.userId, userId))
+    .orderBy(desc(sessionHistory.completedAt))
+    .limit(limit);
+}
+
+export async function createSession(data: InsertSessionHistory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(sessionHistory).values(data);
+  await incrementSessionStats(data.userId, data.duration);
+  return result[0].insertId;
+}
+
+export async function getSessionStats(userId: number) {
+  const db = await getDb();
+  if (!db) return { totalSessions: 0, totalMinutes: 0, currentStreak: 0, longestStreak: 0 };
+  const profile = await getUserProfile(userId);
+  return {
+    totalSessions: profile?.totalSessions ?? 0,
+    totalMinutes: profile?.totalMinutes ?? 0,
+    currentStreak: profile?.currentStreak ?? 0,
+    longestStreak: profile?.longestStreak ?? 0,
+  };
+}
+
+// ─── Favorites ──────────────────────────────────────────────────────────────────
+
+export async function getFavorites(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(favorites).where(eq(favorites.userId, userId));
+  return rows.map((r) => r.meditationId);
+}
+
+export async function toggleFavorite(userId: number, meditationId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await db.select().from(favorites)
+    .where(and(eq(favorites.userId, userId), eq(favorites.meditationId, meditationId)))
+    .limit(1);
+  if (existing.length > 0) {
+    await db.delete(favorites)
+      .where(and(eq(favorites.userId, userId), eq(favorites.meditationId, meditationId)));
+    return false;
+  } else {
+    await db.insert(favorites).values({ userId, meditationId });
+    return true;
+  }
+}
+
+// ─── Chat Messages ──────────────────────────────────────────────────────────────
+
+export async function getChatMessages(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(chatMessages)
+    .where(eq(chatMessages.userId, userId))
+    .orderBy(desc(chatMessages.createdAt))
+    .limit(limit);
+}
+
+export async function saveChatMessage(data: InsertChatMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(chatMessages).values(data);
+  return result[0].insertId;
+}
+
+export async function clearChatHistory(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(chatMessages).where(eq(chatMessages.userId, userId));
+}

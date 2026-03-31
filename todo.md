@@ -71,3 +71,17 @@
 - [x] Intégration dans les paramètres du profil (remplacement du Switch basique)
 - [x] Gestion des réponses aux notifications (deep link vers l'app)
 - [x] Persistance des préférences de notifications dans AsyncStorage
+
+## Phase 12 : Backend complet + connexion frontend
+- [x] Schéma DB : tables userProfiles, checkIns, journalEntries, sessionHistory, chatMessages
+- [x] Migration DB (pnpm db:push)
+- [x] API tRPC : profil utilisateur (get, update, isPremium)
+- [x] API tRPC : check-ins émotionnels (list, create)
+- [x] API tRPC : journal (list, create, update, delete)
+- [x] API tRPC : sessions de méditation (list, create, stats)
+- [x] API tRPC : favoris (list, toggle)
+- [x] API tRPC : chat IA avec LLM intégré (send message, history)
+- [x] Connexion frontend : user-context utilise tRPC au lieu d'AsyncStorage
+- [x] Authentification Manus OAuth réelle dans les écrans auth
+- [x] Gestion des états loading/error dans tous les écrans connectés
+- [x] Synchronisation multi-appareils fonctionnelle

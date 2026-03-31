@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, Pressable, ScrollView, TextInput } from 'react-
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useUser } from '@/lib/user-context';
 import { MOOD_EMOJIS, MOOD_LABELS, ADAPTIVE_JOURNEYS } from '@/lib/mock-data';
 import type { MoodState } from '@/shared/wellness-types';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/hooks/use-auth';
 
 const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'tired', 'anxious', 'sad', 'overwhelmed'];
 
@@ -48,32 +49,38 @@ function ScaleSelector({
   );
 }
 
+// Map MoodState to DB mood enum
+type DbMood = 'anxious' | 'sad' | 'neutral' | 'calm' | 'happy' | 'energetic' | 'grateful';
+const MOOD_MAP: Partial<Record<MoodState, DbMood>> = {
+  calm: 'calm', happy: 'happy', grateful: 'grateful', neutral: 'neutral',
+  anxious: 'anxious', sad: 'sad', tired: 'neutral', overwhelmed: 'anxious',
+};
+
 export default function CheckInScreen() {
   const colors = useColors();
-  const { addCheckIn } = useUser();
+  const { isAuthenticated } = useAuth();
   const [mood, setMood] = useState<MoodState | null>(null);
   const [stress, setStress] = useState(3);
   const [energy, setEnergy] = useState(3);
   const [sleep, setSleep] = useState(3);
   const [note, setNote] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isDone, setIsDone] = useState(false);
+
+  const createCheckIn = trpc.checkIns.create.useMutation();
 
   async function handleSubmit() {
     if (!mood) return;
-    setIsLoading(true);
-    try {
-      await addCheckIn({
-        mood,
-        stressLevel: stress as 1 | 2 | 3 | 4 | 5,
-        energyLevel: energy as 1 | 2 | 3 | 4 | 5,
-        sleepQuality: sleep as 1 | 2 | 3 | 4 | 5,
+    const dbMood = MOOD_MAP[mood] ?? 'neutral';
+    const intensity = Math.round((stress + energy) / 2);
+    if (isAuthenticated) {
+      await createCheckIn.mutateAsync({
+        mood: dbMood,
+        intensity: intensity * 2, // scale 1-5 to 1-10
         note: note.trim() || undefined,
+        triggers: JSON.stringify({ stress, energy, sleep }),
       });
-      setIsDone(true);
-    } finally {
-      setIsLoading(false);
     }
+    setIsDone(true);
   }
 
   // Recommend a journey based on mood
@@ -222,14 +229,14 @@ export default function CheckInScreen() {
             styles.submitButton,
             {
               backgroundColor: mood ? colors.primary : colors.border,
-              opacity: pressed || isLoading ? 0.8 : 1,
+              opacity: pressed || createCheckIn.isPending ? 0.8 : 1,
             },
           ]}
           onPress={handleSubmit}
-          disabled={!mood || isLoading}
+          disabled={!mood || createCheckIn.isPending}
         >
           <Text style={styles.submitButtonText}>
-            {isLoading ? 'Enregistrement...' : 'Enregistrer mon check-in'}
+            {createCheckIn.isPending ? 'Enregistrement...' : 'Enregistrer mon check-in'}
           </Text>
         </Pressable>
 

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList, TextInput, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList, TextInput, Modal, ScrollView, ActivityIndicator } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useUser } from '@/lib/user-context';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import type { JournalEntry, MoodState } from '@/shared/wellness-types';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/hooks/use-auth';
+import type { MoodState } from '@/shared/wellness-types';
 
-const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'tired', 'anxious', 'sad', 'overwhelmed'];
+const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'anxious', 'sad'];
 
 const PROMPTS = [
   "Qu'est-ce qui vous a rendue heureuse aujourd'hui ?",
@@ -18,32 +19,42 @@ const PROMPTS = [
   "Quelle pensée revenait souvent dans votre esprit ?",
 ];
 
+// Map MoodState to DB mood enum
+type DbMood = 'anxious' | 'sad' | 'neutral' | 'calm' | 'happy' | 'energetic' | 'grateful';
+const MOOD_MAP: Partial<Record<MoodState, DbMood>> = {
+  calm: 'calm', happy: 'happy', grateful: 'grateful',
+  neutral: 'neutral', anxious: 'anxious', sad: 'sad',
+};
+
 export default function JournalScreen() {
   const colors = useColors();
-  const { journalEntries, addJournalEntry } = useUser();
+  const { isAuthenticated } = useAuth();
   const [isWriting, setIsWriting] = useState(false);
   const [mood, setMood] = useState<MoodState | null>(null);
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const prompt = PROMPTS[new Date().getDate() % PROMPTS.length];
+
+  // Backend queries
+  const { data: entries = [], isLoading: listLoading, refetch } = trpc.journal.list.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+  const createMutation = trpc.journal.create.useMutation({ onSuccess: () => refetch() });
+  const deleteMutation = trpc.journal.delete.useMutation({ onSuccess: () => refetch() });
 
   async function handleSave() {
     if (!content.trim() || !mood) return;
-    setIsLoading(true);
-    try {
-      await addJournalEntry({
-        title: title.trim() || `Journal du ${new Date().toLocaleDateString('fr-FR')}`,
-        content: content.trim(),
-        mood,
-      });
-      setIsWriting(false);
-      setContent('');
-      setTitle('');
-      setMood(null);
-    } finally {
-      setIsLoading(false);
-    }
+    const dbMood = MOOD_MAP[mood];
+    await createMutation.mutateAsync({
+      title: title.trim() || `Journal du ${new Date().toLocaleDateString('fr-FR')}`,
+      content: content.trim(),
+      mood: dbMood,
+    });
+    setIsWriting(false);
+    setContent('');
+    setTitle('');
+    setMood(null);
   }
 
   function formatDate(date: Date) {
@@ -52,9 +63,14 @@ export default function JournalScreen() {
 
   return (
     <ScreenContainer>
+      {listLoading && (
+        <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      )}
       <FlatList
-        data={journalEntries}
-        keyExtractor={(item) => item.id}
+        data={entries}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
@@ -62,7 +78,7 @@ export default function JournalScreen() {
             <View style={styles.header}>
               <Text style={[styles.title, { color: colors.foreground }]}>Mon journal</Text>
               <Text style={[styles.subtitle, { color: colors.muted }]}>
-                {journalEntries.length} entrée{journalEntries.length !== 1 ? 's' : ''}
+                {entries.length} entrée{entries.length !== 1 ? 's' : ''}
               </Text>
             </View>
             <View style={[styles.promptCard, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}30` }]}>
@@ -93,7 +109,7 @@ export default function JournalScreen() {
               <Text style={styles.entryMoodEmoji}>{item.mood ? MOOD_EMOJIS[item.mood] : "📝"}</Text>
               <View style={styles.entryMeta}>
                 <Text style={[styles.entryTitle, { color: colors.foreground }]}>{item.title}</Text>
-                <Text style={[styles.entryDate, { color: colors.muted }]}>{formatDate(item.createdAt)}</Text>
+                <Text style={[styles.entryDate, { color: colors.muted }]}>{formatDate(new Date(item.createdAt))}</Text>
               </View>
             </View>
             <Text style={[styles.entryContent, { color: colors.muted }]} numberOfLines={3}>
@@ -111,9 +127,9 @@ export default function JournalScreen() {
               <Text style={[styles.modalCancel, { color: colors.muted }]}>Annuler</Text>
             </Pressable>
             <Text style={[styles.modalTitle, { color: colors.foreground }]}>Nouvelle entrée</Text>
-            <Pressable onPress={handleSave} disabled={!content.trim() || !mood || isLoading}>
+            <Pressable onPress={handleSave} disabled={!content.trim() || !mood || createMutation.isPending}>
               <Text style={[styles.modalSave, { color: mood && content.trim() ? colors.primary : colors.muted }]}>
-                {isLoading ? '...' : 'Sauver'}
+                {createMutation.isPending ? '...' : 'Sauver'}
               </Text>
             </Pressable>
           </View>
