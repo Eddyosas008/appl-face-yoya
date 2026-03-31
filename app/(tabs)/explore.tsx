@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ScrollView as HScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, StyleSheet, Pressable, FlatList, Image, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
@@ -49,6 +51,40 @@ export default function ExploreScreen() {
                 {MEDITATIONS.length} méditations guidées
               </Text>
             </View>
+            {/* Feature shortcuts */}
+            <HScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16, marginHorizontal: -4 }} contentContainerStyle={{ paddingHorizontal: 4, gap: 10 }}>
+              <Pressable
+                style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => router.push('/ambient' as never)}
+              >
+                <LinearGradient colors={['#0C4A6E', '#0EA5E9']} style={styles.featureCard}>
+                  <Text style={styles.featureEmoji}>🌊</Text>
+                  <Text style={styles.featureName}>Sons d'ambiance</Text>
+                  <Text style={styles.featureSub}>Pluie, forêt, océan...</Text>
+                </LinearGradient>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => router.push('/breathing' as never)}
+              >
+                <LinearGradient colors={['#4F46E5', '#7C3AED']} style={styles.featureCard}>
+                  <Text style={styles.featureEmoji}>🫁</Text>
+                  <Text style={styles.featureName}>Respiration</Text>
+                  <Text style={styles.featureSub}>5 techniques guidées</Text>
+                </LinearGradient>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => router.push('/progress' as never)}
+              >
+                <LinearGradient colors={['#065F46', '#059669']} style={styles.featureCard}>
+                  <Text style={styles.featureEmoji}>📊</Text>
+                  <Text style={styles.featureName}>Progression</Text>
+                  <Text style={styles.featureSub}>Votre parcours</Text>
+                </LinearGradient>
+              </Pressable>
+            </HScrollView>
+
             <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <IconSymbol name="magnifyingglass" size={18} color={colors.muted} />
               <TextInput
@@ -143,4 +179,8 @@ const styles = StyleSheet.create({
   cardCategory: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
   cardTitle: { fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 4 },
   cardDuration: { fontSize: 11 },
+  featureCard: { borderRadius: 16, padding: 14, width: 140, height: 90, justifyContent: 'flex-end' },
+  featureEmoji: { fontSize: 22, marginBottom: 4 },
+  featureName: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  featureSub: { color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 },
 });

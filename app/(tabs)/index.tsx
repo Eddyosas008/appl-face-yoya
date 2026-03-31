@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Image } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/screen-container';
@@ -20,6 +21,18 @@ export default function HomeScreen() {
   const colors = useColors();
   const { profile, checkIns, sessionHistory, favorites } = useUser();
 
+  // Fade-in animation on mount
+  const fadeAnim = useSharedValue(0);
+  const slideAnim = useSharedValue(20);
+  useEffect(() => {
+    fadeAnim.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.ease) });
+    slideAnim.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.ease) });
+  }, []);
+  const animStyle = useAnimatedStyle(() => ({
+    opacity: fadeAnim.value,
+    transform: [{ translateY: slideAnim.value }],
+  }));
+
   const lastCheckIn = checkIns[0];
   const featuredMeditation = MEDITATIONS.find((m) => !m.isPremium) || MEDITATIONS[0];
   const featuredJourney = ADAPTIVE_JOURNEYS[0];
@@ -32,6 +45,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
+        <Animated.View style={animStyle}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -199,6 +213,41 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Actions rapides</Text>
+          <View style={styles.quickActions}>
+            <Pressable
+              style={({ pressed }) => [styles.quickBtn, { backgroundColor: `#7C3AED20`, opacity: pressed ? 0.8 : 1 }]}
+              onPress={() => router.push('/breathing' as never)}
+            >
+              <Text style={styles.quickEmoji}>🫁</Text>
+              <Text style={[styles.quickLabel, { color: colors.foreground }]}>Respiration</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.quickBtn, { backgroundColor: `#10B98120`, opacity: pressed ? 0.8 : 1 }]}
+              onPress={() => router.push('/progress' as never)}
+            >
+              <Text style={styles.quickEmoji}>📊</Text>
+              <Text style={[styles.quickLabel, { color: colors.foreground }]}>Progression</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.quickBtn, { backgroundColor: `#F59E0B20`, opacity: pressed ? 0.8 : 1 }]}
+              onPress={() => router.push('/(tabs)/journal' as never)}
+            >
+              <Text style={styles.quickEmoji}>📖</Text>
+              <Text style={[styles.quickLabel, { color: colors.foreground }]}>Journal</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.quickBtn, { backgroundColor: `#EC489920`, opacity: pressed ? 0.8 : 1 }]}
+              onPress={() => router.push('/chat' as never)}
+            >
+              <Text style={styles.quickEmoji}>💬</Text>
+              <Text style={[styles.quickLabel, { color: colors.foreground }]}>Chat IA</Text>
+            </Pressable>
+          </View>
+        </View>
+
         {/* Chat IA CTA */}
         <Pressable
           style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
@@ -221,6 +270,7 @@ export default function HomeScreen() {
         </Pressable>
 
         <View style={{ height: 24 }} />
+        </Animated.View>
       </ScrollView>
     </ScreenContainer>
   );
@@ -447,5 +497,25 @@ const styles = StyleSheet.create({
   },
   chatCtaSubtitle: {
     fontSize: 12,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 12,
+  },
+  quickBtn: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 14,
+    alignItems: 'center',
+    gap: 6,
+  },
+  quickEmoji: {
+    fontSize: 24,
+  },
+  quickLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

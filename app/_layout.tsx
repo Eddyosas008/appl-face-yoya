@@ -96,6 +96,9 @@ export default function RootLayout() {
             <Stack.Screen name="journey/[id]" />
             <Stack.Screen name="checkin" options={{ presentation: "modal" }} />
             <Stack.Screen name="chat" />
+            <Stack.Screen name="breathing" />
+            <Stack.Screen name="ambient" />
+            <Stack.Screen name="progress" />
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <StatusBar style="auto" />

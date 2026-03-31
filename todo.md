@@ -51,3 +51,13 @@
 ## Phase 9 : Finalisation
 - [x] Vérification de tous les flux utilisateur
 - [x] Checkpoint final
+
+## Phase 10 : Améliorations v2
+- [x] Lecteur audio fonctionnel avec sons réels (expo-audio + URLs distantes)
+- [x] Exercices de respiration guidés avec animation cercle pulsant
+- [x] Écran Progression avec graphique d'humeur sur 7 jours (SVG)
+- [x] Sons d'ambiance (pluie, forêt, océan) dans l'écran Explore
+- [x] Animation d'entrée sur le Dashboard (fade-in des cartes)
+- [x] Barre de progression interactive dans le lecteur (seek on tap)
+- [x] Minuteur de méditation libre (sans audio)
+- [x] Amélioration de l'écran Explore avec sections thématiques

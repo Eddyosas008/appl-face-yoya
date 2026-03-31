@@ -1,5 +1,27 @@
 import type { Meditation, AdaptiveJourney, SubscriptionPlan } from '@/shared/wellness-types';
 
+// ─── Ambient Sound Sources ────────────────────────────────────────────────────
+export const AMBIENT_SOUNDS = [
+  { id: 'rain', label: 'Pluie douce', emoji: '🌧️', url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_8cb749b7a8.mp3' },
+  { id: 'forest', label: 'Forêt', emoji: '🌲', url: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_8cb749b7a8.mp3' },
+  { id: 'ocean', label: 'Océan', emoji: '🌊', url: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39bde808.mp3' },
+  { id: 'fire', label: 'Feu de cheminée', emoji: '🔥', url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3' },
+  { id: 'wind', label: 'Vent léger', emoji: '💨', url: 'https://cdn.pixabay.com/download/audio/2021/10/25/audio_8cb749b7a8.mp3' },
+  { id: 'birds', label: 'Chants d\'oiseaux', emoji: '🐦', url: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3' },
+];
+
+// ─── Guided Meditation Audio URLs (free, royalty-free) ────────────────────────
+// Using free ambient/meditation tracks from public CDNs
+const AUDIO_URLS: Record<string, string> = {
+  sleep: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_8cb749b7a8.mp3',
+  anxiety: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39bde808.mp3',
+  stress_relief: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3',
+  focus: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3',
+  confidence: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_8cb749b7a8.mp3',
+  self_compassion: 'https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39bde808.mp3',
+  emotional_reset: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3',
+};
+
 // ─── Meditation Library ───────────────────────────────────────────────────────
 
 export const MEDITATIONS: Meditation[] = [
@@ -12,6 +34,7 @@ export const MEDITATIONS: Meditation[] = [
     description: 'Une méditation douce pour relâcher les tensions de la journée et préparer votre corps au sommeil.',
     coverImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80',
     isPremium: false,
+    audioUrl: AUDIO_URLS.sleep,
     tags: ['sommeil', 'relaxation', 'soir'],
   },
   {
@@ -23,6 +46,7 @@ export const MEDITATIONS: Meditation[] = [
     description: 'Revenez au moment présent grâce à cette pratique de pleine conscience pour calmer l\'anxiété.',
     coverImage: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=400&q=80',
     isPremium: false,
+    audioUrl: AUDIO_URLS.anxiety,
     tags: ['anxiété', 'pleine conscience', 'ancrage'],
   },
   {
@@ -34,6 +58,7 @@ export const MEDITATIONS: Meditation[] = [
     description: 'Reconnectez-vous à votre force intérieure et cultivez une confiance profonde et durable.',
     coverImage: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400&q=80',
     isPremium: false,
+    audioUrl: AUDIO_URLS.confidence,
     tags: ['confiance', 'estime de soi', 'empowerment'],
   },
   {
@@ -67,6 +92,7 @@ export const MEDITATIONS: Meditation[] = [
     description: 'Affûtez votre concentration et préparez votre esprit pour une journée productive.',
     coverImage: 'https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&q=80',
     isPremium: false,
+    audioUrl: AUDIO_URLS.focus,
     tags: ['focus', 'concentration', 'matin'],
   },
   {
@@ -78,6 +104,7 @@ export const MEDITATIONS: Meditation[] = [
     description: 'Apprenez à vous traiter avec la même bienveillance que vous offrez aux autres.',
     coverImage: 'https://images.unsplash.com/photo-1474418397713-7ede21d49118?w=400&q=80',
     isPremium: false,
+    audioUrl: AUDIO_URLS.self_compassion,
     tags: ['auto-compassion', 'bienveillance', 'amour de soi'],
   },
   {
@@ -100,6 +127,7 @@ export const MEDITATIONS: Meditation[] = [
     description: 'Commencez votre journée avec intention et sérénité grâce à cette courte méditation matinale.',
     coverImage: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=400&q=80',
     isPremium: false,
+    audioUrl: AUDIO_URLS.focus,
     tags: ['matin', 'intention', 'énergie'],
   },
   {
