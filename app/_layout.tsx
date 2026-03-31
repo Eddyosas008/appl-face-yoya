@@ -45,14 +45,18 @@ export default function RootLayout() {
     initManusRuntime();
   }, []);
 
-  // Handle notification deep links
+  // Handle notification deep links (native only — not available on web)
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+
     // Handle notification that opened the app
-    const lastResponse = Notifications.getLastNotificationResponse();
-    if (lastResponse?.notification?.request?.content?.data?.url) {
-      const url = lastResponse.notification.request.content.data.url as string;
-      router.push(url as never);
-    }
+    try {
+      const lastResponse = Notifications.getLastNotificationResponse();
+      if (lastResponse?.notification?.request?.content?.data?.url) {
+        const url = lastResponse.notification.request.content.data.url as string;
+        router.push(url as never);
+      }
+    } catch (_) {}
 
     // Listen for notification interactions while app is running
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
