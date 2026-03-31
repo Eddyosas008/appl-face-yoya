@@ -32,7 +32,7 @@ const env = {
   appSlug: "yoya-wellness",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "",
+  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/yoya-icon-nBa2zd82ReHr5nCREyk4rY.png",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
