@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useUser } from '@/lib/user-context';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
+import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
 
 const PREMIUM_FEATURES = [
   { icon: '🧘‍♀️', text: 'Accès illimité aux 50+ méditations' },
@@ -26,8 +28,12 @@ export default function ProfileScreen() {
   const colors = useColors();
   const { profile, checkIns, logout } = useUser();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showPremium, setShowPremium] = useState(false);
+  const [notifSettings, setNotifSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+
+  useEffect(() => {
+    loadNotificationSettings().then(setNotifSettings);
+  }, []);
 
   const recentMoods = checkIns.slice(0, 7);
   const moodCounts = recentMoods.reduce((acc: Record<string, number>, ci) => {
@@ -139,11 +145,28 @@ export default function ProfileScreen() {
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Paramètres</Text>
         <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
-          <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+          <Pressable
+            style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+            onPress={() => router.push('/notifications-settings' as never)}
+          >
             <Text style={styles.settingIcon}>🔔</Text>
-            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Notifications</Text>
-            <Switch value={notificationsEnabled} onValueChange={setNotificationsEnabled} trackColor={{ false: colors.border, true: colors.primary }} thumbColor="#FFFFFF" />
-          </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Rappels quotidiens</Text>
+              {notifSettings.enabled ? (
+                <Text style={[styles.settingSubValue, { color: colors.primary }]}>
+                  Activé · {formatTime(notifSettings.hour, notifSettings.minute)}
+                </Text>
+              ) : (
+                <Text style={[styles.settingSubValue, { color: colors.muted }]}>Désactivé</Text>
+              )}
+            </View>
+            <View style={styles.settingRight}>
+              {notifSettings.enabled && (
+                <View style={[styles.notifActiveDot, { backgroundColor: colors.success }]} />
+              )}
+              <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+            </View>
+          </Pressable>
           <Pressable style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}>
             <Text style={styles.settingIcon}>🎯</Text>
             <Text style={[styles.settingLabel, { color: colors.foreground }]}>Objectif quotidien</Text>
@@ -220,9 +243,11 @@ const styles = StyleSheet.create({
   settingsGroup: { borderRadius: 16, marginBottom: 20, overflow: 'hidden' },
   settingRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 0.5 },
   settingIcon: { fontSize: 20, width: 28 },
-  settingLabel: { flex: 1, fontSize: 15 },
+  settingLabel: { fontSize: 15 },
   settingRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   settingValue: { fontSize: 13 },
+  settingSubValue: { fontSize: 12, marginTop: 1 },
+  notifActiveDot: { width: 8, height: 8, borderRadius: 4, marginRight: 4 },
   premiumCta: { borderRadius: 999, paddingVertical: 15, alignItems: 'center', marginBottom: 12 },
   premiumCtaText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   logoutButton: { borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, marginBottom: 16 },

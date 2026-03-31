@@ -61,3 +61,13 @@
 - [x] Barre de progression interactive dans le lecteur (seek on tap)
 - [x] Minuteur de méditation libre (sans audio)
 - [x] Amélioration de l'écran Explore avec sections thématiques
+
+## Phase 11 : Notifications de rappel quotidien
+- [x] Créer le service de notifications (lib/notification-service.ts)
+- [x] Demande de permission au démarrage de l'app
+- [x] Planification de rappels quotidiens récurrents (heure personnalisable)
+- [x] Messages de rappel variés et motivants (10+ messages)
+- [x] Écran dédié de configuration des notifications
+- [x] Intégration dans les paramètres du profil (remplacement du Switch basique)
+- [x] Gestion des réponses aux notifications (deep link vers l'app)
+- [x] Persistance des préférences de notifications dans AsyncStorage

@@ -19,6 +19,12 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { UserProvider } from "@/lib/user-context";
+import { setupNotificationHandler } from "@/lib/notification-service";
+import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
+
+// Initialize notification handler at module level (required by expo-notifications)
+setupNotificationHandler();
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -37,6 +43,26 @@ export default function RootLayout() {
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
     initManusRuntime();
+  }, []);
+
+  // Handle notification deep links
+  useEffect(() => {
+    // Handle notification that opened the app
+    const lastResponse = Notifications.getLastNotificationResponse();
+    if (lastResponse?.notification?.request?.content?.data?.url) {
+      const url = lastResponse.notification.request.content.data.url as string;
+      router.push(url as never);
+    }
+
+    // Listen for notification interactions while app is running
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const url = response.notification.request.content.data?.url;
+      if (typeof url === 'string') {
+        router.push(url as never);
+      }
+    });
+
+    return () => subscription.remove();
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
@@ -99,6 +125,7 @@ export default function RootLayout() {
             <Stack.Screen name="breathing" />
             <Stack.Screen name="ambient" />
             <Stack.Screen name="progress" />
+            <Stack.Screen name="notifications-settings" />
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <StatusBar style="auto" />
