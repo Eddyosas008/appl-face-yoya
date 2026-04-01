@@ -190,3 +190,71 @@ export const meditationRatings = mysqlTable("meditationRatings", {
 
 export type MeditationRating = typeof meditationRatings.$inferSelect;
 export type InsertMeditationRating = typeof meditationRatings.$inferInsert;
+
+// ─── Sleep Programs ───────────────────────────────────────────────────────────
+
+export const sleepPrograms = mysqlTable("sleepPrograms", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  subtitle: varchar("subtitle", { length: 255 }),
+  description: text("description"),
+  emoji: varchar("emoji", { length: 10 }).default("🌙"),
+  durationDays: int("durationDays").notNull(),                    // 2, 7, 21, 30
+  targetIssue: varchar("targetIssue", { length: 100 }),           // insomnia, wakeup, stress, etc.
+  level: mysqlEnum("level", ["beginner", "intermediate", "advanced"]).default("beginner").notNull(),
+  isPremium: boolean("isPremium").default(false).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(),
+  coverColor: varchar("coverColor", { length: 20 }).default("#1E1B4B"),
+  coverColor2: varchar("coverColor2", { length: 20 }).default("#312E81"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  totalEnrollments: int("totalEnrollments").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SleepProgram = typeof sleepPrograms.$inferSelect;
+export type InsertSleepProgram = typeof sleepPrograms.$inferInsert;
+
+// ─── Program Days ─────────────────────────────────────────────────────────────
+
+export const programDays = mysqlTable("programDays", {
+  id: int("id").autoincrement().primaryKey(),
+  programSlug: varchar("programSlug", { length: 100 }).notNull(),
+  dayNumber: int("dayNumber").notNull(),                          // 1, 2, 3...
+  title: varchar("title", { length: 255 }).notNull(),
+  theme: varchar("theme", { length: 255 }),                       // ex: "Préparer le terrain"
+  description: text("description"),
+  // Contenu principal
+  meditationSlug: varchar("meditationSlug", { length: 100 }),     // FK vers meditations.slug
+  breathingExercise: varchar("breathingExercise", { length: 50 }), // ex: "4-7-8"
+  ambientSound: varchar("ambientSound", { length: 50 }),          // ex: "rain"
+  // Exercices et conseils
+  eveningRoutine: text("eveningRoutine"),                         // Routine du soir (texte)
+  sleepTip: text("sleepTip"),                                     // Conseil du jour
+  journalPrompt: text("journalPrompt"),                           // Question pour le journal
+  // Durée estimée
+  estimatedMinutes: int("estimatedMinutes").default(15).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProgramDay = typeof programDays.$inferSelect;
+export type InsertProgramDay = typeof programDays.$inferInsert;
+
+// ─── User Program Progress ────────────────────────────────────────────────────
+
+export const userProgramProgress = mysqlTable("userProgramProgress", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  programSlug: varchar("programSlug", { length: 100 }).notNull(),
+  currentDay: int("currentDay").default(1).notNull(),
+  completedDays: text("completedDays").notNull(),                  // JSON array of completed day numbers (ex: '[1,2,3]')
+  isCompleted: boolean("isCompleted").default(false).notNull(),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+  lastActivityAt: timestamp("lastActivityAt").defaultNow().notNull(),
+});
+
+export type UserProgramProgress = typeof userProgramProgress.$inferSelect;
+export type InsertUserProgramProgress = typeof userProgramProgress.$inferInsert;

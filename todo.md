@@ -94,3 +94,36 @@
 - [x] Afficher le prénom dans le chat IA (contexte personnalisé)
 - [x] Afficher le prénom dans le profil et les paramètres
 - [x] Permettre la modification du prénom depuis le profil
+
+## Phase 14 : Catalogue audio DB
+- [x] Tables DB : meditations + meditationCategories
+- [x] Migration DB
+- [x] Fonctions DB : getMeditations, getMeditationBySlug, getMeditationCategories, incrementPlayCount
+- [x] Routes tRPC : catalog.list, catalog.get, catalog.categories, catalog.played, catalog.upsert
+- [x] Script de seed : 8 catégories + 14 méditations avec scripts complets
+- [x] Bibliothèque explore.tsx connectée à la DB (filtres dynamiques depuis DB)
+- [x] Lecteur meditation/[id].tsx connecté à la DB via slug
+- [x] Affichage du script de méditation dans le lecteur
+- [x] Compteur de lectures incrémenté à chaque écoute
+
+## Phase 15 : Recentrage Sommeil + Page d'accueil enrichie + Programmes
+
+- [ ] Refonte complète de la page d'accueil orientée sommeil
+- [ ] Section hero avec heure du coucher, qualité de sommeil et météo nocturne
+- [ ] Widget "Ce soir" avec méditation du soir recommandée
+- [ ] Section problématiques du sommeil (insomnie, réveil nocturne, stress, etc.)
+- [ ] Section programmes structurés sur la page d'accueil
+- [ ] Conseils du soir et hygiène du sommeil
+- [ ] Citation inspirante nocturne
+- [ ] Statistiques de sommeil (heures dormies, qualité, streak)
+- [ ] Table DB : sleepPrograms (programmes structurés)
+- [ ] Table DB : programDays (jours d'un programme avec contenu)
+- [ ] Table DB : userProgramProgress (progression utilisateur)
+- [ ] Seed DB : Programme "Initiation au sommeil" (2 jours)
+- [ ] Seed DB : Programme "Retrouver le sommeil" (7 jours)
+- [ ] Seed DB : Programme "Transformation du sommeil" (21 jours)
+- [ ] Seed DB : Programme "Maître du sommeil" (30 jours)
+- [ ] Écran liste des programmes avec filtres et progression
+- [ ] Écran détail d'un programme (jours, contenu, progression)
+- [ ] Navigation vers les programmes depuis la page d'accueil
+- [ ] Mise à jour du thème couleurs vers bleu nuit / violet profond

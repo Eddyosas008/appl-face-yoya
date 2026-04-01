@@ -1,0 +1,1 @@
+ALTER TABLE `userProgramProgress` MODIFY COLUMN `completedDays` text NOT NULL;

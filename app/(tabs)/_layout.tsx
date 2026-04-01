@@ -50,8 +50,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="journeys"
         options={{
-          title: "Parcours",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="leaf.fill" color={color} />,
+          title: "Programmes",
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="moon.fill" color={color} />,
         }}
       />
       <Tabs.Screen

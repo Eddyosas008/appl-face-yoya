@@ -290,11 +290,107 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
         return { reply };
       }),
 
-    clear: protectedProcedure.mutation(async ({ ctx }) => {
+     clear: protectedProcedure.mutation(async ({ ctx }) => {
       await db.clearChatHistory(ctx.user.id);
       return { success: true };
     }),
   }),
-});
 
+  // ─── Sleep Programs ─────────────────────────────────────────────────────────────
+  programs: router({
+    // Liste tous les programmes actifs
+    list: publicProcedure
+      .input(z.object({ targetIssue: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        return db.getSleepPrograms(input ?? {});
+      }),
+
+    // Détail d'un programme + ses jours
+    get: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const program = await db.getSleepProgramBySlug(input.slug);
+        if (!program) throw new Error("Programme introuvable");
+        const days = await db.getProgramDays(input.slug);
+        return { ...program, days };
+      }),
+
+    // Détail d'un jour spécifique
+    getDay: publicProcedure
+      .input(z.object({ programSlug: z.string(), dayNumber: z.number() }))
+      .query(async ({ input }) => {
+        return db.getProgramDay(input.programSlug, input.dayNumber);
+      }),
+
+    // Progression de l'utilisateur sur un programme
+    progress: protectedProcedure
+      .input(z.object({ programSlug: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return db.getUserProgramProgress(ctx.user.id, input.programSlug);
+      }),
+
+    // Tous les programmes de l'utilisateur
+    myPrograms: protectedProcedure.query(async ({ ctx }) => {
+      return db.getAllUserPrograms(ctx.user.id);
+    }),
+
+    // Démarrer un programme
+    start: protectedProcedure
+      .input(z.object({ programSlug: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        return db.startProgram(ctx.user.id, input.programSlug);
+      }),
+
+    // Marquer un jour comme complété
+    completeDay: protectedProcedure
+      .input(z.object({ programSlug: z.string(), dayNumber: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.completeProgramDay(ctx.user.id, input.programSlug, input.dayNumber);
+        return { success: true };
+      }),
+
+    // Admin : créer/mettre à jour un programme
+    upsert: protectedProcedure
+      .input(z.object({
+        slug: z.string(),
+        title: z.string(),
+        subtitle: z.string().optional(),
+        description: z.string().optional(),
+        emoji: z.string().optional(),
+        durationDays: z.number(),
+        targetIssue: z.string().optional(),
+        level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+        isPremium: z.boolean().optional(),
+        isFeatured: z.boolean().optional(),
+        coverColor: z.string().optional(),
+        coverColor2: z.string().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.upsertSleepProgram(input as Parameters<typeof db.upsertSleepProgram>[0]);
+        return { success: true };
+      }),
+
+    // Admin : créer/mettre à jour un jour de programme
+    upsertDay: protectedProcedure
+      .input(z.object({
+        programSlug: z.string(),
+        dayNumber: z.number(),
+        title: z.string(),
+        theme: z.string().optional(),
+        description: z.string().optional(),
+        meditationSlug: z.string().optional(),
+        breathingExercise: z.string().optional(),
+        ambientSound: z.string().optional(),
+        eveningRoutine: z.string().optional(),
+        sleepTip: z.string().optional(),
+        journalPrompt: z.string().optional(),
+        estimatedMinutes: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.upsertProgramDay(input as Parameters<typeof db.upsertProgramDay>[0]);
+        return { success: true };
+      }),
+  }),
+});
 export type AppRouter = typeof appRouter;

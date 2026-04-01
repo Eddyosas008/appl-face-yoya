@@ -370,3 +370,118 @@ export async function upsertMeditationCategory(data: InsertMeditationCategory) {
   delete (updateSet as Record<string, unknown>).slug;
   await db.insert(meditationCategories).values(data).onDuplicateKeyUpdate({ set: updateSet });
 }
+
+// ─── Sleep Programs ───────────────────────────────────────────────────────────
+
+import {
+  sleepPrograms,
+  programDays,
+  userProgramProgress,
+  type InsertSleepProgram,
+  type InsertProgramDay,
+  type InsertUserProgramProgress,
+} from "../drizzle/schema";
+
+export async function getSleepPrograms(opts?: { targetIssue?: string }) {
+  const db = await getDb();
+  if (!db) return [];
+  let query = db.select().from(sleepPrograms).where(eq(sleepPrograms.isActive, true));
+  return query.orderBy(asc(sleepPrograms.sortOrder));
+}
+
+export async function getSleepProgramBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(sleepPrograms).where(eq(sleepPrograms.slug, slug)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getProgramDays(programSlug: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(programDays)
+    .where(eq(programDays.programSlug, programSlug))
+    .orderBy(asc(programDays.dayNumber));
+}
+
+export async function getProgramDay(programSlug: string, dayNumber: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(programDays)
+    .where(and(eq(programDays.programSlug, programSlug), eq(programDays.dayNumber, dayNumber)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getUserProgramProgress(userId: number, programSlug: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(userProgramProgress)
+    .where(and(eq(userProgramProgress.userId, userId), eq(userProgramProgress.programSlug, programSlug)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getAllUserPrograms(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userProgramProgress).where(eq(userProgramProgress.userId, userId));
+}
+
+export async function startProgram(userId: number, programSlug: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await getUserProgramProgress(userId, programSlug);
+  if (existing) return existing;
+  await db.insert(userProgramProgress).values({
+    userId,
+    programSlug,
+    currentDay: 1,
+    completedDays: "[]",
+    isCompleted: false,
+    startedAt: new Date(),
+    lastActivityAt: new Date(),
+  });
+  // Increment enrollment count
+  const prog = await getSleepProgramBySlug(programSlug);
+  if (prog) {
+    await db.update(sleepPrograms)
+      .set({ totalEnrollments: prog.totalEnrollments + 1 })
+      .where(eq(sleepPrograms.slug, programSlug));
+  }
+  return getUserProgramProgress(userId, programSlug);
+}
+
+export async function completeProgramDay(userId: number, programSlug: string, dayNumber: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const progress = await getUserProgramProgress(userId, programSlug);
+  if (!progress) throw new Error("Program not started");
+  const completedDays: number[] = JSON.parse(progress.completedDays || "[]");
+  if (!completedDays.includes(dayNumber)) completedDays.push(dayNumber);
+  const prog = await getSleepProgramBySlug(programSlug);
+  const isCompleted = prog ? completedDays.length >= prog.durationDays : false;
+  await db.update(userProgramProgress)
+    .set({
+      completedDays: JSON.stringify(completedDays),
+      currentDay: Math.min(dayNumber + 1, prog?.durationDays ?? dayNumber + 1),
+      isCompleted,
+      completedAt: isCompleted ? new Date() : undefined,
+      lastActivityAt: new Date(),
+    })
+    .where(and(eq(userProgramProgress.userId, userId), eq(userProgramProgress.programSlug, programSlug)));
+}
+
+export async function upsertSleepProgram(data: InsertSleepProgram) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateSet: Partial<InsertSleepProgram> = { ...data };
+  delete (updateSet as Record<string, unknown>).slug;
+  await db.insert(sleepPrograms).values(data).onDuplicateKeyUpdate({ set: updateSet });
+}
+
+export async function upsertProgramDay(data: InsertProgramDay) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(programDays).values(data).onDuplicateKeyUpdate({ set: { ...data } });
+}

@@ -130,6 +130,8 @@ export default function RootLayout() {
             <Stack.Screen name="ambient" />
             <Stack.Screen name="progress" />
             <Stack.Screen name="notifications-settings" />
+            <Stack.Screen name="program/[slug]" />
+            <Stack.Screen name="program-day/[slug]/[day]" />
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <StatusBar style="auto" />
