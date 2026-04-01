@@ -161,3 +161,7 @@
 - [x] Refonte écran jour de programme (exercices interactifs, minuteur)
 - [x] Enrichissement contenu DB (21j et 30j complets)
 - [x] Indicateur de jours restants et streak programme
+
+## Phase 19 : Corrections de navigation
+
+- [x] Corriger navigation 'Voir tout' programmes — redirige vers /(tabs)/journeys (route existante)
