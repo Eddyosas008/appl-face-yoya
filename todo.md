@@ -152,3 +152,12 @@
 - [ ] Ajouter champ notes multilignes dans le modal de saisie du dashboard
 - [ ] Afficher les notes dans l historique de l ecran sleep-tracker
 - [ ] Permettre l edition des notes depuis l historique
+
+## Phase 18 : Amélioration Programmes
+
+- [x] Refonte écran liste programmes (cartes gradient, progression, badge Premium)
+- [x] Section "Mon programme en cours" sur la liste
+- [x] Refonte écran détail programme (timeline jours, aperçu contenu)
+- [x] Refonte écran jour de programme (exercices interactifs, minuteur)
+- [ ] Enrichissement contenu DB (21j et 30j complets)
+- [x] Indicateur de jours restants et streak programme

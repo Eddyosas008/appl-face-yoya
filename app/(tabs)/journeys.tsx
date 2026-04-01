@@ -14,11 +14,12 @@ import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 
 const FILTERS = [
-  { key: "all", label: "Tous" },
-  { key: "insomnia", label: "Insomnie" },
-  { key: "quality", label: "Qualité" },
-  { key: "general", label: "Débutant" },
-  { key: "advanced", label: "Expert" },
+  { key: "all", label: "Tous", emoji: "🌙" },
+  { key: "insomnia", label: "Insomnie", emoji: "😴" },
+  { key: "quality", label: "Qualité", emoji: "✨" },
+  { key: "stress", label: "Stress", emoji: "🧘" },
+  { key: "advanced", label: "Expert", emoji: "🌟" },
+  { key: "basics", label: "Bases", emoji: "🌱" },
 ];
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -39,7 +40,7 @@ export default function JourneysScreen() {
   const { isAuthenticated } = useUser();
   const [activeFilter, setActiveFilter] = useState("all");
 
-  const { data: programs, isLoading } = trpc.programs.list.useQuery({});
+  const { data: programs, isLoading } = trpc.programs.list.useQuery();
   const { data: myPrograms } = trpc.programs.myPrograms.useQuery(undefined, {
     enabled: !!isAuthenticated,
   });
@@ -47,6 +48,11 @@ export default function JourneysScreen() {
   const filtered = programs?.filter((p) =>
     activeFilter === "all" ? true : p.targetIssue === activeFilter || p.level === activeFilter
   ) ?? [];
+
+  // Programme actif en cours
+  const activeProg = myPrograms?.find((p) => !p.isCompleted);
+  const activeProgramData = activeProg ? programs?.find((p) => p.slug === activeProg.programSlug) : null;
+  const activeDaysCompleted = activeProg ? (JSON.parse(activeProg.completedDays || "[]") as number[]).length : 0;
 
   const getProgress = (slug: string) => {
     const prog = myPrograms?.find((p) => p.programSlug === slug);
@@ -59,10 +65,51 @@ export default function JourneysScreen() {
     <ScreenContainer>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Programmes Sommeil</Text>
-          <Text style={styles.subtitle}>Des parcours guidés pour transformer vos nuits</Text>
-        </View>
+        <LinearGradient colors={["#1A0533", "#0D0B1E"]} style={styles.header}>
+          <Text style={styles.title}>🌙 Programmes Sommeil</Text>
+          <Text style={styles.subtitle}>Des parcours scientifiques pour transformer vos nuits</Text>
+        </LinearGradient>
+
+        {/* Programme en cours */}
+        {activeProgramData && activeProg && (
+          <View style={styles.activeSection}>
+            <Text style={styles.activeSectionTitle}>▶ Programme en cours</Text>
+            <TouchableOpacity
+              onPress={() => router.push(`/program/${activeProgramData.slug}` as never)}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={[activeProgramData.coverColor ?? "#1A0533", activeProgramData.coverColor2 ?? "#7C3AED"]}
+                style={styles.activeCard}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.activeCardRow}>
+                  <Text style={styles.activeEmoji}>{activeProgramData.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.activeTitle}>{activeProgramData.title}</Text>
+                    <Text style={styles.activeSub}>{activeProgramData.subtitle}</Text>
+                  </View>
+                  <View style={styles.activeStreakBox}>
+                    <Text style={styles.activeStreakNum}>{activeDaysCompleted}</Text>
+                    <Text style={styles.activeStreakLabel}>jours</Text>
+                  </View>
+                </View>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${Math.round((activeDaysCompleted / activeProgramData.durationDays) * 100)}%` as unknown as number }]} />
+                </View>
+                <View style={styles.activeCardFooter}>
+                  <Text style={styles.activeProgressText}>
+                    {activeDaysCompleted} / {activeProgramData.durationDays} jours
+                  </Text>
+                  <View style={styles.resumeBtn}>
+                    <Text style={styles.resumeBtnText}>Reprendre — Jour {activeProg.currentDay} →</Text>
+                  </View>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Filters */}
         <ScrollView
@@ -76,6 +123,7 @@ export default function JourneysScreen() {
               style={[styles.filterBtn, activeFilter === f.key && styles.filterBtnActive]}
               onPress={() => setActiveFilter(f.key)}
             >
+              <Text style={styles.filterEmoji}>{f.emoji}</Text>
               <Text style={[styles.filterLabel, activeFilter === f.key && styles.filterLabelActive]}>
                 {f.label}
               </Text>
@@ -212,18 +260,36 @@ export default function JourneysScreen() {
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 100 },
-  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
-  title: { fontSize: 28, fontWeight: "800", color: "#E2D9F3", letterSpacing: -0.5 },
-  subtitle: { fontSize: 14, color: "#9CA3AF", marginTop: 4 },
+  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24 },
+  title: { fontSize: 26, fontWeight: "800", color: "#E9D5FF", marginBottom: 6 },
+  subtitle: { fontSize: 14, color: "#9CA3AF", lineHeight: 20 },
+  // Programme actif
+  activeSection: { paddingHorizontal: 16, marginBottom: 8 },
+  activeSectionTitle: { fontSize: 14, fontWeight: "700", color: "#C4B5FD", marginBottom: 10 },
+  activeCard: { borderRadius: 20, padding: 18 },
+  activeCardRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
+  activeEmoji: { fontSize: 32 },
+  activeTitle: { fontSize: 16, fontWeight: "700", color: "#fff", marginBottom: 2 },
+  activeSub: { fontSize: 12, color: "rgba(255,255,255,0.7)" },
+  activeStreakBox: { alignItems: "center", backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6 },
+  activeStreakNum: { fontSize: 22, fontWeight: "800", color: "#fff" },
+  activeStreakLabel: { fontSize: 10, color: "rgba(255,255,255,0.8)" },
+  activeCardFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  activeProgressText: { fontSize: 12, color: "rgba(255,255,255,0.7)" },
+  resumeBtn: { backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
+  resumeBtnText: { fontSize: 12, fontWeight: "700", color: "#fff" },
+  // Filtres
   filtersRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
   filterBtn: {
-    paddingHorizontal: 16, paddingVertical: 8,
+    flexDirection: "row", alignItems: "center", gap: 4,
+    paddingHorizontal: 14, paddingVertical: 7,
     borderRadius: 20, backgroundColor: "#1F1B35",
     borderWidth: 1, borderColor: "#3B3060",
   },
-  filterBtnActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  filterBtnActive: { backgroundColor: "#4C1D95", borderColor: "#7C3AED" },
+  filterEmoji: { fontSize: 13 },
   filterLabel: { fontSize: 13, color: "#9CA3AF", fontWeight: "600" },
-  filterLabelActive: { color: "#FFFFFF" },
+  filterLabelActive: { color: "#E9D5FF", fontWeight: "700" },
   statsBanner: {
     flexDirection: "row", marginHorizontal: 20, marginBottom: 16,
     backgroundColor: "#1F1B35", borderRadius: 16, padding: 16,
