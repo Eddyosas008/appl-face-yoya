@@ -76,6 +76,17 @@ export default function HomeScreen() {
   const { data: dbMeditations = [] } = trpc.catalog.list.useQuery({ categorySlug: 'sleep', limit: 3 });
   const { data: sleepStats } = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: sleepLogs = [] } = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
+  const { data: myPrograms = [] } = trpc.programs.myPrograms.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: programsList = [] } = trpc.programs.list.useQuery();
+
+  // Programme actif en cours
+  const activeProgram = myPrograms.find((p: any) => !p.isCompleted);
+  const activeProgramData = activeProgram
+    ? programsList.find((pl: any) => pl.slug === activeProgram.programSlug)
+    : null;
+  const activeProgramCompleted = activeProgram
+    ? (JSON.parse(activeProgram.completedDays || '[]') as number[]).length
+    : 0;
 
   // Modal saisie sommeil
   const [showSleepModal, setShowSleepModal] = useState(false);
@@ -325,6 +336,39 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* ── WIDGET PROGRAMME EN COURS ─────────────────── */}
+        {activeProgram && activeProgramData && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🎯 Programme en cours</Text>
+            <Pressable
+              style={({ pressed }) => [styles.activeProgramCard, { opacity: pressed ? 0.9 : 1 }]}
+              onPress={() => router.push(`/program/${activeProgram.programSlug}` as never)}
+            >
+              <LinearGradient colors={['#2D1B69', '#5B21B6']} style={styles.activeProgramGradient}>
+                <View style={styles.activeProgramTop}>
+                  <View>
+                    <Text style={styles.activeProgramLabel}>Jour {activeProgram.currentDay} sur {activeProgramData.durationDays}</Text>
+                    <Text style={styles.activeProgramTitle} numberOfLines={1}>{activeProgramData.title}</Text>
+                  </View>
+                  <View style={styles.activeProgramBadge}>
+                    <Text style={styles.activeProgramBadgeText}>{Math.round((activeProgramCompleted / activeProgramData.durationDays) * 100)}%</Text>
+                  </View>
+                </View>
+                <View style={styles.activeProgramBar}>
+                  <View style={[styles.activeProgramFill, { width: `${(activeProgramCompleted / activeProgramData.durationDays) * 100}%` }]} />
+                </View>
+                <View style={styles.activeProgramActions}>
+                  <Pressable
+                    style={({ pressed }) => [styles.activeProgramBtn, { opacity: pressed ? 0.85 : 1 }]}
+                    onPress={() => router.push(`/program-day/${activeProgram.programSlug}/${activeProgram.currentDay}` as never)}
+                  >
+                    <Text style={styles.activeProgramBtnText}>▶ Continuer — Jour {activeProgram.currentDay}</Text>
+                  </Pressable>
+                </View>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        )}
         {/* ── PROGRAMMES STRUCTURÉS ─────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -689,4 +733,17 @@ const styles = StyleSheet.create({
   qualityBtnText: { fontSize: 16, fontWeight: '700' },
   modalSaveBtn: { borderRadius: 16, padding: 18, alignItems: 'center' },
   modalSaveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  // Widget programme en cours
+  activeProgramCard: { borderRadius: 20, overflow: 'hidden' },
+  activeProgramGradient: { padding: 18, borderRadius: 20 },
+  activeProgramTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 },
+  activeProgramLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  activeProgramTitle: { color: '#FFF', fontSize: 18, fontWeight: '800' },
+  activeProgramBadge: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  activeProgramBadgeText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+  activeProgramBar: { height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, marginBottom: 14 },
+  activeProgramFill: { height: 6, backgroundColor: '#A78BFA', borderRadius: 3 },
+  activeProgramActions: { alignItems: 'flex-start' },
+  activeProgramBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9 },
+  activeProgramBtnText: { color: '#FFF', fontSize: 14, fontWeight: '700' },
 });

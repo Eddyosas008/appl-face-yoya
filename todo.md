@@ -177,14 +177,21 @@
 
 ## Phase 21 : Bouton "Commencer le programme" + Audio dans les jours
 
-- [ ] Corriger le bouton "Commencer le programme" (navigation vers le jour 1)
-- [ ] Vérifier tous les boutons de l'écran détail programme
-- [ ] Ajouter colonnes audioUrl + audioDurationSeconds dans programDays
-- [ ] Mettre à jour le lecteur de jour de programme pour lire l'audio
-- [ ] Créer l'écran admin de gestion audio des jours de programme
+- [x] Corriger le bouton "Commencer le programme" (navigation vers le jour 1)
+- [x] Vérifier tous les boutons de l'écran détail programme
+- [x] Ajouter colonnes audioUrl + audioDurationSeconds dans programDays
+- [x] Mettre à jour le lecteur de jour de programme pour lire l'audio
+- [x] Créer l'écran admin de gestion audio des jours de programme
 
 ## Phase 22 : Correction boutons et navigation
 
-- [ ] Corriger définitivement le bouton "Commencer le programme"
-- [ ] Auditer tous les boutons de l'app et corriger les liens morts
-- [ ] Créer les pages/sessions manquantes
+- [x] Corriger définitivement le bouton "Commencer le programme" (Pressable + useAuth)
+- [x] Auditer tous les boutons de l'app et corriger les liens morts
+- [x] Corriger useAuth dans journeys, program-day, sleep-tracker, admin
+
+## Phase 23 : Améliorations générales
+
+- [x] Enrichir l'écran Progression avec données réelles DB (humeur, sommeil, séances, programmes)
+- [x] Améliorer le Journal : recherche, tags d'humeur colorés, compteur de mots, suppression confirmée
+- [x] Widget "Programme en cours" sur la page d'accueil avec barre de progression et bouton Continuer
+- [x] Améliorer l'écran Explore : tri par durée/popularité, filtre favoris, toolbar de tri
