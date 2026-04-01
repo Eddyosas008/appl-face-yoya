@@ -167,6 +167,83 @@ export const appRouter = router({
       }),
   }),
 
+  // ─── Meditations Catalog ────────────────────────────────────────────────────
+  catalog: router({
+    // Public: list all active meditations (no auth required)
+    list: publicProcedure
+      .input(z.object({
+        categorySlug: z.string().optional(),
+        level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+        isFeatured: z.boolean().optional(),
+        limit: z.number().min(1).max(200).default(100),
+      }).optional())
+      .query(async ({ input }) => {
+        return db.getMeditations(input);
+      }),
+
+    // Public: get a single meditation by slug
+    get: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        return db.getMeditationBySlug(input.slug);
+      }),
+
+    // Public: list all active categories
+    categories: publicProcedure.query(async () => {
+      return db.getMeditationCategories();
+    }),
+
+    // Protected: increment play count when user starts a meditation
+    played: protectedProcedure
+      .input(z.object({ meditationDbId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.incrementPlayCount(input.meditationDbId);
+        return { success: true };
+      }),
+
+    // Admin: upsert a meditation (for seeding or admin panel)
+    upsert: protectedProcedure
+      .input(z.object({
+        slug: z.string().max(100),
+        title: z.string().max(255),
+        subtitle: z.string().max(255).optional(),
+        description: z.string().optional(),
+        audioUrl: z.string().url(),
+        audioDurationSeconds: z.number().default(0),
+        categorySlug: z.string().max(50),
+        level: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
+        tags: z.string().optional(),
+        instructor: z.string().max(100).default("Yoya"),
+        scriptText: z.string().optional(),
+        coverColor: z.string().max(20).optional(),
+        coverImageUrl: z.string().optional(),
+        isPremium: z.boolean().default(false),
+        isFeatured: z.boolean().default(false),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Only admin can upsert catalog content
+        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
+        await db.upsertMeditation(input);
+        return { success: true };
+      }),
+
+    // Admin: upsert a category
+    upsertCategory: protectedProcedure
+      .input(z.object({
+        slug: z.string().max(50),
+        name: z.string().max(100),
+        emoji: z.string().max(10).optional(),
+        description: z.string().optional(),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
+        await db.upsertMeditationCategory({ ...input, isActive: true });
+        return { success: true };
+      }),
+  }),
+
   // ─── Chat IA ────────────────────────────────────────────────────────────────────
   chat: router({
     history: protectedProcedure

@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -9,11 +9,15 @@ import {
   sessionHistory,
   favorites,
   chatMessages,
+  meditations,
+  meditationCategories,
   type InsertUserProfile,
   type InsertCheckIn,
   type InsertJournalEntry,
   type InsertSessionHistory,
   type InsertChatMessage,
+  type InsertMeditation,
+  type InsertMeditationCategory,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -290,4 +294,79 @@ export async function clearChatHistory(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(chatMessages).where(eq(chatMessages.userId, userId));
+}
+
+// ─── Meditations Catalog ──────────────────────────────────────────────────────
+
+export async function getMeditations(opts?: {
+  categorySlug?: string;
+  level?: string;
+  isPremium?: boolean;
+  isFeatured?: boolean;
+  limit?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+  const query = db.select().from(meditations);
+  const conditions = [eq(meditations.isActive, true)];
+  if (opts?.categorySlug) conditions.push(eq(meditations.categorySlug, opts.categorySlug));
+  if (opts?.level) conditions.push(eq(meditations.level, opts.level as "beginner" | "intermediate" | "advanced"));
+  if (opts?.isPremium !== undefined) conditions.push(eq(meditations.isPremium, opts.isPremium));
+  if (opts?.isFeatured !== undefined) conditions.push(eq(meditations.isFeatured, opts.isFeatured));
+  return query
+    .where(and(...conditions))
+    .orderBy(asc(meditations.sortOrder), desc(meditations.playCount))
+    .limit(opts?.limit ?? 100);
+}
+
+export async function getMeditationBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(meditations)
+    .where(and(eq(meditations.slug, slug), eq(meditations.isActive, true)))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getMeditationById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(meditations)
+    .where(eq(meditations.id, id))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function incrementPlayCount(meditationId: number) {
+  const db = await getDb();
+  if (!db) return;
+  const current = await getMeditationById(meditationId);
+  if (!current) return;
+  await db.update(meditations)
+    .set({ playCount: current.playCount + 1, updatedAt: new Date() })
+    .where(eq(meditations.id, meditationId));
+}
+
+export async function upsertMeditation(data: InsertMeditation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateSet: Partial<InsertMeditation> = { ...data };
+  delete (updateSet as Record<string, unknown>).slug;
+  await db.insert(meditations).values(data).onDuplicateKeyUpdate({ set: updateSet });
+}
+
+export async function getMeditationCategories() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(meditationCategories)
+    .where(eq(meditationCategories.isActive, true))
+    .orderBy(asc(meditationCategories.sortOrder));
+}
+
+export async function upsertMeditationCategory(data: InsertMeditationCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const updateSet: Partial<InsertMeditationCategory> = { ...data };
+  delete (updateSet as Record<string, unknown>).slug;
+  await db.insert(meditationCategories).values(data).onDuplicateKeyUpdate({ set: updateSet });
 }

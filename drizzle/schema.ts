@@ -121,3 +121,72 @@ export const chatMessages = mysqlTable("chatMessages", {
 
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = typeof chatMessages.$inferInsert;
+
+// ─── Meditation Categories ────────────────────────────────────────────────────────────────────────────────
+
+export const meditationCategories = mysqlTable("meditationCategories", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 50 }).notNull().unique(),       // ex: "stress", "sleep", "focus"
+  name: varchar("name", { length: 100 }).notNull(),               // ex: "Stress & Anxiété"
+  emoji: varchar("emoji", { length: 10 }),                        // ex: "🌿"
+  description: text("description"),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MeditationCategory = typeof meditationCategories.$inferSelect;
+export type InsertMeditationCategory = typeof meditationCategories.$inferInsert;
+
+// ─── Meditations Catalog ───────────────────────────────────────────────────────────────────────────────────────
+// Central catalog of all guided meditations. Audio files are hosted externally
+// (CDN, S3, or public URL). This table is the single source of truth for content.
+
+export const meditations = mysqlTable("meditations", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),      // ex: "souffle-du-soir"
+  title: varchar("title", { length: 255 }).notNull(),
+  subtitle: varchar("subtitle", { length: 255 }),                 // ex: "Méditation guidée pour s'endormir"
+  description: text("description"),
+  // Audio
+  audioUrl: text("audioUrl").notNull(),                           // URL du fichier MP3/M4A
+  audioDurationSeconds: int("audioDurationSeconds").default(0).notNull(), // durée exacte en secondes
+  audioSizeBytes: int("audioSizeBytes").default(0),               // taille fichier (optionnel)
+  // Categorisation
+  categorySlug: varchar("categorySlug", { length: 50 }).notNull(), // FK vers meditationCategories.slug
+  level: mysqlEnum("level", ["beginner", "intermediate", "advanced"]).default("beginner").notNull(),
+  tags: text("tags"),                                             // JSON array ex: '["sommeil","relaxation"]'
+  // Contenu
+  instructor: varchar("instructor", { length: 100 }).default("Yoya").notNull(),
+  language: varchar("language", { length: 10 }).default("fr").notNull(),
+  scriptText: text("scriptText"),                                 // Texte de la méditation (optionnel)
+  // Visuel
+  coverColor: varchar("coverColor", { length: 20 }).default("#7C3AED"), // couleur de fond de la carte
+  coverImageUrl: text("coverImageUrl"),                           // URL image de couverture (optionnel)
+  // Accès
+  isPremium: boolean("isPremium").default(false).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(),     // mise en avant sur le dashboard
+  sortOrder: int("sortOrder").default(0).notNull(),
+  // Stats
+  playCount: int("playCount").default(0).notNull(),               // nombre total d'écoutes
+  averageRating: int("averageRating").default(0),                 // note moyenne x10 (ex: 45 = 4.5/5)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Meditation = typeof meditations.$inferSelect;
+export type InsertMeditation = typeof meditations.$inferInsert;
+
+// ─── Meditation Ratings (user ratings) ────────────────────────────────────────────────────────────────────────────
+
+export const meditationRatings = mysqlTable("meditationRatings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  meditationId: int("meditationId").notNull(),
+  rating: int("rating").notNull(),                                // 1-5
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MeditationRating = typeof meditationRatings.$inferSelect;
+export type InsertMeditationRating = typeof meditationRatings.$inferInsert;
