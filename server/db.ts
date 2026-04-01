@@ -375,6 +375,19 @@ export async function updateMeditationAudioUrl(
   await db.update(meditations).set(updateData).where(eq(meditations.slug, slug));
 }
 
+export async function updateProgramDayAudioUrl(
+  programSlug: string,
+  dayNumber: number,
+  audioUrl: string | null,
+  audioDurationSeconds: number = 0
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(programDays)
+    .set({ audioUrl, audioDurationSeconds })
+    .where(and(eq(programDays.programSlug, programSlug), eq(programDays.dayNumber, dayNumber)));
+}
+
 export async function getMeditationCategories() {
   const db = await getDb();
   if (!db) return [];

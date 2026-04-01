@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { useAudioPlayer, setAudioModeAsync } from "expo-audio";
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 
@@ -398,6 +399,41 @@ export default function ProgramDayScreen() {
     ? AMBIENT_LABELS[programDay.ambientSound]
     : null;
 
+  // ── Lecteur audio du jour ──
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioPos, setAudioPos] = useState(0); // secondes
+  const audioPlayer = useAudioPlayer(programDay.audioUrl ?? "");
+  const audioIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!programDay.audioUrl) return;
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+    return () => {
+      audioPlayer.pause();
+      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
+    };
+  }, [programDay.audioUrl]);
+
+  const toggleAudio = () => {
+    if (!programDay.audioUrl) return;
+    if (audioPlaying) {
+      audioPlayer.pause();
+      setAudioPlaying(false);
+      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
+    } else {
+      audioPlayer.play();
+      setAudioPlaying(true);
+      audioIntervalRef.current = setInterval(() => {
+        setAudioPos((p) => p + 1);
+      }, 1000);
+    }
+  };
+
+  const audioDuration = (programDay as any).audioDurationSeconds ?? 0;
+  const audioProgress = audioDuration > 0 ? Math.min(audioPos / audioDuration, 1) : 0;
+  const fmtTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+
   // Routine steps
   const routineSteps = programDay.eveningRoutine
     ? programDay.eveningRoutine
@@ -463,6 +499,33 @@ export default function ProgramDayScreen() {
             <Text style={styles.description}>{programDay.description}</Text>
           </View>
         )}
+
+        {/* ── Audio du jour ── */}
+        {(programDay as any).audioUrl ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🎧 Audio du jour</Text>
+            <View style={audioStyles.card}>
+              <View style={audioStyles.row}>
+                <TouchableOpacity
+                  style={audioStyles.playBtn}
+                  onPress={toggleAudio}
+                  activeOpacity={0.85}
+                >
+                  <Text style={audioStyles.playBtnText}>{audioPlaying ? "⏸" : "▶"}</Text>
+                </TouchableOpacity>
+                <View style={audioStyles.info}>
+                  <Text style={audioStyles.title}>{programDay.title}</Text>
+                  <Text style={audioStyles.duration}>
+                    {fmtTime(audioPos)}{audioDuration > 0 ? ` / ${fmtTime(audioDuration)}` : ""}
+                  </Text>
+                </View>
+              </View>
+              <View style={audioStyles.progressBar}>
+                <View style={[audioStyles.progressFill, { width: `${audioProgress * 100}%` as unknown as number }]} />
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         {/* ── Activités ── */}
         <View style={styles.section}>
@@ -902,4 +965,39 @@ const styles = StyleSheet.create({
   completedBannerEmoji: { fontSize: 40, marginBottom: 8 },
   completedBannerTitle: { color: "#86EFAC", fontSize: 18, fontWeight: "800", marginBottom: 4 },
   completedBannerSub: { color: "#6B7280", fontSize: 13, textAlign: "center" },
+});
+
+const audioStyles = StyleSheet.create({
+  card: {
+    backgroundColor: "#1E1B4B",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(167,139,250,0.3)",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 12,
+  },
+  playBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#7C3AED",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  playBtnText: { fontSize: 20, color: "#fff" },
+  info: { flex: 1 },
+  title: { color: "#E9D5FF", fontSize: 14, fontWeight: "700", marginBottom: 2 },
+  duration: { color: "#A78BFA", fontSize: 12 },
+  progressBar: {
+    height: 4,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: { height: 4, backgroundColor: "#A78BFA", borderRadius: 2 },
 });

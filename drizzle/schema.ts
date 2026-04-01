@@ -234,6 +234,9 @@ export const programDays = mysqlTable("programDays", {
   eveningRoutine: text("eveningRoutine"),                         // Routine du soir (texte)
   sleepTip: text("sleepTip"),                                     // Conseil du jour
   journalPrompt: text("journalPrompt"),                           // Question pour le journal
+  // Audio du jour (contenu audio spécifique au programme)
+  audioUrl: text("audioUrl"),                                     // URL directe du fichier audio (MP3/M4A)
+  audioDurationSeconds: int("audioDurationSeconds").default(0).notNull(), // durée exacte en secondes
   // Durée estimée
   estimatedMinutes: int("estimatedMinutes").default(15).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

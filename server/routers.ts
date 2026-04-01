@@ -398,10 +398,25 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
         eveningRoutine: z.string().optional(),
         sleepTip: z.string().optional(),
         journalPrompt: z.string().optional(),
+        audioUrl: z.string().nullable().optional(),
+        audioDurationSeconds: z.number().optional(),
         estimatedMinutes: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         await db.upsertProgramDay(input as Parameters<typeof db.upsertProgramDay>[0]);
+        return { success: true };
+      }),
+    // Admin : mettre à jour l'URL audio d'un jour de programme
+    updateDayAudioUrl: protectedProcedure
+      .input(z.object({
+        programSlug: z.string(),
+        dayNumber: z.number(),
+        audioUrl: z.string().nullable().optional(),
+        audioDurationSeconds: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
+        await db.updateProgramDayAudioUrl(input.programSlug, input.dayNumber, input.audioUrl ?? null, input.audioDurationSeconds ?? 0);
         return { success: true };
       }),
   }),

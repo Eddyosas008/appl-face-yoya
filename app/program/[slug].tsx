@@ -41,6 +41,8 @@ export default function ProgramDetailScreen() {
     onSuccess: () => {
       refetchProgress();
       utils.programs.myPrograms.invalidate();
+      // Naviguer vers le jour 1 après démarrage
+      router.push(`/program-day/${slug}/1` as never);
     },
   });
 
@@ -285,15 +287,8 @@ export default function ProgramDetailScreen() {
                       handleStart();
                       return;
                     }
-                    // Toggle expand or navigate
-                    if (isDone || isCurrent) {
-                      setExpandedDay(isExpanded ? null : day.dayNumber);
-                    }
-                  }}
-                  onLongPress={() => {
-                    if (!isLocked && progress) {
-                      handleDayPress(day.dayNumber);
-                    }
+                    // Naviguer directement vers le jour
+                    handleDayPress(day.dayNumber);
                   }}
                   activeOpacity={isLocked ? 1 : 0.8}
                 >

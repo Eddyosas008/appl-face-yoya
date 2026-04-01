@@ -174,3 +174,11 @@
 - [x] Route tRPC catalog.updateAudioUrl pour mettre à jour l'URL audio
 - [x] Créer écran admin /admin/audio-manager (liste + champs URL + sauvegarde)
 - [x] Lien Gestion Audio dans le profil utilisateur
+
+## Phase 21 : Bouton "Commencer le programme" + Audio dans les jours
+
+- [ ] Corriger le bouton "Commencer le programme" (navigation vers le jour 1)
+- [ ] Vérifier tous les boutons de l'écran détail programme
+- [ ] Ajouter colonnes audioUrl + audioDurationSeconds dans programDays
+- [ ] Mettre à jour le lecteur de jour de programme pour lire l'audio
+- [ ] Créer l'écran admin de gestion audio des jours de programme
