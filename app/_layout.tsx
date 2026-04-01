@@ -132,6 +132,7 @@ export default function RootLayout() {
             <Stack.Screen name="notifications-settings" />
             <Stack.Screen name="program/[slug]" />
             <Stack.Screen name="program-day/[slug]/[day]" />
+            <Stack.Screen name="sleep-tracker" />
             <Stack.Screen name="oauth/callback" />
           </Stack>
           <StatusBar style="auto" />

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  Animated, Dimensions, Platform,
+  Animated, Dimensions, Platform, Modal, TextInput,
 } from 'react-native';
+// Note: useRef, useState, useEffect imported from React above
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/screen-container';
@@ -73,6 +74,29 @@ export default function HomeScreen() {
   // Stats depuis la DB
   const { data: sessionStats } = trpc.sessions.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: dbMeditations = [] } = trpc.catalog.list.useQuery({ categorySlug: 'sleep', limit: 3 });
+  const { data: sleepStats } = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: sleepLogs = [] } = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
+
+  // Modal saisie sommeil
+  const [showSleepModal, setShowSleepModal] = useState(false);
+  const [sleepBedtime, setSleepBedtime] = useState('22:30');
+  const [sleepWakeTime, setSleepWakeTime] = useState('07:00');
+  const [sleepQuality, setSleepQuality] = useState(3);
+  const createSleepLog = trpc.sleep.create.useMutation({
+    onSuccess: () => setShowSleepModal(false),
+  });
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayLog = sleepLogs.find((l: { sleepDate: string; bedtime?: string | null; wakeTime?: string | null; quality?: number | null }) => l.sleepDate === todayStr);
+
+  function handleSaveSleep() {
+    createSleepLog.mutate({
+      sleepDate: todayStr,
+      bedtime: sleepBedtime,
+      wakeTime: sleepWakeTime,
+      quality: sleepQuality,
+    });
+  }
 
   useEffect(() => {
     Animated.parallel([
@@ -158,6 +182,83 @@ export default function HomeScreen() {
             <Text style={[styles.statLabel, { color: colors.muted }]}>Minutes</Text>
           </View>
         </Animated.View>
+
+        {/* ── WIDGET SUIVI DU SOMMEIL ──────────────────── */}
+        <View style={[styles.section, { paddingHorizontal: 16 }]}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🛏️ Suivi du sommeil</Text>
+              <Text style={[styles.sectionSub, { color: colors.muted }]}>Enregistrez votre nuit</Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+              onPress={() => router.push('/sleep-tracker' as never)}
+            >
+              <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
+            </Pressable>
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
+            onPress={() => isAuthenticated ? setShowSleepModal(true) : router.push('/(auth)/signin' as never)}
+          >
+            <LinearGradient
+              colors={todayLog ? ['#0D3B2E', '#065F46'] : ['#1E1B4B', '#312E81']}
+              style={styles.sleepWidget}
+            >
+              <View style={styles.sleepWidgetLeft}>
+                <Text style={styles.sleepWidgetEmoji}>{todayLog ? '✅' : '🌙'}</Text>
+                <View>
+                  <Text style={styles.sleepWidgetTitle}>
+                    {todayLog ? 'Nuit enregistrée' : 'Enregistrer cette nuit'}
+                  </Text>
+                  {todayLog ? (
+                    <Text style={styles.sleepWidgetSub}>
+                      {todayLog.bedtime} → {todayLog.wakeTime} · Qualité {todayLog.quality}/5
+                    </Text>
+                  ) : (
+                    <Text style={styles.sleepWidgetSub}>Heure de coucher, lever, qualité</Text>
+                  )}
+                </View>
+              </View>
+              <View style={styles.sleepWidgetRight}>
+                {sleepStats && (
+                  <View style={styles.sleepMiniStats}>
+                    <Text style={styles.sleepMiniVal}>{sleepStats.avgQuality?.toFixed(1) ?? '—'}</Text>
+                    <Text style={styles.sleepMiniLabel}>Qualité moy.</Text>
+                  </View>
+                )}
+                <IconSymbol name="chevron.right" size={18} color="rgba(255,255,255,0.6)" />
+              </View>
+            </LinearGradient>
+          </Pressable>
+
+          {/* Mini graphique barres 7 jours */}
+          {sleepLogs.length > 0 && (
+            <View style={[styles.sleepMiniChart, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.sleepMiniChartTitle, { color: colors.muted }]}>7 dernières nuits</Text>
+              <View style={styles.sleepBars}>
+                {Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - (6 - i));
+                  const dateStr = d.toISOString().split('T')[0];
+                  const log = sleepLogs.find((l: { sleepDate: string; quality: number | null }) => l.sleepDate === dateStr);
+                  const quality = log?.quality ?? 0;
+                  const barH = quality > 0 ? (quality / 5) * 48 : 4;
+                  const barColor = quality >= 4 ? '#10B981' : quality >= 3 ? '#6366F1' : quality > 0 ? '#F59E0B' : colors.border;
+                  return (
+                    <View key={dateStr} style={styles.sleepBarCol}>
+                      <View style={[styles.sleepBar, { height: barH, backgroundColor: barColor }]} />
+                      <Text style={[styles.sleepBarLabel, { color: colors.muted }]}>
+                        {['D', 'L', 'M', 'M', 'J', 'V', 'S'][d.getDay()]}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+        </View>
 
         {/* ── MÉDITATION DU SOIR ────────────────────────── */}
         <View style={styles.section}>
@@ -379,6 +480,68 @@ export default function HomeScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* ── MODAL SAISIE SOMMEIL ──────────────────────── */}
+      <Modal
+        visible={showSleepModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowSleepModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowSleepModal(false)}>
+          <Pressable style={[styles.modalSheet, { backgroundColor: '#1E1B4B' }]} onPress={e => e.stopPropagation()}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: '#FFF' }]}>🌙 Votre nuit</Text>
+            <Text style={[styles.modalSub, { color: 'rgba(255,255,255,0.6)' }]}>Enregistrez votre sommeil de cette nuit</Text>
+
+            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>🛌 Heure de coucher</Text>
+            <TextInput
+              style={[styles.modalInput, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: '#FFF' }]}
+              value={sleepBedtime}
+              onChangeText={setSleepBedtime}
+              placeholder="ex. 22:30"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              returnKeyType="done"
+            />
+
+            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>☀️ Heure de lever</Text>
+            <TextInput
+              style={[styles.modalInput, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: '#FFF' }]}
+              value={sleepWakeTime}
+              onChangeText={setSleepWakeTime}
+              placeholder="ex. 07:00"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              returnKeyType="done"
+            />
+
+            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>⭐ Qualité du sommeil</Text>
+            <View style={styles.qualityRow}>
+              {[1, 2, 3, 4, 5].map(q => (
+                <Pressable
+                  key={q}
+                  style={[styles.qualityBtn, {
+                    backgroundColor: sleepQuality === q ? '#7C3AED' : 'rgba(255,255,255,0.1)',
+                    borderColor: sleepQuality === q ? '#7C3AED' : 'rgba(255,255,255,0.2)',
+                  }]}
+                  onPress={() => setSleepQuality(q)}
+                >
+                  <Text style={styles.qualityBtnText}>{['😫', '😕', '😐', '🙂', '😄'][q - 1]}</Text>
+                  <Text style={[styles.qualityBtnText, { fontSize: 12, color: '#FFF' }]}>{q}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Pressable
+              style={({ pressed }) => [styles.modalSaveBtn, { backgroundColor: '#7C3AED', opacity: pressed ? 0.85 : 1 }]}
+              onPress={handleSaveSleep}
+            >
+              <Text style={styles.modalSaveBtnText}>
+                {createSleepLog.isPending ? 'Enregistrement...' : 'Enregistrer ma nuit 🌙'}
+              </Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScreenContainer>
   );
 }
@@ -476,4 +639,35 @@ const styles = StyleSheet.create({
   ctaContent: { flex: 1 },
   ctaTitle: { color: '#FFF', fontSize: 16, fontWeight: '700', marginBottom: 4 },
   ctaSub: { color: 'rgba(255,255,255,0.65)', fontSize: 13 },
+
+  // Widget sommeil
+  sleepWidget: { borderRadius: 20, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  sleepWidgetLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  sleepWidgetEmoji: { fontSize: 32 },
+  sleepWidgetTitle: { color: '#FFF', fontSize: 15, fontWeight: '700', marginBottom: 3 },
+  sleepWidgetSub: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
+  sleepWidgetRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sleepMiniStats: { alignItems: 'center' },
+  sleepMiniVal: { color: '#FFF', fontSize: 20, fontWeight: '800' },
+  sleepMiniLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10 },
+  sleepMiniChart: { marginTop: 12, borderRadius: 16, padding: 14, borderWidth: 1 },
+  sleepMiniChartTitle: { fontSize: 12, marginBottom: 10 },
+  sleepBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 60 },
+  sleepBarCol: { alignItems: 'center', flex: 1, gap: 4 },
+  sleepBar: { width: 14, borderRadius: 7, minHeight: 4 },
+  sleepBarLabel: { fontSize: 10 },
+
+  // Modal sommeil
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  modalSheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40 },
+  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 22, fontWeight: '800', marginBottom: 6 },
+  modalSub: { fontSize: 14, marginBottom: 24 },
+  modalLabel: { fontSize: 13, fontWeight: '600', marginBottom: 8 },
+  modalInput: { borderRadius: 12, padding: 14, fontSize: 16, borderWidth: 1, marginBottom: 16 },
+  qualityRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
+  qualityBtn: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1 },
+  qualityBtnText: { fontSize: 16, fontWeight: '700' },
+  modalSaveBtn: { borderRadius: 16, padding: 18, alignItems: 'center' },
+  modalSaveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 });

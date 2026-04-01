@@ -108,22 +108,35 @@
 
 ## Phase 15 : Recentrage Sommeil + Page d'accueil enrichie + Programmes
 
-- [ ] Refonte complète de la page d'accueil orientée sommeil
-- [ ] Section hero avec heure du coucher, qualité de sommeil et météo nocturne
-- [ ] Widget "Ce soir" avec méditation du soir recommandée
-- [ ] Section problématiques du sommeil (insomnie, réveil nocturne, stress, etc.)
-- [ ] Section programmes structurés sur la page d'accueil
-- [ ] Conseils du soir et hygiène du sommeil
-- [ ] Citation inspirante nocturne
-- [ ] Statistiques de sommeil (heures dormies, qualité, streak)
-- [ ] Table DB : sleepPrograms (programmes structurés)
-- [ ] Table DB : programDays (jours d'un programme avec contenu)
-- [ ] Table DB : userProgramProgress (progression utilisateur)
-- [ ] Seed DB : Programme "Initiation au sommeil" (2 jours)
-- [ ] Seed DB : Programme "Retrouver le sommeil" (7 jours)
-- [ ] Seed DB : Programme "Transformation du sommeil" (21 jours)
-- [ ] Seed DB : Programme "Maître du sommeil" (30 jours)
-- [ ] Écran liste des programmes avec filtres et progression
-- [ ] Écran détail d'un programme (jours, contenu, progression)
-- [ ] Navigation vers les programmes depuis la page d'accueil
-- [ ] Mise à jour du thème couleurs vers bleu nuit / violet profond
+- [x] Refonte complète de la page d'accueil orientée sommeil
+- [x] Section hero avec heure du coucher, qualité de sommeil et météo nocturne
+- [x] Widget "Ce soir" avec méditation du soir recommandée
+- [x] Section problématiques du sommeil (insomnie, réveil nocturne, stress, etc.)
+- [x] Section programmes structurés sur la page d'accueil
+- [x] Conseils du soir et hygiène du sommeil
+- [x] Citation inspirante nocturne
+- [x] Statistiques de sommeil (heures dormies, qualité, streak)
+- [x] Table DB : sleepPrograms (programmes structurés)
+- [x] Table DB : programDays (jours d'un programme avec contenu)
+- [x] Table DB : userProgramProgress (progression utilisateur)
+- [x] Seed DB : Programme "Initiation au sommeil" (2 jours)
+- [x] Seed DB : Programme "Retrouver le sommeil" (7 jours)
+- [x] Seed DB : Programme "Transformation du sommeil" (21 jours)
+- [x] Seed DB : Programme "Maître du sommeil" (30 jours)
+- [x] Écran liste des programmes avec filtres et progression
+- [x] Écran détail d.un programme (jours, contenu, progression)
+- [x] Navigation vers les programmes depuis la page d'accueil
+- [x] Mise à jour du thème couleurs vers bleu nuit / violet profond
+
+## Phase 16 : Suivi du sommeil
+
+- [x] Table DB sleepLogs (heure coucher, lever, durée, qualité, notes, date)
+- [x] Routes tRPC : sleepLog.create, sleepLog.list, sleepLog.stats, sleepLog.delete
+- [x] Modal de saisie du sommeil (heure coucher/lever, qualité 1-5 étoiles, notes)
+- [x] Widget sommeil sur la page d'accueil (dernière nuit + bouton saisie)
+- [x] Écran dédié suivi sommeil avec graphique SVG hebdomadaire
+- [x] Graphique barres durée de sommeil sur 7 jours
+- [x] Courbe qualité du sommeil sur 7 jours
+- [x] Statistiques : durée moyenne, meilleure nuit, objectif atteint
+- [x] Historique des 30 derniers jours en liste
+- [x] Lien depuis le dashboard vers l'écran de suivi

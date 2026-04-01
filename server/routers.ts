@@ -392,5 +392,99 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
         return { success: true };
       }),
   }),
+
+  // ─── Sleep Tracking ───────────────────────────────────────────────────────────────────────
+  sleep: router({
+    // Lister les logs de sommeil
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        return db.getSleepLogs(ctx.user.id, input?.limit ?? 30);
+      }),
+
+    // Récupérer le log d'une date spécifique
+    getByDate: protectedProcedure
+      .input(z.object({ sleepDate: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return db.getSleepLogByDate(ctx.user.id, input.sleepDate);
+      }),
+
+    // Créer un log de sommeil
+    create: protectedProcedure
+      .input(z.object({
+        sleepDate: z.string(),
+        bedtime: z.string().optional(),
+        wakeTime: z.string().optional(),
+        durationMinutes: z.number().optional(),
+        quality: z.number().min(1).max(5).optional(),
+        hadNightWaking: z.boolean().optional(),
+        nightWakings: z.number().optional(),
+        dreamRecall: z.boolean().optional(),
+        notes: z.string().optional(),
+        eveningMood: MoodEnum.optional(),
+        usedMeditation: z.boolean().optional(),
+        usedBreathing: z.boolean().optional(),
+        usedAmbient: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        let durationMinutes = input.durationMinutes;
+        if (!durationMinutes && input.bedtime && input.wakeTime) {
+          const [bH, bM] = input.bedtime.split(":").map(Number);
+          const [wH, wM] = input.wakeTime.split(":").map(Number);
+          let bedMins = bH * 60 + bM;
+          let wakeMins = wH * 60 + wM;
+          if (wakeMins < bedMins) wakeMins += 24 * 60;
+          durationMinutes = wakeMins - bedMins;
+        }
+        await db.createSleepLog({ ...input, userId: ctx.user.id, durationMinutes });
+        return { success: true };
+      }),
+
+    // Mettre à jour un log
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        bedtime: z.string().optional(),
+        wakeTime: z.string().optional(),
+        durationMinutes: z.number().optional(),
+        quality: z.number().min(1).max(5).optional(),
+        hadNightWaking: z.boolean().optional(),
+        nightWakings: z.number().optional(),
+        dreamRecall: z.boolean().optional(),
+        notes: z.string().optional(),
+        eveningMood: MoodEnum.optional(),
+        usedMeditation: z.boolean().optional(),
+        usedBreathing: z.boolean().optional(),
+        usedAmbient: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        let durationMinutes = data.durationMinutes;
+        if (!durationMinutes && data.bedtime && data.wakeTime) {
+          const [bH, bM] = data.bedtime.split(":").map(Number);
+          const [wH, wM] = data.wakeTime.split(":").map(Number);
+          let bedMins = bH * 60 + bM;
+          let wakeMins = wH * 60 + wM;
+          if (wakeMins < bedMins) wakeMins += 24 * 60;
+          durationMinutes = wakeMins - bedMins;
+        }
+        await db.updateSleepLog(id, ctx.user.id, { ...data, durationMinutes });
+        return { success: true };
+      }),
+
+    // Supprimer un log
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteSleepLog(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    // Statistiques globales de sommeil
+    stats: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getSleepStats(ctx.user.id);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

@@ -258,3 +258,35 @@ export const userProgramProgress = mysqlTable("userProgramProgress", {
 
 export type UserProgramProgress = typeof userProgramProgress.$inferSelect;
 export type InsertUserProgramProgress = typeof userProgramProgress.$inferInsert;
+
+// ─── Sleep Logs (daily sleep tracking) ───────────────────────────────────────
+
+export const sleepLogs = mysqlTable("sleepLogs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  // Date de la nuit (date du coucher, format YYYY-MM-DD)
+  sleepDate: varchar("sleepDate", { length: 10 }).notNull(),
+  // Heures (format "HH:MM" en 24h)
+  bedtime: varchar("bedtime", { length: 5 }),                       // ex: "22:30"
+  wakeTime: varchar("wakeTime", { length: 5 }),                     // ex: "07:00"
+  // Durée calculée en minutes
+  durationMinutes: int("durationMinutes"),                          // ex: 510 (8h30)
+  // Qualité du sommeil (1-5)
+  quality: int("quality"),                                          // 1=très mauvais, 5=excellent
+  // Indicateurs optionnels
+  hadNightWaking: boolean("hadNightWaking").default(false),          // réveil nocturne
+  nightWakings: int("nightWakings").default(0),                     // nombre de réveils
+  dreamRecall: boolean("dreamRecall").default(false),               // se souvient de ses rêves
+  // Notes libres
+  notes: text("notes"),
+  // Facteurs du soir
+  eveningMood: mysqlEnum("eveningMood", ["anxious", "sad", "neutral", "calm", "happy", "energetic", "grateful"]),
+  usedMeditation: boolean("usedMeditation").default(false),         // a utilisé l'app avant de dormir
+  usedBreathing: boolean("usedBreathing").default(false),
+  usedAmbient: boolean("usedAmbient").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SleepLog = typeof sleepLogs.$inferSelect;
+export type InsertSleepLog = typeof sleepLogs.$inferInsert;

@@ -11,6 +11,10 @@ import {
   chatMessages,
   meditations,
   meditationCategories,
+  sleepLogs,
+  sleepPrograms,
+  programDays,
+  userProgramProgress,
   type InsertUserProfile,
   type InsertCheckIn,
   type InsertJournalEntry,
@@ -18,6 +22,9 @@ import {
   type InsertChatMessage,
   type InsertMeditation,
   type InsertMeditationCategory,
+  type InsertSleepLog,
+  type InsertSleepProgram,
+  type InsertProgramDay,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -371,16 +378,7 @@ export async function upsertMeditationCategory(data: InsertMeditationCategory) {
   await db.insert(meditationCategories).values(data).onDuplicateKeyUpdate({ set: updateSet });
 }
 
-// ─── Sleep Programs ───────────────────────────────────────────────────────────
-
-import {
-  sleepPrograms,
-  programDays,
-  userProgramProgress,
-  type InsertSleepProgram,
-  type InsertProgramDay,
-  type InsertUserProgramProgress,
-} from "../drizzle/schema";
+// ──// ─// ─── Sleep Programs ───────────────────────────────────────────────
 
 export async function getSleepPrograms(opts?: { targetIssue?: string }) {
   const db = await getDb();
@@ -484,4 +482,94 @@ export async function upsertProgramDay(data: InsertProgramDay) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.insert(programDays).values(data).onDuplicateKeyUpdate({ set: { ...data } });
+}
+
+// ─── Sleep Logs ───────────────────────────────────────────────────────────────────────
+
+export async function createSleepLog(data: InsertSleepLog) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(sleepLogs).values(data);
+  return result;
+}
+
+export async function getSleepLogs(userId: number, limit = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(sleepLogs)
+    .where(eq(sleepLogs.userId, userId))
+    .orderBy(desc(sleepLogs.sleepDate))
+    .limit(limit);
+}
+
+export async function getSleepLogByDate(userId: number, sleepDate: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const [log] = await db
+    .select()
+    .from(sleepLogs)
+    .where(and(eq(sleepLogs.userId, userId), eq(sleepLogs.sleepDate, sleepDate)))
+    .limit(1);
+  return log ?? null;
+}
+
+export async function updateSleepLog(id: number, userId: number, data: Partial<InsertSleepLog>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(sleepLogs)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(sleepLogs.id, id), eq(sleepLogs.userId, userId)));
+}
+
+export async function deleteSleepLog(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(sleepLogs).where(and(eq(sleepLogs.id, id), eq(sleepLogs.userId, userId)));
+}
+
+export async function getSleepStats(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const logs = await db
+    .select()
+    .from(sleepLogs)
+    .where(eq(sleepLogs.userId, userId))
+    .orderBy(desc(sleepLogs.sleepDate))
+    .limit(30);
+
+  if (logs.length === 0) return null;
+
+  const logsWithDuration = logs.filter((l) => l.durationMinutes != null && l.durationMinutes > 0);
+  const logsWithQuality = logs.filter((l) => l.quality != null && l.quality > 0);
+
+  const avgDuration =
+    logsWithDuration.length > 0
+      ? Math.round(logsWithDuration.reduce((s, l) => s + (l.durationMinutes ?? 0), 0) / logsWithDuration.length)
+      : 0;
+
+  const avgQuality =
+    logsWithQuality.length > 0
+      ? Math.round((logsWithQuality.reduce((s, l) => s + (l.quality ?? 0), 0) / logsWithQuality.length) * 10) / 10
+      : 0;
+
+  const bestNight = logsWithDuration.reduce(
+    (best, l) => ((l.durationMinutes ?? 0) > (best?.durationMinutes ?? 0) ? l : best),
+    logsWithDuration[0] ?? null
+  );
+
+  const SLEEP_GOAL_MINUTES = 450; // 7h30
+  const nightsAtGoal = logsWithDuration.filter((l) => (l.durationMinutes ?? 0) >= SLEEP_GOAL_MINUTES).length;
+
+  return {
+    totalLogs: logs.length,
+    avgDurationMinutes: avgDuration,
+    avgQuality,
+    bestNightMinutes: bestNight?.durationMinutes ?? 0,
+    nightsAtGoal,
+    goalMinutes: SLEEP_GOAL_MINUTES,
+    last7Days: logs.slice(0, 7),
+  };
 }

@@ -1,0 +1,20 @@
+CREATE TABLE `sleepLogs` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`sleepDate` varchar(10) NOT NULL,
+	`bedtime` varchar(5),
+	`wakeTime` varchar(5),
+	`durationMinutes` int,
+	`quality` int,
+	`hadNightWaking` boolean DEFAULT false,
+	`nightWakings` int DEFAULT 0,
+	`dreamRecall` boolean DEFAULT false,
+	`notes` text,
+	`eveningMood` enum('anxious','sad','neutral','calm','happy','energetic','grateful'),
+	`usedMeditation` boolean DEFAULT false,
+	`usedBreathing` boolean DEFAULT false,
+	`usedAmbient` boolean DEFAULT false,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `sleepLogs_id` PRIMARY KEY(`id`)
+);
