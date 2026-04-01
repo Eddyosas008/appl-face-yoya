@@ -13,8 +13,6 @@ import { trpc } from '@/lib/trpc';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
-type SortMode = 'default' | 'duration_asc' | 'duration_desc' | 'popular';
-
 // Couleurs de fallback par catégorie si pas de coverColor
 const CATEGORY_COLORS: Record<string, string> = {
   stress: '#7C3AED',
@@ -38,8 +36,6 @@ export default function ExploreScreen() {
   const { favorites, toggleFavorite, profile } = useUser();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [sortMode, setSortMode] = useState<SortMode>('default');
-  const [showFavs, setShowFavs] = useState(false);
 
   // Charger les catégories depuis la DB
   const { data: dbCategories = [], isLoading: loadingCats } = trpc.catalog.categories.useQuery();
@@ -55,27 +51,16 @@ export default function ExploreScreen() {
     ...dbCategories,
   ], [dbCategories]);
 
-  // Favoris
-  const favMeditations = useMemo(
-    () => dbMeditations.filter((m) => favorites.includes(String(m.id))),
-    [dbMeditations, favorites]
-  );
-
-  // Filtrer et trier les méditations
+  // Filtrer les méditations selon la recherche et la catégorie active
   const filtered = useMemo(() => {
-    let result = dbMeditations.filter((m) => {
+    return dbMeditations.filter((m) => {
       const matchSearch = !search ||
         m.title.toLowerCase().includes(search.toLowerCase()) ||
         (m.subtitle ?? '').toLowerCase().includes(search.toLowerCase());
       const matchCat = activeCategory === 'all' || m.categorySlug === activeCategory;
-      const matchFav = !showFavs || favorites.includes(String(m.id));
-      return matchSearch && matchCat && matchFav;
+      return matchSearch && matchCat;
     });
-    if (sortMode === 'duration_asc') result = [...result].sort((a, b) => (a.audioDurationSeconds ?? 0) - (b.audioDurationSeconds ?? 0));
-    if (sortMode === 'duration_desc') result = [...result].sort((a, b) => (b.audioDurationSeconds ?? 0) - (a.audioDurationSeconds ?? 0));
-    if (sortMode === 'popular') result = [...result].sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
-    return result;
-  }, [dbMeditations, search, activeCategory, sortMode, showFavs, favorites]);
+  }, [dbMeditations, search, activeCategory]);
 
   const isLoading = loadingCats || loadingMeds;
 
@@ -148,36 +133,8 @@ export default function ExploreScreen() {
                 returnKeyType="search"
               />
               {search.length > 0 && (
-                <Pressable onPress={() => setSearch('')} hitSlop={8}>
+                <Pressable onPress={() => setSearch('')}>
                   <IconSymbol name="xmark.circle.fill" size={18} color={colors.muted} />
-                </Pressable>
-              )}
-            </View>
-
-            {/* Tri + Favoris */}
-            <View style={styles.toolbarRow}>
-              <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 8 }}>
-                {([
-                  { key: 'default', label: '✨ Suggérés' },
-                  { key: 'popular', label: '⭐ Populaires' },
-                  { key: 'duration_asc', label: '⏱ Court → Long' },
-                  { key: 'duration_desc', label: '⏱ Long → Court' },
-                ] as { key: SortMode; label: string }[]).map((s) => (
-                  <Pressable
-                    key={s.key}
-                    style={[styles.sortChip, sortMode === s.key && { backgroundColor: colors.primary + '25', borderColor: colors.primary }]}
-                    onPress={() => setSortMode(s.key)}
-                  >
-                    <Text style={[styles.sortChipText, { color: sortMode === s.key ? colors.primary : colors.muted }]}>{s.label}</Text>
-                  </Pressable>
-                ))}
-              </HScrollView>
-              {favMeditations.length > 0 && (
-                <Pressable
-                  style={[styles.favToggle, showFavs && { backgroundColor: '#F9A8D4' + '30', borderColor: '#F9A8D4' }]}
-                  onPress={() => setShowFavs((v) => !v)}
-                >
-                  <Text style={{ fontSize: 16 }}>{showFavs ? '❤️' : '🤍'}</Text>
                 </Pressable>
               )}
             </View>
@@ -350,14 +307,4 @@ const styles = StyleSheet.create({
   featureEmoji: { fontSize: 22, marginBottom: 4 },
   featureName: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   featureSub: { color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 },
-  toolbarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, gap: 8 },
-  sortChip: {
-    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 12, paddingVertical: 6,
-  },
-  sortChipText: { fontSize: 12, fontWeight: '600' },
-  favToggle: {
-    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 10, paddingVertical: 6,
-  },
 });

@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Pressable,
   StyleSheet,
   ActivityIndicator,
   Alert,
@@ -13,7 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/use-auth";
+import { useUser } from "@/lib/user-context";
 
 const LEVEL_LABELS: Record<string, { label: string; emoji: string }> = {
   beginner: { label: "Débutant", emoji: "🌱" },
@@ -24,7 +23,7 @@ const LEVEL_LABELS: Record<string, { label: string; emoji: string }> = {
 export default function ProgramDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useUser();
   const utils = trpc.useUtils();
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
@@ -42,16 +41,6 @@ export default function ProgramDetailScreen() {
     onSuccess: () => {
       refetchProgress();
       utils.programs.myPrograms.invalidate();
-      // Naviguer vers le jour 1 après démarrage
-      router.push(`/program-day/${slug}/1` as never);
-    },
-    onError: (err) => {
-      // Si erreur d'auth, naviguer quand même vers le jour 1 (mode découverte)
-      if (err.message?.includes('auth') || err.message?.includes('session') || err.data?.code === 'UNAUTHORIZED') {
-        router.push(`/program-day/${slug}/1` as never);
-      } else {
-        Alert.alert("Erreur", err.message ?? "Impossible de démarrer le programme.");
-      }
     },
   });
 
@@ -61,18 +50,21 @@ export default function ProgramDetailScreen() {
 
   const handleStart = () => {
     if (!isAuthenticated) {
-      // Mode découverte : naviguer directement vers le jour 1 sans connexion
-      router.push(`/program-day/${slug}/1` as never);
+      Alert.alert(
+        "Connexion requise",
+        "Connectez-vous pour démarrer un programme et suivre votre progression.",
+        [
+          { text: "Annuler", style: "cancel" },
+          { text: "Se connecter", onPress: () => router.push("/(auth)/signin" as never) },
+        ]
+      );
       return;
     }
     startMutation.mutate({ programSlug: slug ?? "" });
   };
 
   const handleDayPress = (dayNumber: number) => {
-    if (!progress) {
-      handleStart();
-      return;
-    }
+    // Naviguer directement vers le jour sans exiger la connexion
     router.push(`/program-day/${slug}/${dayNumber}` as never);
   };
 
@@ -202,16 +194,16 @@ export default function ProgramDetailScreen() {
         {/* Bouton démarrer / reprendre */}
         {!progress ? (
           <View style={styles.ctaSection}>
-            <Pressable
-              style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.85 }]}
+            <TouchableOpacity
+              style={styles.startBtn}
               onPress={handleStart}
+              activeOpacity={0.85}
             >
               <LinearGradient
                 colors={["#7C3AED", "#A855F7"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.startBtnGradient}
-                pointerEvents="none"
               >
                 {startMutation.isPending ? (
                   <ActivityIndicator color="#FFFFFF" />
@@ -219,7 +211,7 @@ export default function ProgramDetailScreen() {
                   <Text style={styles.startBtnText}>🌙 Commencer le programme</Text>
                 )}
               </LinearGradient>
-            </Pressable>
+            </TouchableOpacity>
             <Text style={styles.startNote}>
               👥 {program.totalEnrollments ?? 0} personnes ont déjà commencé
             </Text>
@@ -286,12 +278,12 @@ export default function ProgramDetailScreen() {
                   ]}
                   onPress={() => {
                     if (isLocked) return;
-                    if (!progress) {
-                      handleStart();
-                      return;
-                    }
-                    // Naviguer directement vers le jour
                     handleDayPress(day.dayNumber);
+                  }}
+                  onLongPress={() => {
+                    if (!isLocked) {
+                      setExpandedDay(isExpanded ? null : day.dayNumber);
+                    }
                   }}
                   activeOpacity={isLocked ? 1 : 0.8}
                 >

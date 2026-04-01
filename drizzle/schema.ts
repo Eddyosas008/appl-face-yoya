@@ -149,7 +149,7 @@ export const meditations = mysqlTable("meditations", {
   subtitle: varchar("subtitle", { length: 255 }),                 // ex: "Méditation guidée pour s'endormir"
   description: text("description"),
   // Audio
-  audioUrl: text("audioUrl"),                                     // URL du fichier MP3/M4A (null = audio non encore assigné)
+  audioUrl: text("audioUrl").notNull(),                           // URL du fichier MP3/M4A
   audioDurationSeconds: int("audioDurationSeconds").default(0).notNull(), // durée exacte en secondes
   audioSizeBytes: int("audioSizeBytes").default(0),               // taille fichier (optionnel)
   // Categorisation
@@ -159,7 +159,7 @@ export const meditations = mysqlTable("meditations", {
   // Contenu
   instructor: varchar("instructor", { length: 100 }).default("Yoya").notNull(),
   language: varchar("language", { length: 10 }).default("fr").notNull(),
-  // scriptText retiré — les contenus audio sont fournis directement via audioUrl
+  scriptText: text("scriptText"),                                 // Texte de la méditation (optionnel)
   // Visuel
   coverColor: varchar("coverColor", { length: 20 }).default("#7C3AED"), // couleur de fond de la carte
   coverImageUrl: text("coverImageUrl"),                           // URL image de couverture (optionnel)
@@ -234,9 +234,6 @@ export const programDays = mysqlTable("programDays", {
   eveningRoutine: text("eveningRoutine"),                         // Routine du soir (texte)
   sleepTip: text("sleepTip"),                                     // Conseil du jour
   journalPrompt: text("journalPrompt"),                           // Question pour le journal
-  // Audio du jour (contenu audio spécifique au programme)
-  audioUrl: text("audioUrl"),                                     // URL directe du fichier audio (MP3/M4A)
-  audioDurationSeconds: int("audioDurationSeconds").default(0).notNull(), // durée exacte en secondes
   // Durée estimée
   estimatedMinutes: int("estimatedMinutes").default(15).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

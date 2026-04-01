@@ -43,13 +43,6 @@
       "when": 1775025967766,
       "tag": "0005_melodic_xorn",
       "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1775070239479,
-      "tag": "0006_puzzling_lake",
-      "breakpoints": true
     }
   ]
 }

@@ -208,13 +208,13 @@ export const appRouter = router({
         title: z.string().max(255),
         subtitle: z.string().max(255).optional(),
         description: z.string().optional(),
-        audioUrl: z.string().url().optional(),
+        audioUrl: z.string().url(),
         audioDurationSeconds: z.number().default(0),
         categorySlug: z.string().max(50),
         level: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
         tags: z.string().optional(),
         instructor: z.string().max(100).default("Yoya"),
-        // scriptText supprimé
+        scriptText: z.string().optional(),
         coverColor: z.string().max(20).optional(),
         coverImageUrl: z.string().optional(),
         isPremium: z.boolean().default(false),
@@ -225,19 +225,6 @@ export const appRouter = router({
         // Only admin can upsert catalog content
         if (ctx.user.role !== "admin") throw new Error("Unauthorized");
         await db.upsertMeditation(input);
-        return { success: true };
-      }),
-
-    // Admin: mettre à jour uniquement l'URL audio d'une méditation
-    updateAudioUrl: protectedProcedure
-      .input(z.object({
-        slug: z.string().max(100),
-        audioUrl: z.string().nullable(),
-        audioDurationSeconds: z.number().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
-        await db.updateMeditationAudioUrl(input.slug, input.audioUrl, input.audioDurationSeconds);
         return { success: true };
       }),
 
@@ -398,25 +385,10 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
         eveningRoutine: z.string().optional(),
         sleepTip: z.string().optional(),
         journalPrompt: z.string().optional(),
-        audioUrl: z.string().nullable().optional(),
-        audioDurationSeconds: z.number().optional(),
         estimatedMinutes: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         await db.upsertProgramDay(input as Parameters<typeof db.upsertProgramDay>[0]);
-        return { success: true };
-      }),
-    // Admin : mettre à jour l'URL audio d'un jour de programme
-    updateDayAudioUrl: protectedProcedure
-      .input(z.object({
-        programSlug: z.string(),
-        dayNumber: z.number(),
-        audioUrl: z.string().nullable().optional(),
-        audioDurationSeconds: z.number().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
-        await db.updateProgramDayAudioUrl(input.programSlug, input.dayNumber, input.audioUrl ?? null, input.audioDurationSeconds ?? 0);
         return { success: true };
       }),
   }),

@@ -253,34 +253,6 @@ export default function ProfileScreen() {
           </Pressable>
         )}
 
-        {/* Section Admin — visible pour tous les utilisateurs connectés (la route vérifie le rôle) */}
-        {isAuthenticated && (
-          <View style={[styles.settingsGroup, { backgroundColor: colors.surface, marginBottom: 12 }]}>
-            <Pressable
-              style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, borderBottomWidth: 0.5, opacity: pressed ? 0.7 : 1 }]}
-              onPress={() => router.push('/admin/audio-manager' as never)}
-            >
-              <Text style={styles.settingIcon}>🎵</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.settingLabel, { color: colors.foreground }]}>Audio Méditations</Text>
-                <Text style={[styles.settingSubValue, { color: colors.muted }]}>Assigner les URLs audio aux méditations</Text>
-              </View>
-              <IconSymbol name="chevron.right" size={16} color={colors.muted} />
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.settingRow, { opacity: pressed ? 0.7 : 1 }]}
-              onPress={() => router.push('/admin/program-audio-manager' as never)}
-            >
-              <Text style={styles.settingIcon}>🎧</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.settingLabel, { color: colors.foreground }]}>Audio Programmes</Text>
-                <Text style={[styles.settingSubValue, { color: colors.muted }]}>Assigner les URLs audio aux jours de programme</Text>
-              </View>
-              <IconSymbol name="chevron.right" size={16} color={colors.muted} />
-            </Pressable>
-          </View>
-        )}
-
         <Pressable style={({ pressed }) => [styles.logoutButton, { borderColor: colors.error, opacity: pressed ? 0.7 : 1 }]} onPress={logout}>
           <Text style={[styles.logoutText, { color: colors.error }]}>Se déconnecter</Text>
         </Pressable>

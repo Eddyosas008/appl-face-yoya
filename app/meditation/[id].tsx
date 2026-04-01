@@ -67,9 +67,13 @@ export default function MeditationPlayerScreen() {
 
   useKeepAwake();
 
-  // Vérifier si un audio réel est disponible
-  const hasAudio = !!(meditation?.audioUrl && meditation.audioUrl.trim() !== '');
-  const audioSource = hasAudio ? { uri: meditation!.audioUrl! } : null;
+  // Détecter si l'URL audio est un placeholder
+  const isPlaceholderAudio = !meditation?.audioUrl ||
+    meditation.audioUrl.includes('placeholder.yoya-wellness.com');
+
+  const audioSource = (!isPlaceholderAudio && meditation?.audioUrl)
+    ? { uri: meditation.audioUrl }
+    : null;
 
   const player = useAudioPlayer(audioSource ?? { uri: '' });
   const status = useAudioPlayerStatus(player);
@@ -375,18 +379,18 @@ export default function MeditationPlayerScreen() {
               <Text style={[styles.playerHint, { color: colors.muted }]}>
                 {status.playing
                   ? '✨ Méditation en cours...'
-                  : hasAudio
-                  ? 'Appuyez pour commencer'
-                  : '🎵 Audio bientôt disponible'}
+                  : isPlaceholderAudio
+                  ? '🎵 Fichier audio à uploader — script disponible ci-dessous'
+                  : 'Appuyez pour commencer'}
               </Text>
             </View>
           )}
 
-          {/* Message si aucun audio assigné */}
-          {!hasAudio && (
+          {/* Script de méditation (si disponible) */}
+          {meditation.scriptText && (
             <View style={[styles.scriptContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.scriptTitle, { color: colors.foreground }]}>🎵 Audio en cours de préparation</Text>
-              <Text style={[styles.scriptText, { color: colors.muted }]}>Ce contenu audio sera bientôt disponible. Revenez prochainement pour écouter cette méditation guidée.</Text>
+              <Text style={[styles.scriptTitle, { color: colors.foreground }]}>📖 Script de méditation</Text>
+              <Text style={[styles.scriptText, { color: colors.muted }]}>{meditation.scriptText}</Text>
             </View>
           )}
         </View>
