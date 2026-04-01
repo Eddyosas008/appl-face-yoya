@@ -140,3 +140,15 @@
 - [x] Statistiques : durée moyenne, meilleure nuit, objectif atteint
 - [x] Historique des 30 derniers jours en liste
 - [x] Lien depuis le dashboard vers l'écran de suivi
+
+## Phase 17 : Notes de nuit (rêves / pensées)
+
+- [ ] Ajouter champ notes multilignes dans le modal de saisie du dashboard
+- [ ] Afficher les notes dans l'historique de l'écran sleep-tracker
+- [ ] Permettre l'édition des notes depuis l'historique
+
+## Phase 17 : Notes de nuit (rêves / pensées)
+
+- [ ] Ajouter champ notes multilignes dans le modal de saisie du dashboard
+- [ ] Afficher les notes dans l historique de l ecran sleep-tracker
+- [ ] Permettre l edition des notes depuis l historique

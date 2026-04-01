@@ -82,8 +82,12 @@ export default function HomeScreen() {
   const [sleepBedtime, setSleepBedtime] = useState('22:30');
   const [sleepWakeTime, setSleepWakeTime] = useState('07:00');
   const [sleepQuality, setSleepQuality] = useState(3);
+  const [sleepNotes, setSleepNotes] = useState('');
   const createSleepLog = trpc.sleep.create.useMutation({
-    onSuccess: () => setShowSleepModal(false),
+    onSuccess: () => {
+      setShowSleepModal(false);
+      setSleepNotes('');
+    },
   });
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -95,6 +99,7 @@ export default function HomeScreen() {
       bedtime: sleepBedtime,
       wakeTime: sleepWakeTime,
       quality: sleepQuality,
+      notes: sleepNotes.trim() || undefined,
     });
   }
 
@@ -531,6 +536,19 @@ export default function HomeScreen() {
               ))}
             </View>
 
+            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>📝 Notes (rêves, pensées...)</Text>
+            <TextInput
+              style={[styles.modalInput, styles.modalInputNotes, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: '#FFF' }]}
+              value={sleepNotes}
+              onChangeText={setSleepNotes}
+              placeholder="Notez vos rêves, vos pensées du soir..."
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              returnKeyType="default"
+            />
+
             <Pressable
               style={({ pressed }) => [styles.modalSaveBtn, { backgroundColor: '#7C3AED', opacity: pressed ? 0.85 : 1 }]}
               onPress={handleSaveSleep}
@@ -665,6 +683,7 @@ const styles = StyleSheet.create({
   modalSub: { fontSize: 14, marginBottom: 24 },
   modalLabel: { fontSize: 13, fontWeight: '600', marginBottom: 8 },
   modalInput: { borderRadius: 12, padding: 14, fontSize: 16, borderWidth: 1, marginBottom: 16 },
+  modalInputNotes: { minHeight: 80, paddingTop: 12 },
   qualityRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   qualityBtn: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1 },
   qualityBtnText: { fontSize: 16, fontWeight: '700' },

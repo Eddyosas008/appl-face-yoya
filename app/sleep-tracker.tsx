@@ -495,7 +495,12 @@ export default function SleepTrackerScreen() {
               )}
             </View>
 
-            {log.notes ? <Text style={styles.logNotes}>{log.notes}</Text> : null}
+            {log.notes ? (
+              <View style={styles.logNotesContainer}>
+                <Text style={styles.logNotesIcon}>📝</Text>
+                <Text style={styles.logNotes}>{log.notes}</Text>
+              </View>
+            ) : null}
 
             {/* Actions */}
             <View style={styles.logActions}>
@@ -784,7 +789,9 @@ const styles = StyleSheet.create({
   logIndicators: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 6 },
   indicator: { fontSize: 11, color: "#A5B4FC", backgroundColor: "#2D2B5A", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   indicatorWarn: { color: "#FCD34D", backgroundColor: "#3B2F0A" },
-  logNotes: { fontSize: 12, color: "#9CA3AF", fontStyle: "italic", marginBottom: 8 },
+  logNotesContainer: { flexDirection: "row", alignItems: "flex-start", backgroundColor: "rgba(124, 58, 237, 0.1)", borderRadius: 10, padding: 10, marginBottom: 10, gap: 8 },
+  logNotesIcon: { fontSize: 13, marginTop: 1 },
+  logNotes: { flex: 1, fontSize: 13, color: "#C4B5FD", fontStyle: "italic", lineHeight: 18 },
   logActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },
   editBtn: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: "#4338CA" },
   editBtnText: { fontSize: 12, color: "#A5B4FC" },
