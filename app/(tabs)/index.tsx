@@ -6,6 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useUser } from '@/lib/user-context';
+import { useAuth } from '@/hooks/use-auth';
+import { trpc } from '@/lib/trpc';
 import { MEDITATIONS, ADAPTIVE_JOURNEYS, MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PremiumBadge } from '@/components/ui/premium-badge';
@@ -20,6 +22,16 @@ function getGreeting() {
 export default function HomeScreen() {
   const colors = useColors();
   const { profile, checkIns, sessionHistory, favorites } = useUser();
+  const { isAuthenticated } = useAuth();
+
+  // Charger le profil depuis le backend pour avoir le vrai prénom
+  const { data: backendProfile } = trpc.profile.get.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
+  // Prénom : priorité backend > local > fallback
+  const firstName = backendProfile?.firstName || profile?.firstName || 'vous';
 
   // Fade-in animation on mount
   const fadeAnim = useSharedValue(0);
@@ -51,7 +63,7 @@ export default function HomeScreen() {
           <View style={styles.headerLeft}>
             <Text style={[styles.greeting, { color: colors.muted }]}>{getGreeting()},</Text>
             <Text style={[styles.userName, { color: colors.foreground }]}>
-              {profile?.firstName || 'Sophia'} ✨
+              {firstName} ✨
             </Text>
           </View>
           <Pressable

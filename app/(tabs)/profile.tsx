@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useUser } from '@/lib/user-context';
+import { useAuth } from '@/hooks/use-auth';
+import { trpc } from '@/lib/trpc';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
@@ -26,14 +28,41 @@ const PLANS = [
 
 export default function ProfileScreen() {
   const colors = useColors();
-  const { profile, checkIns, logout } = useUser();
+  const { profile, checkIns, logout, updateProfile } = useUser();
+  const { isAuthenticated } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
   const [showPremium, setShowPremium] = useState(false);
+  const [showEditName, setShowEditName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState('');
   const [notifSettings, setNotifSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+
+  // Charger le profil depuis le backend
+  const { data: backendProfile, refetch: refetchProfile } = trpc.profile.get.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+  const updateProfileMutation = trpc.profile.update.useMutation({
+    onSuccess: () => refetchProfile(),
+  });
+
+  // Prénom réel : backend > local
+  const firstName = backendProfile?.firstName || profile?.firstName || 'Vous';
 
   useEffect(() => {
     loadNotificationSettings().then(setNotifSettings);
   }, []);
+
+  async function handleSaveName() {
+    const trimmed = editNameValue.trim();
+    if (!trimmed) return;
+    // Sauvegarder localement
+    await updateProfile({ firstName: trimmed });
+    // Sauvegarder en DB si connecté
+    if (isAuthenticated) {
+      await updateProfileMutation.mutateAsync({ firstName: trimmed });
+    }
+    setShowEditName(false);
+  }
 
   const recentMoods = checkIns.slice(0, 7);
   const moodCounts = recentMoods.reduce((acc: Record<string, number>, ci) => {
@@ -106,8 +135,16 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.foreground }]}>{profile?.firstName || 'Sophia'}</Text>
-            <Text style={[styles.profileEmail, { color: colors.muted }]}>{profile?.firstName ? profile.firstName + '@yoya.app' : 'sophia@yoya.app'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={[styles.profileName, { color: colors.foreground }]}>{firstName}</Text>
+              <Pressable
+                style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+                onPress={() => { setEditNameValue(firstName); setShowEditName(true); }}
+              >
+                <Text style={{ fontSize: 14 }}>✏️</Text>
+              </Pressable>
+            </View>
+            <Text style={[styles.profileEmail, { color: colors.muted }]}>{firstName}@yoya.app</Text>
             {profile?.isPremium ? (
               <PremiumBadge small />
             ) : (
@@ -187,10 +224,16 @@ export default function ProfileScreen() {
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Compte</Text>
         <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
-          <Pressable style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}>
+          <Pressable
+            style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+            onPress={() => { setEditNameValue(firstName); setShowEditName(true); }}
+          >
             <Text style={styles.settingIcon}>✏️</Text>
-            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Modifier le profil</Text>
-            <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+            <Text style={[styles.settingLabel, { color: colors.foreground }]}>Modifier le prénom</Text>
+            <View style={styles.settingRight}>
+              <Text style={[styles.settingValue, { color: colors.muted }]}>{firstName}</Text>
+              <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+            </View>
           </Pressable>
           <Pressable style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}>
             <Text style={styles.settingIcon}>🔒</Text>
@@ -216,6 +259,54 @@ export default function ProfileScreen() {
 
         <Text style={[styles.version, { color: colors.muted }]}>Yoya Wellness v1.0.0</Text>
       </ScrollView>
+
+      {/* Modal d'édition du prénom */}
+      <Modal visible={showEditName} animationType="slide" presentationStyle="pageSheet" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitle, { color: colors.foreground }]}>Modifier votre prénom</Text>
+            <TextInput
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: editNameValue ? colors.primary : colors.border,
+                  color: colors.foreground,
+                },
+              ]}
+              placeholder="Votre prénom"
+              placeholderTextColor={colors.muted}
+              value={editNameValue}
+              onChangeText={setEditNameValue}
+              autoCapitalize="words"
+              autoCorrect={false}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSaveName}
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={({ pressed }) => [styles.modalCancelBtn, { borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+                onPress={() => setShowEditName(false)}
+              >
+                <Text style={[styles.modalCancelText, { color: colors.muted }]}>Annuler</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.modalSaveBtn,
+                  { backgroundColor: editNameValue.trim() ? colors.primary : colors.border, opacity: pressed ? 0.8 : 1 },
+                ]}
+                onPress={handleSaveName}
+                disabled={!editNameValue.trim() || updateProfileMutation.isPending}
+              >
+                <Text style={styles.modalSaveText}>
+                  {updateProfileMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }
@@ -251,6 +342,15 @@ const styles = StyleSheet.create({
   premiumCta: { borderRadius: 999, paddingVertical: 15, alignItems: 'center', marginBottom: 12 },
   premiumCtaText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   logoutButton: { borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, marginBottom: 16 },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' },
+  modalCard: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+  modalTitle: { fontSize: 18, fontWeight: '800', marginBottom: 20, textAlign: 'center' },
+  modalInput: { borderRadius: 14, borderWidth: 1.5, paddingHorizontal: 16, paddingVertical: 14, fontSize: 18, fontWeight: '600', marginBottom: 20 },
+  modalButtons: { flexDirection: 'row', gap: 12 },
+  modalCancelBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5 },
+  modalCancelText: { fontSize: 15, fontWeight: '600' },
+  modalSaveBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center' },
+  modalSaveText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   logoutText: { fontSize: 15, fontWeight: '600' },
   version: { fontSize: 12, textAlign: 'center' },
   premiumScroll: { paddingBottom: 40 },

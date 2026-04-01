@@ -85,3 +85,12 @@
 - [x] Authentification Manus OAuth réelle dans les écrans auth
 - [x] Gestion des états loading/error dans tous les écrans connectés
 - [x] Synchronisation multi-appareils fonctionnelle
+
+## Phase 13 : Persistance et affichage du prénom
+- [x] Lire l'état actuel de l'onboarding et du user-context
+- [x] Sauvegarder le prénom en DB (trpc.profile.upsert) à la fin de l'onboarding
+- [x] Sauvegarder le prénom dans AsyncStorage pour accès hors-ligne
+- [x] Afficher le prénom dans le dashboard (salutation personnalisée)
+- [x] Afficher le prénom dans le chat IA (contexte personnalisé)
+- [x] Afficher le prénom dans le profil et les paramètres
+- [x] Permettre la modification du prénom depuis le profil

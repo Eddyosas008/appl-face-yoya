@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useUser } from '@/lib/user-context';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/hooks/use-auth';
 import type { UserProfile } from '@/shared/wellness-types';
 
 type OnboardingData = Partial<UserProfile>;
@@ -90,6 +92,8 @@ const STEPS = [
 export default function OnboardingScreen() {
   const colors = useColors();
   const { completeOnboarding } = useUser();
+  const { isAuthenticated } = useAuth();
+  const upsertProfile = trpc.profile.upsert.useMutation();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({});
   const [textInput, setTextInput] = useState('');
@@ -123,7 +127,19 @@ export default function OnboardingScreen() {
       const finalData = step.type === 'text'
         ? { ...data, [step.field]: textInput.trim() }
         : data;
+      // Sauvegarder localement
       await completeOnboarding(finalData as Partial<UserProfile>);
+      // Sauvegarder en DB si authentifié
+      if (isAuthenticated) {
+        await upsertProfile.mutateAsync({
+          firstName: (finalData as Partial<UserProfile>).firstName || undefined,
+          ageRange: (finalData as Partial<UserProfile>).ageRange || undefined,
+          mainGoal: (finalData as Partial<UserProfile>).mainGoal || undefined,
+          meditationLevel: (finalData as Partial<UserProfile>).meditationLevel as any || undefined,
+          preferredDuration: (finalData as Partial<UserProfile>).preferredDuration || undefined,
+          guidanceTone: (finalData as Partial<UserProfile>).guidanceTone as any || undefined,
+        });
+      }
       router.replace('/(tabs)');
     } finally {
       setIsLoading(false);
@@ -159,33 +175,41 @@ export default function OnboardingScreen() {
         {/* Text input step */}
         {step.type === 'text' && (
           <View style={styles.textInputContainer}>
-            <View
+            {/* Vrai champ de saisie éditable */}
+            <TextInput
               style={[
                 styles.textInputWrapper,
-                { backgroundColor: colors.surface, borderColor: colors.border },
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: textInput ? colors.primary : colors.border,
+                  color: colors.foreground,
+                  fontSize: 18,
+                  fontWeight: '600',
+                },
               ]}
-            >
-              <Text
-                style={[
-                  styles.textInputField,
-                  { color: textInput ? colors.foreground : colors.muted },
-                ]}
-                onPress={() => {}}
-              >
-                {textInput || step.placeholder}
-              </Text>
-            </View>
-            {/* Simple text input */}
-            <View style={[styles.nameInput, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
-              {['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'].map((_, i) => null)}
-            </View>
+              placeholder={step.placeholder}
+              placeholderTextColor={colors.muted}
+              value={textInput}
+              onChangeText={setTextInput}
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={handleNext}
+              autoFocus
+            />
+            {/* Suggestions de prénoms */}
+            <Text style={[styles.suggestionsLabel, { color: colors.muted }]}>Suggestions</Text>
             <View style={styles.nameOptions}>
               {['Sophia', 'Emma', 'Léa', 'Marie', 'Camille', 'Julie', 'Chloé', 'Laura'].map((name) => (
                 <Pressable
                   key={name}
                   style={({ pressed }) => [
                     styles.nameChip,
-                    { backgroundColor: textInput === name ? colors.primary : colors.surface, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                    {
+                      backgroundColor: textInput === name ? colors.primary : colors.surface,
+                      borderColor: textInput === name ? colors.primary : colors.border,
+                      opacity: pressed ? 0.7 : 1,
+                    },
                   ]}
                   onPress={() => setTextInput(name)}
                 >
@@ -318,6 +342,14 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     display: 'none',
+  },
+  suggestionsLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
+    marginTop: 4,
   },
   nameOptions: {
     flexDirection: 'row',
