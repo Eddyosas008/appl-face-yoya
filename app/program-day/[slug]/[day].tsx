@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { useAuth } from "@/hooks/use-auth";
 import { useAudioPlayer, setAudioModeAsync } from "expo-audio";
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
@@ -321,7 +322,7 @@ const timerStyles = StyleSheet.create({
 export default function ProgramDayScreen() {
   const { slug, day } = useLocalSearchParams<{ slug: string; day: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAuth();
   const [isCompleting, setIsCompleting] = useState(false);
   const [routineChecked, setRoutineChecked] = useState<Record<number, boolean>>({});
   const [showBreathing, setShowBreathing] = useState(false);

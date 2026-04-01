@@ -12,7 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
-import { useUser } from "@/lib/user-context";
+import { useAuth } from "@/hooks/use-auth";
 
 // ─── Types locaux ───────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ type DayEdit = {
 
 export default function ProgramAudioManagerScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAuth();
 
   // État local des éditions par clé "slug-dayNumber"
   const [edits, setEdits] = useState<Record<string, DayEdit>>({});

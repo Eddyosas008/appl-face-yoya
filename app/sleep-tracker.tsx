@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { useAuth } from "@/hooks/use-auth";
 import Svg, { Path, Circle, Line, Text as SvgText, Rect } from "react-native-svg";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -236,7 +237,7 @@ function SleepChart({ logs }: SleepChartProps) {
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
 export default function SleepTrackerScreen() {
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<SleepFormData>({

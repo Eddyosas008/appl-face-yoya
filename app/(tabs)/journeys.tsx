@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { useAuth } from "@/hooks/use-auth";
 
 const FILTERS = [
   { key: "all", label: "Tous", emoji: "🌙" },
@@ -37,7 +38,7 @@ const ISSUE_LABELS: Record<string, string> = {
 
 export default function JourneysScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAuth();
   const [activeFilter, setActiveFilter] = useState("all");
 
   const { data: programs, isLoading } = trpc.programs.list.useQuery();

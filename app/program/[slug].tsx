@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   ActivityIndicator,
   Alert,
@@ -12,7 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
-import { useUser } from "@/lib/user-context";
+import { useAuth } from "@/hooks/use-auth";
 
 const LEVEL_LABELS: Record<string, { label: string; emoji: string }> = {
   beginner: { label: "Débutant", emoji: "🌱" },
@@ -23,7 +24,7 @@ const LEVEL_LABELS: Record<string, { label: string; emoji: string }> = {
 export default function ProgramDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated } = useAuth();
   const utils = trpc.useUtils();
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
@@ -44,6 +45,14 @@ export default function ProgramDetailScreen() {
       // Naviguer vers le jour 1 après démarrage
       router.push(`/program-day/${slug}/1` as never);
     },
+    onError: (err) => {
+      // Si erreur d'auth, naviguer quand même vers le jour 1 (mode découverte)
+      if (err.message?.includes('auth') || err.message?.includes('session') || err.data?.code === 'UNAUTHORIZED') {
+        router.push(`/program-day/${slug}/1` as never);
+      } else {
+        Alert.alert("Erreur", err.message ?? "Impossible de démarrer le programme.");
+      }
+    },
   });
 
   const completedDays: number[] = progress ? JSON.parse(progress.completedDays || "[]") : [];
@@ -52,14 +61,8 @@ export default function ProgramDetailScreen() {
 
   const handleStart = () => {
     if (!isAuthenticated) {
-      Alert.alert(
-        "Connexion requise",
-        "Connectez-vous pour démarrer un programme et suivre votre progression.",
-        [
-          { text: "Annuler", style: "cancel" },
-          { text: "Se connecter", onPress: () => router.push("/(auth)/signin" as never) },
-        ]
-      );
+      // Mode découverte : naviguer directement vers le jour 1 sans connexion
+      router.push(`/program-day/${slug}/1` as never);
       return;
     }
     startMutation.mutate({ programSlug: slug ?? "" });
@@ -199,16 +202,16 @@ export default function ProgramDetailScreen() {
         {/* Bouton démarrer / reprendre */}
         {!progress ? (
           <View style={styles.ctaSection}>
-            <TouchableOpacity
-              style={styles.startBtn}
+            <Pressable
+              style={({ pressed }) => [styles.startBtn, pressed && { opacity: 0.85 }]}
               onPress={handleStart}
-              activeOpacity={0.85}
             >
               <LinearGradient
                 colors={["#7C3AED", "#A855F7"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.startBtnGradient}
+                pointerEvents="none"
               >
                 {startMutation.isPending ? (
                   <ActivityIndicator color="#FFFFFF" />
@@ -216,7 +219,7 @@ export default function ProgramDetailScreen() {
                   <Text style={styles.startBtnText}>🌙 Commencer le programme</Text>
                 )}
               </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
             <Text style={styles.startNote}>
               👥 {program.totalEnrollments ?? 0} personnes ont déjà commencé
             </Text>

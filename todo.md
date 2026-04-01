@@ -182,3 +182,9 @@
 - [ ] Ajouter colonnes audioUrl + audioDurationSeconds dans programDays
 - [ ] Mettre à jour le lecteur de jour de programme pour lire l'audio
 - [ ] Créer l'écran admin de gestion audio des jours de programme
+
+## Phase 22 : Correction boutons et navigation
+
+- [ ] Corriger définitivement le bouton "Commencer le programme"
+- [ ] Auditer tous les boutons de l'app et corriger les liens morts
+- [ ] Créer les pages/sessions manquantes
