@@ -165,3 +165,12 @@
 ## Phase 19 : Corrections de navigation
 
 - [x] Corriger navigation 'Voir tout' programmes — redirige vers /(tabs)/journeys (route existante)
+
+## Phase 20 : Audio URL pour les méditations
+
+- [x] Rendre audioUrl nullable + supprimer scriptText (migration DB directe)
+- [x] Mettre à jour le seed pour retirer les références scriptText
+- [x] Mettre à jour le lecteur pour utiliser audioUrl de la DB (sans script)
+- [x] Route tRPC catalog.updateAudioUrl pour mettre à jour l'URL audio
+- [x] Créer écran admin /admin/audio-manager (liste + champs URL + sauvegarde)
+- [x] Lien Gestion Audio dans le profil utilisateur

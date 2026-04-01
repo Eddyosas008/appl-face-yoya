@@ -362,6 +362,19 @@ export async function upsertMeditation(data: InsertMeditation) {
   await db.insert(meditations).values(data).onDuplicateKeyUpdate({ set: updateSet });
 }
 
+export async function updateMeditationAudioUrl(
+  slug: string,
+  audioUrl: string | null,
+  audioDurationSeconds?: number
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  type UpdateFields = { audioUrl: string | null; audioDurationSeconds?: number };
+  const updateData: UpdateFields = { audioUrl };
+  if (audioDurationSeconds !== undefined) updateData.audioDurationSeconds = audioDurationSeconds;
+  await db.update(meditations).set(updateData).where(eq(meditations.slug, slug));
+}
+
 export async function getMeditationCategories() {
   const db = await getDb();
   if (!db) return [];

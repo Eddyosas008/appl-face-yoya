@@ -149,7 +149,7 @@ export const meditations = mysqlTable("meditations", {
   subtitle: varchar("subtitle", { length: 255 }),                 // ex: "Méditation guidée pour s'endormir"
   description: text("description"),
   // Audio
-  audioUrl: text("audioUrl").notNull(),                           // URL du fichier MP3/M4A
+  audioUrl: text("audioUrl"),                                     // URL du fichier MP3/M4A (null = audio non encore assigné)
   audioDurationSeconds: int("audioDurationSeconds").default(0).notNull(), // durée exacte en secondes
   audioSizeBytes: int("audioSizeBytes").default(0),               // taille fichier (optionnel)
   // Categorisation
@@ -159,7 +159,7 @@ export const meditations = mysqlTable("meditations", {
   // Contenu
   instructor: varchar("instructor", { length: 100 }).default("Yoya").notNull(),
   language: varchar("language", { length: 10 }).default("fr").notNull(),
-  scriptText: text("scriptText"),                                 // Texte de la méditation (optionnel)
+  // scriptText retiré — les contenus audio sont fournis directement via audioUrl
   // Visuel
   coverColor: varchar("coverColor", { length: 20 }).default("#7C3AED"), // couleur de fond de la carte
   coverImageUrl: text("coverImageUrl"),                           // URL image de couverture (optionnel)

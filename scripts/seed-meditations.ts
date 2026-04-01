@@ -404,7 +404,7 @@ async function seed() {
             isPremium: med.isPremium,
             isFeatured: med.isFeatured,
             sortOrder: med.sortOrder,
-            scriptText: (med as { scriptText?: string }).scriptText,
+            // scriptText supprimé — utiliser audioUrl pour le contenu audio
           },
         });
       console.log(`  ✓ Meditation: ${med.title}`);
@@ -415,8 +415,8 @@ async function seed() {
 
   console.log("\n✅ Seed completed!");
   console.log(`   ${CATEGORIES.length} categories | ${MEDITATIONS.length} meditations`);
-  console.log("\n⚠️  Note: audioUrl are placeholders.");
-  console.log("   Upload real MP3 files via the admin route: trpc.catalog.upsert");
+  console.log("\n⚠️  Note: les audioUrl sont vides par défaut.");
+  console.log("   Ajoutez vos URLs audio via l'interface admin (Profil > Gestion des méditations).");
   process.exit(0);
 }
 

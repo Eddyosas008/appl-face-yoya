@@ -208,13 +208,13 @@ export const appRouter = router({
         title: z.string().max(255),
         subtitle: z.string().max(255).optional(),
         description: z.string().optional(),
-        audioUrl: z.string().url(),
+        audioUrl: z.string().url().optional(),
         audioDurationSeconds: z.number().default(0),
         categorySlug: z.string().max(50),
         level: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
         tags: z.string().optional(),
         instructor: z.string().max(100).default("Yoya"),
-        scriptText: z.string().optional(),
+        // scriptText supprimé
         coverColor: z.string().max(20).optional(),
         coverImageUrl: z.string().optional(),
         isPremium: z.boolean().default(false),
@@ -225,6 +225,19 @@ export const appRouter = router({
         // Only admin can upsert catalog content
         if (ctx.user.role !== "admin") throw new Error("Unauthorized");
         await db.upsertMeditation(input);
+        return { success: true };
+      }),
+
+    // Admin: mettre à jour uniquement l'URL audio d'une méditation
+    updateAudioUrl: protectedProcedure
+      .input(z.object({
+        slug: z.string().max(100),
+        audioUrl: z.string().nullable(),
+        audioDurationSeconds: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
+        await db.updateMeditationAudioUrl(input.slug, input.audioUrl, input.audioDurationSeconds);
         return { success: true };
       }),
 
