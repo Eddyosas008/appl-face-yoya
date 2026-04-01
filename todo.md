@@ -159,5 +159,5 @@
 - [x] Section "Mon programme en cours" sur la liste
 - [x] Refonte écran détail programme (timeline jours, aperçu contenu)
 - [x] Refonte écran jour de programme (exercices interactifs, minuteur)
-- [ ] Enrichissement contenu DB (21j et 30j complets)
+- [x] Enrichissement contenu DB (21j et 30j complets)
 - [x] Indicateur de jours restants et streak programme
