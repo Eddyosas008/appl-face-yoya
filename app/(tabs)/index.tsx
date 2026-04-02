@@ -310,7 +310,7 @@ export default function HomeScreen() {
                   styles.issueCard,
                   { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
                 ]}
-                onPress={() => router.push(`/programs?issue=${issue.id}` as never)}
+                onPress={() => router.push(`/programs` as never)}
               >
                 <LinearGradient
                   colors={[`${issue.color}30`, `${issue.color}10`]}
@@ -350,7 +350,7 @@ export default function HomeScreen() {
               <Pressable
                 key={prog.slug}
                 style={({ pressed }) => [styles.programCard, { opacity: pressed ? 0.9 : 1 }]}
-                onPress={() => router.push(`/programs/${prog.slug}` as never)}
+                onPress={() => router.push(`/program/${prog.slug}` as never)}
               >
                 <LinearGradient colors={prog.color} style={styles.programGradient}>
                   <Text style={styles.programEmoji}>{prog.emoji}</Text>

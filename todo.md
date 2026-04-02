@@ -165,3 +165,10 @@
 ## Phase 24 : Correction tap cartes jours programme
 
 - [x] Corriger le tap sur les cartes de jours — tap simple navigue vers le jour (plus besoin de connexion pour Jour 1)
+
+## Phase 25 : Corrections navigation et audio
+
+- [x] Corriger le bouton "Voir tout" Programmes dans la page d'accueil
+- [x] Faire fonctionner le lecteur audio des jours de programme (audioUrl depuis DB)
+- [x] Créer l'écran liste /programs avec filtres et progression
+- [x] Corriger la navigation des cartes programmes (/programs/[slug] → /program/[slug])

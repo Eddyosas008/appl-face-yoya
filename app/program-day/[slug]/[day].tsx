@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,12 +8,14 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from "expo-audio";
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 
@@ -315,8 +317,103 @@ const timerStyles = StyleSheet.create({
   resetBtnText: { color: "#fff", fontWeight: "700", fontSize: 16 },
 });
 
-// ─── Écran principal ────────────────────────────────────────────────────────────
+// ─── Composant lecteur audio ────────────────────────────────────────────────────
+function AudioPlayerCard({ audioUrl, durationSeconds }: { audioUrl: string; durationSeconds?: number | null }) {
+  const player = useAudioPlayer(audioUrl);
+  const status = useAudioPlayerStatus(player);
+  const [isReady, setIsReady] = useState(false);
 
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+    return () => { player.release(); };
+  }, []);
+
+  useEffect(() => {
+    if (status.isLoaded) setIsReady(true);
+  }, [status.isLoaded]);
+
+  const togglePlay = useCallback(() => {
+    if (Platform.OS !== "web") {
+      const { Haptics } = require("expo-haptics");
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
+    if (status.playing) {
+      player.pause();
+    } else {
+      player.play();
+    }
+  }, [status.playing, player]);
+
+  const totalSecs = durationSeconds && durationSeconds > 0
+    ? durationSeconds
+    : Math.round((status.duration ?? 0) / 1000);
+  const currentSecs = Math.round((status.currentTime ?? 0) / 1000);
+  const pct = totalSecs > 0 ? Math.min(currentSecs / totalSecs, 1) : 0;
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  return (
+    <View style={audioStyles.container}>
+      <View style={audioStyles.row}>
+        <TouchableOpacity
+          style={[audioStyles.playBtn, !isReady && audioStyles.playBtnDisabled]}
+          onPress={togglePlay}
+          disabled={!isReady}
+          activeOpacity={0.8}
+        >
+          <Text style={audioStyles.playBtnText}>{status.playing ? "⏸" : "▶"}</Text>
+        </TouchableOpacity>
+        <View style={audioStyles.info}>
+          <View style={audioStyles.progressBg}>
+            <View style={[audioStyles.progressFill, { width: `${pct * 100}%` as unknown as number }]} />
+          </View>
+          <View style={audioStyles.timeRow}>
+            <Text style={audioStyles.timeText}>{fmt(currentSecs)}</Text>
+            {totalSecs > 0 && (
+              <Text style={audioStyles.timeText}>{fmt(totalSecs)}</Text>
+            )}
+          </View>
+        </View>
+      </View>
+      {!isReady && (
+        <Text style={audioStyles.loadingText}>Chargement de l'audio...</Text>
+      )}
+    </View>
+  );
+}
+const audioStyles = StyleSheet.create({
+  container: {
+    backgroundColor: "rgba(167,139,250,0.12)",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "rgba(167,139,250,0.3)",
+  },
+  row: { flexDirection: "row", alignItems: "center", gap: 14 },
+  playBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#7C3AED",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  playBtnDisabled: { backgroundColor: "#374151" },
+  playBtnText: { fontSize: 20, color: "#fff" },
+  info: { flex: 1 },
+  progressBg: {
+    height: 4,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 2,
+    marginBottom: 6,
+    overflow: "hidden",
+  },
+  progressFill: { height: 4, backgroundColor: "#A78BFA", borderRadius: 2 },
+  timeRow: { flexDirection: "row", justifyContent: "space-between" },
+  timeText: { color: "rgba(255,255,255,0.5)", fontSize: 11 },
+  loadingText: { color: "#6B7280", fontSize: 12, marginTop: 8, textAlign: "center" },
+});
+// ─── Écran principal ────────────────────────────────────────────────────────────
 export default function ProgramDayScreen() {
   const { slug, day } = useLocalSearchParams<{ slug: string; day: string }>();
   const router = useRouter();
@@ -464,10 +561,32 @@ export default function ProgramDayScreen() {
           </View>
         )}
 
-        {/* ── Activités ── */}
+         {/* ── Activités ── */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🌙 Activités du soir</Text>
-
+          {/* Audio du jour */}
+          {programDay.audioUrl && (
+            <View style={styles.activityCard}>
+              <LinearGradient
+                colors={["#1A0533", "#2D1B69"]}
+                style={styles.activityGradient}
+              >
+                <View style={styles.activityRow}>
+                  <View style={styles.activityIconBox}>
+                    <Text style={styles.activityIconText}>🎧</Text>
+                  </View>
+                  <View style={styles.activityContent}>
+                    <Text style={styles.activityTitle}>Audio du jour</Text>
+                    <Text style={styles.activitySub}>Méditation guidée pour ce jour</Text>
+                  </View>
+                </View>
+                <AudioPlayerCard
+                  audioUrl={programDay.audioUrl}
+                  durationSeconds={programDay.audioDurationSeconds}
+                />
+              </LinearGradient>
+            </View>
+          )}
           {/* Méditation */}
           {programDay.meditationSlug && (
             <TouchableOpacity
