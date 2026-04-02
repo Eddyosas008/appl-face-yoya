@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
@@ -38,6 +38,12 @@ export default function ProfileScreen() {
 
   // Charger le profil depuis le backend
   const { data: backendProfile, refetch: refetchProfile } = trpc.profile.get.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
+  // Programmes terminés
+  const { data: completedPrograms } = trpc.programs.completed.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
@@ -178,6 +184,59 @@ export default function ProfileScreen() {
             <Text style={styles.moodRecapEmoji}>{MOOD_EMOJIS[topMoodEntry[0] as keyof typeof MOOD_EMOJIS]}</Text>
             <Text style={[styles.moodRecapText, { color: colors.foreground }]}>{MOOD_LABELS[topMoodEntry[0] as keyof typeof MOOD_LABELS]}</Text>
           </View>
+        )}
+
+        {/* Section Programmes complétés */}
+        {isAuthenticated && completedPrograms && completedPrograms.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Programmes terminés 🏆</Text>
+            <View style={styles.completedList}>
+              {completedPrograms.map((prog) => {
+                const completionDate = prog.completedAt
+                  ? new Date(prog.completedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                  : null;
+                const startDate = prog.startedAt
+                  ? new Date(prog.startedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+                  : null;
+                const durationDays = prog.programDurationDays ?? prog.completedDaysCount;
+                const levelLabel = prog.programLevel === 'beginner' ? 'Débutant'
+                  : prog.programLevel === 'intermediate' ? 'Intermédiaire' : 'Avancé';
+                return (
+                  <TouchableOpacity
+                    key={prog.id}
+                    activeOpacity={0.85}
+                    style={styles.completedCard}
+                    onPress={() => router.push(`/program/${prog.programSlug}` as never)}
+                  >
+                    <LinearGradient
+                      colors={[prog.programCoverColor ?? '#1E1B4B', prog.programCoverColor2 ?? '#312E81']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.completedCardGradient}
+                    >
+                      <View style={styles.completedCardLeft}>
+                        <Text style={styles.completedCardEmoji}>{prog.programEmoji}</Text>
+                        <View style={styles.completedCardInfo}>
+                          <Text style={styles.completedCardTitle} numberOfLines={1}>{prog.programTitle}</Text>
+                          <View style={styles.completedCardMeta}>
+                            <View style={styles.completedBadge}>
+                              <Text style={styles.completedBadgeText}>✓ Terminé</Text>
+                            </View>
+                            <Text style={styles.completedCardLevel}>{levelLabel}</Text>
+                          </View>
+                          <Text style={styles.completedCardDays}>{durationDays} jours · {startDate && completionDate ? `${startDate} → ${completionDate}` : completionDate ?? ''}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.completedCardRight}>
+                        <Text style={styles.completedTrophy}>🏆</Text>
+                        <Text style={styles.completedCardChevron}>›</Text>
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
         )}
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Paramètres</Text>
@@ -375,4 +434,20 @@ const styles = StyleSheet.create({
   subscribeButton: { marginHorizontal: 20, borderRadius: 999, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
   subscribeButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   premiumDisclaimer: { fontSize: 11, textAlign: 'center', paddingHorizontal: 20 },
+  // Programmes terminés
+  completedList: { gap: 12, marginBottom: 24 },
+  completedCard: { borderRadius: 16, overflow: 'hidden' },
+  completedCardGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+  completedCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  completedCardEmoji: { fontSize: 32 },
+  completedCardInfo: { flex: 1, gap: 4 },
+  completedCardTitle: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  completedCardMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  completedBadge: { backgroundColor: 'rgba(34,197,94,0.25)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  completedBadgeText: { color: '#4ADE80', fontSize: 11, fontWeight: '700' },
+  completedCardLevel: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
+  completedCardDays: { color: 'rgba(255,255,255,0.55)', fontSize: 11, marginTop: 2 },
+  completedCardRight: { alignItems: 'center', gap: 4 },
+  completedTrophy: { fontSize: 22 },
+  completedCardChevron: { color: 'rgba(255,255,255,0.5)', fontSize: 22, lineHeight: 24 },
 });

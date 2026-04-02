@@ -485,6 +485,37 @@ export async function upsertProgramDay(data: InsertProgramDay) {
   await db.insert(programDays).values(data).onDuplicateKeyUpdate({ set: { ...data } });
 }
 
+// Retourne les programmes terminés avec les infos du programme associé
+export async function getCompletedPrograms(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Récupérer toutes les progressions terminées
+  const progresses = await db
+    .select()
+    .from(userProgramProgress)
+    .where(and(eq(userProgramProgress.userId, userId), eq(userProgramProgress.isCompleted, true)))
+    .orderBy(desc(userProgramProgress.completedAt));
+  if (progresses.length === 0) return [];
+  // Pour chaque progression, récupérer les infos du programme
+  const results = await Promise.all(
+    progresses.map(async (prog) => {
+      const program = await getSleepProgramBySlug(prog.programSlug);
+      const completedDays: number[] = JSON.parse(prog.completedDays || "[]");
+      return {
+        ...prog,
+        programTitle: program?.title ?? prog.programSlug,
+        programEmoji: program?.emoji ?? "🌙",
+        programDurationDays: program?.durationDays ?? completedDays.length,
+        programCoverColor: program?.coverColor ?? "#1E1B4B",
+        programCoverColor2: program?.coverColor2 ?? "#312E81",
+        programLevel: program?.level ?? "beginner",
+        completedDaysCount: completedDays.length,
+      };
+    })
+  );
+  return results;
+}
+
 // ─── Sleep Logs ───────────────────────────────────────────────────────────────────────
 
 export async function createSleepLog(data: InsertSleepLog) {

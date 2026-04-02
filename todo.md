@@ -179,3 +179,10 @@
 - [x] Modifier completeDay dans routers.ts pour retourner isCompleted
 - [x] Connecter la navigation depuis program-day vers l'écran de félicitations
 - [x] Ajouter haptics et animation d'entrée sur l'écran de félicitations
+
+## Phase 27 : Section Programmes complétés dans le profil
+
+- [x] Créer la fonction getCompletedPrograms dans db.ts (joint userProgramProgress + sleepPrograms)
+- [x] Ajouter la route tRPC programs.completed dans routers.ts
+- [x] Intégrer la section dans l'écran profil avec cartes gradient, badges et dates
+- [x] Ajouter les styles pour les cartes de programmes complétés

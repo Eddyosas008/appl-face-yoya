@@ -334,6 +334,11 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
       return db.getAllUserPrograms(ctx.user.id);
     }),
 
+    // Programmes terminés avec détail du programme
+    completed: protectedProcedure.query(async ({ ctx }) => {
+      return db.getCompletedPrograms(ctx.user.id);
+    }),
+
     // Démarrer un programme
     start: protectedProcedure
       .input(z.object({ programSlug: z.string() }))
