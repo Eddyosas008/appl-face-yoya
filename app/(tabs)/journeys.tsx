@@ -258,20 +258,21 @@ export default function JourneysScreen() {
   );
 }
 
-// Palette Sanctuaire du Sommeil
-const NIGHT_BG     = '#07051C';
-const GOLD         = '#D4A853';
-const GOLD_SOFT    = 'rgba(212,168,83,0.10)';
-const LAVENDER     = 'rgba(180,168,220,0.55)';
-const LAVENDER_DIM = 'rgba(180,168,220,0.12)';
-const WHITE_SOFT   = '#F0EEF8';
+// Palette SomnioPax v3
+const NIGHT_BG     = '#03020F';
+const GOLD         = '#C9A84C';
+const GOLD_SOFT    = 'rgba(201,168,76,0.10)';
+const LAVENDER     = 'rgba(237,233,255,0.55)';
+const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
+const LAVENDER_MED = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT   = '#EDE9FF';
 const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+const GLASS_BORDER = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 100 },
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24 },
-  title: { fontFamily: 'CormorantGaramond-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 6 },
+  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 6 },
   subtitle: { fontSize: 12, color: LAVENDER, lineHeight: 18, letterSpacing: 0.2 },
   // Programme actif
   activeSection: { paddingHorizontal: 16, marginBottom: 8 },
@@ -281,8 +282,8 @@ const styles = StyleSheet.create({
   activeEmoji: { fontSize: 32 },
   activeTitle: { fontSize: 15, fontWeight: '600', color: WHITE_SOFT, marginBottom: 2 },
   activeSub: { fontSize: 11, color: 'rgba(255,255,255,0.65)' },
-  activeStreakBox: { alignItems: 'center', backgroundColor: 'rgba(212,168,83,0.2)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.4)' },
-  activeStreakNum: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, color: GOLD },
+  activeStreakBox: { alignItems: 'center', backgroundColor: 'rgba(201,168,76,0.15)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)' },
+  activeStreakNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD },
   activeStreakLabel: { fontSize: 9, color: GOLD, letterSpacing: 0.3 },
   activeCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   activeProgressText: { fontSize: 11, color: 'rgba(255,255,255,0.65)' },
@@ -302,20 +303,20 @@ const styles = StyleSheet.create({
   filterLabelActive: { color: GOLD, fontWeight: '600' },
   statsBanner: {
     flexDirection: 'row', marginHorizontal: 20, marginBottom: 16,
-    backgroundColor: GLASS_BG, borderRadius: 16, padding: 16,
-    borderWidth: 0.5, borderColor: GLASS_BORDER,
+    backgroundColor: GLASS_BG, borderRadius: 20, padding: 16,
+    borderWidth: 1, borderColor: GLASS_BORDER,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statNum: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, color: GOLD },
-  statLabel: { fontSize: 10, color: LAVENDER, marginTop: 2, textAlign: 'center', letterSpacing: 0.2 },
-  statDivider: { width: 0.5, backgroundColor: LAVENDER_DIM, marginHorizontal: 8 },
+  statNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD },
+  statLabel: { fontSize: 10, color: LAVENDER_MED, marginTop: 2, textAlign: 'center', letterSpacing: 0.2 },
+  statDivider: { width: 1, backgroundColor: LAVENDER_DIM, marginHorizontal: 8 },
   programsList: { paddingHorizontal: 20, gap: 16 },
   programCard: { borderRadius: 24, overflow: 'hidden', elevation: 4 },
   cardGradient: { padding: 24 },
   cardBadges: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   featuredBadge: {
-    backgroundColor: 'rgba(212,168,83,0.15)', paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 12, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.4)',
+    backgroundColor: 'rgba(201,168,76,0.15)', paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 12, borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)',
   },
   featuredBadgeText: { fontSize: 10, color: GOLD, fontWeight: '600' },
   premiumBadge: {
@@ -324,7 +325,7 @@ const styles = StyleSheet.create({
   },
   premiumBadgeText: { fontSize: 10, color: '#C4B5FD', fontWeight: '600' },
   cardEmoji: { fontSize: 40, marginBottom: 8 },
-  cardTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, color: WHITE_SOFT, marginBottom: 4 },
+  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT, marginBottom: 4 },
   cardSubtitle: { fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 16, lineHeight: 18 },
   cardMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   metaChip: {
@@ -349,5 +350,5 @@ const styles = StyleSheet.create({
   startBtnText: { fontSize: 12, color: GOLD, fontWeight: '600', letterSpacing: 0.2 },
   emptyState: { alignItems: 'center', paddingTop: 60 },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: LAVENDER },
+  emptyText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: LAVENDER_MED },
 });

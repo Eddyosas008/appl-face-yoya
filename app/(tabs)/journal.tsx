@@ -268,20 +268,21 @@ export default function JournalScreen() {
   );
 }
 
-// Palette Sanctuaire du Sommeil
-const NIGHT_BG     = '#07051C';
-const GOLD         = '#D4A853';
-const GOLD_SOFT    = 'rgba(212,168,83,0.10)';
-const LAVENDER     = 'rgba(180,168,220,0.55)';
-const WHITE_SOFT   = '#F0EEF8';
+// Palette SomnioPax v3
+const NIGHT_BG     = '#03020F';
+const GOLD         = '#C9A84C';
+const GOLD_SOFT    = 'rgba(201,168,76,0.10)';
+const LAVENDER     = 'rgba(237,233,255,0.55)';
+const LAVENDER_MED = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT   = '#EDE9FF';
 const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+const GLASS_BORDER = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingBottom: 32 },
   header: { paddingTop: 18, marginBottom: 18 },
-  title: { fontFamily: 'CormorantGaramond-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4 },
-  subtitle: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },
+  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4 },
+  subtitle: { fontSize: 11, color: LAVENDER_MED, letterSpacing: 0.3 },
   // Recherche
   searchBar: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 14,
@@ -298,16 +299,16 @@ const styles = StyleSheet.create({
   },
   moodFilterEmoji: { fontSize: 13 },
   moodFilterText: { fontSize: 11, fontWeight: '500', letterSpacing: 0.2 },
-  promptCard: { borderRadius: 16, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', backgroundColor: GOLD_SOFT, padding: 16, marginBottom: 24 },
+  promptCard: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(201,168,76,0.22)', backgroundColor: GOLD_SOFT, padding: 16, marginBottom: 24 },
   promptLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD, marginBottom: 6 },
-  promptText: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: WHITE_SOFT, lineHeight: 24, marginBottom: 14 },
+  promptText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT, lineHeight: 24, marginBottom: 14 },
   writeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, alignSelf: 'flex-start', backgroundColor: GOLD },
   writeButtonText: { color: NIGHT_BG, fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
   empty: { alignItems: 'center', paddingTop: 40 },
   emptyEmoji: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 20, color: WHITE_SOFT, marginBottom: 8 },
-  emptySubtitle: { fontSize: 13, color: LAVENDER, lineHeight: 20, textAlign: 'center' },
-  entryCard: { borderRadius: 16, borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, padding: 14, marginBottom: 12 },
+  emptyTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: WHITE_SOFT, marginBottom: 8 },
+  emptySubtitle: { fontSize: 13, color: LAVENDER_MED, lineHeight: 20, textAlign: 'center' },
+  entryCard: { borderRadius: 18, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, padding: 14, marginBottom: 12 },
   entryHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   entryMoodEmoji: { fontSize: 26 },
   entryMeta: { flex: 1 },
@@ -316,14 +317,14 @@ const styles = StyleSheet.create({
   entryContent: { fontSize: 12, color: LAVENDER, lineHeight: 18 },
   tapHint: { fontSize: 10, color: GOLD, marginTop: 6, textAlign: 'right', opacity: 0.7, letterSpacing: 0.3 },
   deleteBtn: { padding: 6 },
-  modal: { flex: 1, backgroundColor: '#07051C' },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER },
-  modalCancel: { fontSize: 14, color: LAVENDER },
-  modalTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: WHITE_SOFT },
+  modal: { flex: 1, backgroundColor: '#03020F' },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  modalCancel: { fontSize: 14, color: LAVENDER_MED },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT },
   modalSave: { fontSize: 14, fontWeight: '700' },
   modalContent: { flex: 1, paddingHorizontal: 20 },
   titleInput: { fontSize: 16, fontWeight: '500', color: WHITE_SOFT, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER, marginBottom: 20 },
-  moodLabel: { fontFamily: 'CormorantGaramond-Medium', fontSize: 17, color: WHITE_SOFT, marginBottom: 12 },
+  moodLabel: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 17, color: WHITE_SOFT, marginBottom: 12 },
   moodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   moodChip: { borderRadius: 12, borderWidth: 0.5, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center', width: '22%', backgroundColor: GLASS_BG },
   moodChipEmoji: { fontSize: 20, marginBottom: 2 },

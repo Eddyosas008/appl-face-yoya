@@ -452,38 +452,39 @@ export default function ProfileScreen() {
   );
 }
 
-// Palette Sanctuaire du Sommeil
-const NIGHT_BG     = '#07051C';
-const GOLD         = '#D4A853';
-const GOLD_SOFT    = 'rgba(212,168,83,0.12)';
-const LAVENDER     = 'rgba(180,168,220,0.55)';
-const LAVENDER_DIM = 'rgba(180,168,220,0.12)';
-const WHITE_SOFT   = '#F0EEF8';
+// Palette SomnioPax v3
+const NIGHT_BG     = '#03020F';
+const GOLD         = '#C9A84C';
+const GOLD_SOFT    = 'rgba(201,168,76,0.12)';
+const LAVENDER     = 'rgba(237,233,255,0.55)';
+const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
+const LAVENDER_MED = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT   = '#EDE9FF';
 const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+const GLASS_BORDER = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingTop: 24, marginBottom: 24 },
-  avatarContainer: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.4)' },
-  avatarText: { fontFamily: 'CormorantGaramond-Medium', fontSize: 28, color: GOLD },
+  avatarContainer: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(201,168,76,0.45)', shadowColor: GOLD, shadowRadius: 12, shadowOpacity: 0.3, shadowOffset: { width: 0, height: 0 } },
+  avatarText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: GOLD },
   profileInfo: { flex: 1, gap: 4 },
-  profileName: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, color: WHITE_SOFT },
+  profileName: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT },
   profileEmail: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },
   upgradeBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', backgroundColor: GOLD_SOFT, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
   upgradeBadgeText: { fontSize: 11, fontWeight: '600', color: GOLD, letterSpacing: 0.3 },
-  statsCard: { flexDirection: 'row', borderRadius: 16, paddingVertical: 16, marginBottom: 16, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
+  statsCard: { flexDirection: 'row', borderRadius: 20, paddingVertical: 18, marginBottom: 16, backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER },
   statItem: { flex: 1, alignItems: 'center' },
-  statValue: { fontFamily: 'CormorantGaramond-Medium', fontSize: 24, color: GOLD, marginBottom: 2 },
-  statLabel: { fontSize: 10, color: LAVENDER, letterSpacing: 0.3 },
-  statDivider: { width: 0.5, height: '80%', alignSelf: 'center', backgroundColor: LAVENDER_DIM },
-  moodRecap: { borderRadius: 16, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.2)', padding: 14, marginBottom: 24, alignItems: 'center', backgroundColor: GOLD_SOFT },
+  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: GOLD, marginBottom: 2 },
+  statLabel: { fontSize: 10, color: LAVENDER_MED, letterSpacing: 0.3 },
+  statDivider: { width: 1, height: '80%', alignSelf: 'center', backgroundColor: LAVENDER_DIM },
+  moodRecap: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(201,168,76,0.22)', padding: 14, marginBottom: 24, alignItems: 'center', backgroundColor: GOLD_SOFT },
   moodRecapLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD, marginBottom: 8 },
   moodRecapEmoji: { fontSize: 36, marginBottom: 4 },
-  moodRecapText: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: WHITE_SOFT },
-  sectionTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: WHITE_SOFT, marginBottom: 10, marginTop: 4 },
-  settingsGroup: { borderRadius: 16, marginBottom: 20, overflow: 'hidden', backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
-  settingRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER },
+  moodRecapText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT, marginBottom: 10, marginTop: 4 },
+  settingsGroup: { borderRadius: 18, marginBottom: 20, overflow: 'hidden', backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER },
+  settingRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
   settingIcon: { fontSize: 18, width: 26 },
   settingLabel: { fontSize: 14, color: WHITE_SOFT },
   settingRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -494,8 +495,8 @@ const styles = StyleSheet.create({
   premiumCtaText: { color: NIGHT_BG, fontSize: 14, fontWeight: '700', letterSpacing: 0.3 },
   logoutButton: { borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#F87171', marginBottom: 16 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
-  modalCard: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, backgroundColor: '#12103A', borderTopWidth: 0.5, borderColor: GLASS_BORDER },
-  modalTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, color: WHITE_SOFT, marginBottom: 20, textAlign: 'center' },
+  modalCard: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, backgroundColor: '#0D0A2A', borderTopWidth: 1, borderColor: GLASS_BORDER },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT, marginBottom: 20, textAlign: 'center' },
   modalInput: { borderRadius: 14, borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: WHITE_SOFT, marginBottom: 20 },
   modalButtons: { flexDirection: 'row', gap: 12 },
   modalCancelBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 0.5, borderColor: GLASS_BORDER },
@@ -508,7 +509,7 @@ const styles = StyleSheet.create({
   closeBtn: { position: 'absolute', top: 16, right: 16, zIndex: 10, padding: 8 },
   premiumHero: { paddingTop: 60, paddingBottom: 40, alignItems: 'center' },
   premiumHeroEmoji: { fontSize: 48, marginBottom: 12 },
-  premiumHeroTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 28, marginBottom: 6 },
+  premiumHeroTitle: { fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT, fontSize: 28, marginBottom: 6 },
   premiumHeroSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
   premiumFeatures: { padding: 20, gap: 12 },
   premiumFeatureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -521,7 +522,7 @@ const styles = StyleSheet.create({
   savingBadge: { position: 'absolute', bottom: -10, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, backgroundColor: '#22C55E' },
   savingBadgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
   planLabel: { fontSize: 13, fontWeight: '500', color: WHITE_SOFT, marginBottom: 4 },
-  planPrice: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, color: GOLD },
+  planPrice: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD },
   planPeriod: { fontSize: 11, color: LAVENDER },
   subscribeButton: { marginHorizontal: 20, borderRadius: 999, paddingVertical: 16, alignItems: 'center', marginBottom: 12, backgroundColor: GOLD },
   subscribeButtonText: { color: NIGHT_BG, fontSize: 15, fontWeight: '700' },

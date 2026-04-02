@@ -281,3 +281,15 @@
 - [x] Refondre la section script de méditation (cartes glass)
 - [x] Refondre les méditations similaires (cartes glass)
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 35 : Refonte SomnioPax v3 — Interface premium
+
+- [x] Mettre à jour la palette : #03020F fond, --gold #C9A84C, Playfair Display
+- [x] Installer la police Playfair Display (expo-font)
+- [x] Refondre la navigation : floating pill glassmorphique
+- [x] Refondre Home : aurora animée (blobs SVG), stats anneaux SVG, carte méditation premium
+- [x] Refondre Explore avec le nouveau thème SomnioPax
+- [x] Refondre Journal avec le nouveau thème SomnioPax
+- [x] Refondre Profil avec le nouveau thème SomnioPax
+- [x] Refondre Journeys avec le nouveau thème SomnioPax
+- [x] Vérifier TypeScript et sauvegarder le checkpoint

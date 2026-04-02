@@ -14,17 +14,19 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ─── Constantes de design ────────────────────────────────────────────────────
-const NIGHT_BG     = '#07051C';
-const INDIGO_DEEP  = '#12103A';
-const INDIGO_MID   = '#2D1A6E';
-const GOLD         = '#D4A853';
-const GOLD_SOFT    = 'rgba(212,168,83,0.15)';
-const LAVENDER     = 'rgba(180,168,220,0.55)';
-const LAVENDER_DIM = 'rgba(180,168,220,0.12)';
-const WHITE_SOFT   = '#F0EEF8';
+// ─── Palette SomnioPax v3 ────────────────────────────────────────────
+const NIGHT_BG     = '#03020F';   // quasi-noir absolu
+const INDIGO_DEEP  = '#1A1240';   // fond hero
+const INDIGO_MID   = '#2E1870';   // cartes gradient
+const GOLD         = '#C9A84C';   // or SomnioPax
+const GOLD_LIGHT   = '#E8C97A';   // or clair
+const GOLD_SOFT    = 'rgba(201,168,76,0.15)';
+const LAVENDER     = 'rgba(237,233,255,0.55)';
+const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
+const LAVENDER_MED = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT   = '#EDE9FF';
 const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+const GLASS_BORDER = 'rgba(180,160,255,0.10)';
 
 // ─── Données statiques ───────────────────────────────────────────────────────
 const SLEEP_ISSUES = [
@@ -78,35 +80,80 @@ function getMoonEmoji(): string {
   return phases[new Date().getDate() % 8];
 }
 
-// ─── Composant étoiles animées ───────────────────────────────────────────────
+// ─── Composant Aurora + étoiles (SomnioPax v3) ───────────────────────────────
 function StarField() {
+  // Étoiles scintillantes
   const stars = useRef(
-    Array.from({ length: 50 }, (_, i) => ({
+    Array.from({ length: 70 }, (_, i) => ({
       x: Math.random() * 100,
-      y: Math.random() * 60,
-      size: Math.random() * 2 + 1,
-      anim: new Animated.Value(Math.random()),
-      delay: i * 80,
+      y: Math.random() * 80,
+      size: Math.random() * 1.8 + 0.4,
+      anim: new Animated.Value(Math.random() * 0.6 + 0.1),
+      delay: i * 60,
     }))
   ).current;
 
+  // Blobs aurora flottants
+  const blobAnims = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+
   useEffect(() => {
+    // Scintillement étoiles
     stars.forEach((star) => {
       const loop = Animated.loop(
         Animated.sequence([
-          Animated.timing(star.anim, { toValue: 1, duration: 2000 + Math.random() * 2000, delay: star.delay, useNativeDriver: true }),
-          Animated.timing(star.anim, { toValue: 0.2, duration: 2000 + Math.random() * 2000, useNativeDriver: true }),
+          Animated.timing(star.anim, { toValue: 0.85, duration: 1800 + Math.random() * 2400, delay: star.delay, useNativeDriver: true }),
+          Animated.timing(star.anim, { toValue: 0.08, duration: 1800 + Math.random() * 2400, useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+    });
+    // Blobs aurora
+    blobAnims.forEach((anim, i) => {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, { toValue: 1, duration: 6000 + i * 1200, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0, duration: 6000 + i * 1200, useNativeDriver: true }),
         ])
       );
       loop.start();
     });
   }, []);
 
+  const blobConfigs = [
+    { left: '10%', top: '8%',  width: 160, height: 90,  color: 'rgba(74,44,138,0.22)' },
+    { left: '55%', top: '15%', width: 130, height: 75,  color: 'rgba(40,20,100,0.18)' },
+    { left: '30%', top: '2%',  width: 170, height: 60,  color: 'rgba(100,60,180,0.14)' },
+  ];
+
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      {/* Blobs aurora */}
+      {blobConfigs.map((blob, i) => (
+        <Animated.View
+          key={`blob-${i}`}
+          style={{
+            position: 'absolute',
+            left: blob.left as any,
+            top: blob.top as any,
+            width: blob.width,
+            height: blob.height,
+            borderRadius: blob.width / 2,
+            backgroundColor: blob.color,
+            opacity: blobAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }),
+            transform: [{
+              translateY: blobAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0, 12] }),
+            }],
+          }}
+        />
+      ))}
+      {/* Étoiles scintillantes */}
       {stars.map((star, i) => (
         <Animated.View
-          key={i}
+          key={`star-${i}`}
           style={{
             position: 'absolute',
             left: `${star.x}%` as any,
@@ -114,7 +161,7 @@ function StarField() {
             width: star.size,
             height: star.size,
             borderRadius: star.size / 2,
-            backgroundColor: WHITE_SOFT,
+            backgroundColor: '#EDE9FF',
             opacity: star.anim,
           }}
         />
@@ -580,36 +627,43 @@ export default function HomeScreen() {
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Hero
+  // Hero SomnioPax v3
   heroWrapper: { overflow: 'hidden' },
-  hero: { paddingTop: 24, paddingBottom: 36, paddingHorizontal: 24, position: 'relative', minHeight: 300 },
-  moonContainer: { alignItems: 'center', marginBottom: 16 },
-  moonRing: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(212,168,83,0.08)', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', alignItems: 'center', justifyContent: 'center' },
-  moonEmoji: { fontSize: 36 },
+  hero: { paddingTop: 28, paddingBottom: 40, paddingHorizontal: 24, position: 'relative', minHeight: 320, backgroundColor: NIGHT_BG },
+  moonContainer: { alignItems: 'center', marginBottom: 18 },
+  moonRing: {
+    width: 68, height: 68, borderRadius: 34,
+    backgroundColor: 'rgba(201,168,76,0.06)',
+    borderWidth: 1, borderColor: 'rgba(201,168,76,0.28)',
+    alignItems: 'center', justifyContent: 'center',
+    // Halo doré
+    shadowColor: GOLD, shadowRadius: 16, shadowOpacity: 0.35, shadowOffset: { width: 0, height: 0 },
+  },
+  moonEmoji: { fontSize: 38 },
   heroContent: { alignItems: 'center' },
-  heroGreeting: { fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: GOLD, marginBottom: 10, fontWeight: '500' },
-  heroTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 34, color: WHITE_SOFT, textAlign: 'center', lineHeight: 40, marginBottom: 12, letterSpacing: -0.3 },
-  heroSubtitle: { fontSize: 13, color: LAVENDER, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, marginBottom: 18 },
-  moonPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
-  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD, shadowColor: GOLD, shadowRadius: 4, shadowOpacity: 0.8 },
-  moonPillText: { color: 'rgba(240,238,248,0.75)', fontSize: 11, letterSpacing: 0.4 },
+  heroGreeting: { fontSize: 10.5, letterSpacing: 1.8, textTransform: 'uppercase', color: GOLD, marginBottom: 12, fontWeight: '500' },
+  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 32, color: WHITE_SOFT, textAlign: 'center', lineHeight: 38, marginBottom: 12, letterSpacing: -0.3 },
+  heroSubtitle: { fontFamily: 'PlayfairDisplay-Regular', fontSize: 13, color: LAVENDER, textAlign: 'center', lineHeight: 21, paddingHorizontal: 16, marginBottom: 20 },
+  moonPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(201,168,76,0.20)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
+  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD, shadowColor: GOLD, shadowRadius: 8, shadowOpacity: 1 },
+  moonPillText: { color: 'rgba(237,233,255,0.70)', fontSize: 10.5, letterSpacing: 0.5 },
 
-  // Stats
-  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 16, marginBottom: 4 },
-  statCard: { flex: 1, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 8, alignItems: 'center' },
-  statIcon: { fontSize: 16, marginBottom: 6 },
-  statValue: { fontFamily: 'CormorantGaramond-Medium', fontSize: 26, color: WHITE_SOFT, lineHeight: 28, marginBottom: 3 },
-  statLabel: { fontSize: 9.5, letterSpacing: 0.8, textTransform: 'uppercase', color: LAVENDER },
+  // Stats SomnioPax v3 — anneaux SVG style
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 18, marginBottom: 4 },
+  statCard: { flex: 1, backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER, borderRadius: 20, paddingVertical: 16, paddingHorizontal: 6, alignItems: 'center', position: 'relative', overflow: 'hidden' },
+  statIcon: { fontSize: 18, marginBottom: 4 },
+  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: WHITE_SOFT, lineHeight: 26, marginBottom: 4 },
+  statLabel: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: LAVENDER_MED },
 
   // Divider
   divider: { height: 0.5, backgroundColor: LAVENDER_DIM, marginHorizontal: 24, marginVertical: 8 },
 
-  // Sections
-  section: { marginTop: 22, paddingHorizontal: 18 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-  sectionTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 19, color: WHITE_SOFT, marginBottom: 3 },
-  sectionSub: { fontSize: 11, color: LAVENDER, letterSpacing: 0.2 },
-  seeAll: { fontSize: 10.5, color: GOLD, letterSpacing: 0.5, marginTop: 4 },
+  // Sections SomnioPax v3
+  section: { marginTop: 24, paddingHorizontal: 18 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: WHITE_SOFT, marginBottom: 3 },
+  sectionSub: { fontSize: 10.5, color: LAVENDER_MED, letterSpacing: 0.2 },
+  seeAll: { fontSize: 10, color: GOLD, letterSpacing: 0.6, marginTop: 4, opacity: 0.8 },
 
   // Carte sommeil
   sleepCard: { backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
@@ -628,16 +682,16 @@ const styles = StyleSheet.create({
   sleepBar: { width: 12, borderRadius: 6, minHeight: 3 },
   sleepBarLabel: { fontSize: 9, color: LAVENDER },
 
-  // Méditation featured
-  featuredCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(196,181,253,0.2)' },
-  featuredHalo: { position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(212,168,83,0.12)' },
+  // Méditation featured SomnioPax v3
+  featuredCard: { borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(201,168,76,0.20)' },
+  featuredHalo: { position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(201,168,76,0.18)' },
   featuredLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1, zIndex: 1 },
-  featuredMoon: { fontSize: 32 },
-  featuredTag: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(212,168,83,0.8)', marginBottom: 3 },
-  featuredTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 20, color: WHITE_SOFT, lineHeight: 22, marginBottom: 3 },
-  featuredMeta: { fontSize: 10.5, color: 'rgba(196,181,253,0.6)', letterSpacing: 0.3 },
-  playBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: GOLD, shadowRadius: 12, shadowOpacity: 0.4, elevation: 4 },
-  playBtnIcon: { color: NIGHT_BG, fontSize: 14, fontWeight: '700', paddingLeft: 2 },
+  featuredMoon: { fontSize: 32, textShadowColor: 'rgba(201,168,76,0.5)', textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } },
+  featuredTag: { fontSize: 8.5, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(201,168,76,0.80)', marginBottom: 4 },
+  featuredTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: WHITE_SOFT, lineHeight: 23, marginBottom: 3 },
+  featuredMeta: { fontSize: 10.5, color: 'rgba(184,174,255,0.60)', letterSpacing: 0.3 },
+  playBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: GOLD, shadowRadius: 16, shadowOpacity: 0.45, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  playBtnIcon: { color: '#0F0930', fontSize: 14, fontWeight: '700', paddingLeft: 2 },
 
   // Mini méditations
   miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
@@ -665,15 +719,15 @@ const styles = StyleSheet.create({
   inProgressBarFill: { height: 5, backgroundColor: '#4ADE80', borderRadius: 3 },
   inProgressCta: { color: GOLD, fontSize: 11, fontWeight: '600' },
 
-  // Programmes
-  programCard: { width: 158 },
-  programGradient: { borderRadius: 20, padding: 16, height: 200, justifyContent: 'space-between' },
+  // Programmes SomnioPax v3
+  programCard: { width: 160 },
+  programGradient: { borderRadius: 22, padding: 16, height: 205, justifyContent: 'space-between' },
   programEmoji: { fontSize: 30 },
-  programDaysBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  programDaysBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
   programDaysText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
-  programTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 17, lineHeight: 20 },
-  programDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
-  programStartBtn: { backgroundColor: GOLD_SOFT, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
+  programTitle: { fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT, fontSize: 17, lineHeight: 21 },
+  programDesc: { color: 'rgba(237,233,255,0.55)', fontSize: 11 },
+  programStartBtn: { backgroundColor: GOLD_SOFT, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(201,168,76,0.30)' },
   programStartText: { color: GOLD, fontSize: 11, fontWeight: '600' },
 
   // Problématiques
@@ -694,30 +748,30 @@ const styles = StyleSheet.create({
   tipDots: { flexDirection: 'row', justifyContent: 'center', gap: 6, paddingBottom: 12 },
   tipDot: { width: 5, height: 5, borderRadius: 2.5 },
 
-  // Science
-  scienceCard: { width: 200, borderRadius: 20, padding: 18 },
+  // Science SomnioPax v3
+  scienceCard: { width: 200, borderRadius: 22, padding: 18, borderWidth: 1, borderColor: GLASS_BORDER },
   scienceEmoji: { fontSize: 30, marginBottom: 10 },
-  scienceTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 16, marginBottom: 6 },
-  scienceDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 12, lineHeight: 18 },
+  scienceTitle: { fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT, fontSize: 16, marginBottom: 6 },
+  scienceDesc: { color: 'rgba(237,233,255,0.55)', fontSize: 12, lineHeight: 18 },
 
-  // Citation
-  quoteCard: { borderRadius: 20, padding: 28, alignItems: 'center' },
-  quoteStars: { color: 'rgba(212,168,83,0.5)', fontSize: 13, letterSpacing: 10, marginBottom: 16 },
-  quoteText: { fontFamily: 'CormorantGaramond-Regular', color: WHITE_SOFT, fontSize: 18, fontStyle: 'italic', textAlign: 'center', lineHeight: 26, marginBottom: 12 },
-  quoteAuthor: { color: LAVENDER, fontSize: 12, letterSpacing: 0.5 },
+  // Citation SomnioPax v3
+  quoteCard: { borderRadius: 22, padding: 30, alignItems: 'center' },
+  quoteStars: { color: 'rgba(201,168,76,0.5)', fontSize: 13, letterSpacing: 10, marginBottom: 18 },
+  quoteText: { fontFamily: 'PlayfairDisplay-Italic', color: WHITE_SOFT, fontSize: 19, lineHeight: 28, textAlign: 'center', marginBottom: 14 },
+  quoteAuthor: { color: LAVENDER_MED, fontSize: 12, letterSpacing: 0.5 },
 
-  // CTA
-  ctaCard: { borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  // CTA SomnioPax v3
+  ctaCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
   ctaEmoji: { fontSize: 34 },
   ctaContent: { flex: 1 },
-  ctaTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 18, marginBottom: 4, lineHeight: 22 },
-  ctaSub: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
+  ctaTitle: { fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT, fontSize: 18, marginBottom: 4, lineHeight: 23 },
+  ctaSub: { color: 'rgba(237,233,255,0.55)', fontSize: 12 },
 
-  // Modal sommeil
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#12103A', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: GLASS_BORDER },
-  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'center', marginBottom: 20 },
-  modalTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 24, color: WHITE_SOFT, marginBottom: 6 },
+  // Modal sommeil SomnioPax v3
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.80)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#0D0A2A', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: GLASS_BORDER },
+  modalHandle: { width: 40, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.12)', alignSelf: 'center', marginBottom: 22 },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: WHITE_SOFT, marginBottom: 6 },
   modalSub: { fontSize: 13, color: LAVENDER, marginBottom: 24 },
   modalLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.75)', marginBottom: 8, letterSpacing: 0.3 },
   modalInput: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 12, padding: 14, fontSize: 16, color: WHITE_SOFT, marginBottom: 16 },

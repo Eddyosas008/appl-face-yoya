@@ -43,6 +43,10 @@ export default function RootLayout() {
     'CormorantGaramond-Medium': require('../assets/fonts/CormorantGaramond-Medium.ttf'),
     'CormorantGaramond-Light': require('../assets/fonts/CormorantGaramond-Light.ttf'),
     'CormorantGaramond-SemiBold': require('../assets/fonts/CormorantGaramond-SemiBold.ttf'),
+    'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
+    'PlayfairDisplay-Medium': require('../assets/fonts/PlayfairDisplay-Medium.ttf'),
+    'PlayfairDisplay-SemiBold': require('../assets/fonts/PlayfairDisplay-SemiBold.ttf'),
+    'PlayfairDisplay-Italic': require('../assets/fonts/PlayfairDisplay-Italic.ttf'),
   });
 
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);

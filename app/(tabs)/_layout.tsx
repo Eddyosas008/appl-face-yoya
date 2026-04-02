@@ -1,52 +1,64 @@
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Platform, View, StyleSheet } from "react-native";
+import { Platform, View, StyleSheet, Animated as RNAnimated } from "react-native";
+import { useRef, useEffect, useState } from "react";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { useColors } from "@/hooks/use-colors";
 
-// Couleurs Sanctuaire du Sommeil
-const NIGHT_BG    = '#07051C';
-const GOLD        = '#D4A853';
-const LAVENDER    = 'rgba(180,168,220,0.45)';
-const GLASS_BG    = 'rgba(12,8,40,0.96)';
-const GLASS_BORDER = 'rgba(180,168,220,0.10)';
+// ─── Palette SomnioPax v3 ─────────────────────────────────────────────────
+const BG          = '#03020F';
+const GOLD        = '#C9A84C';
+const GOLD_LIGHT  = '#E8C97A';
+const LAVENDER_DIM = 'rgba(184,174,255,0.30)';
+const PILL_BG     = 'rgba(255,255,255,0.055)';
+const PILL_BORDER = 'rgba(180,160,255,0.14)';
+const INDICATOR_BG = 'rgba(201,168,76,0.18)';
+const INDICATOR_BORDER = 'rgba(201,168,76,0.25)';
 
 export default function TabLayout() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
-  const bottomPadding = Platform.OS === "web" ? 14 : Math.max(insets.bottom, 10);
-  const tabBarHeight = 58 + bottomPadding;
+  const bottomPadding = Platform.OS === "web" ? 16 : Math.max(insets.bottom, 12);
+  // Floating pill — hauteur fixe, pas de tab bar native standard
+  const tabBarHeight = 64 + bottomPadding;
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: GOLD,
-        tabBarInactiveTintColor: LAVENDER,
+        tabBarInactiveTintColor: LAVENDER_DIM,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          paddingTop: 10,
-          paddingBottom: bottomPadding,
-          height: tabBarHeight,
-          backgroundColor: GLASS_BG,
-          borderTopColor: GLASS_BORDER,
-          borderTopWidth: 0.5,
-          // Ombre douce vers le haut
+          position: 'absolute',
+          bottom: bottomPadding,
+          left: 18,
+          right: 18,
+          height: 56,
+          borderRadius: 30,
+          backgroundColor: PILL_BG,
+          borderWidth: 1,
+          borderColor: PILL_BORDER,
+          // Glassmorphisme
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
-          elevation: 12,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.4,
+          shadowRadius: 32,
+          elevation: 16,
+          // Séparation du bord haut
+          borderTopWidth: 0,
+          paddingBottom: 0,
+          paddingTop: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 9,
+          fontSize: 8,
           fontWeight: '500',
-          marginTop: 2,
-          letterSpacing: 0.4,
+          letterSpacing: 0.8,
           textTransform: 'uppercase',
+          marginTop: 1,
         },
-
+        tabBarItemStyle: {
+          paddingVertical: 8,
+        },
       }}
     >
       <Tabs.Screen
@@ -54,9 +66,9 @@ export default function TabLayout() {
         options={{
           title: "Accueil",
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
+            <View style={styles.iconWrap}>
               {focused && <View style={styles.activeGlow} />}
-              <IconSymbol size={22} name="house.fill" color={color} />
+              <IconSymbol size={20} name="house.fill" color={color} />
             </View>
           ),
         }}
@@ -66,9 +78,9 @@ export default function TabLayout() {
         options={{
           title: "Explorer",
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
+            <View style={styles.iconWrap}>
               {focused && <View style={styles.activeGlow} />}
-              <IconSymbol size={22} name="sparkles" color={color} />
+              <IconSymbol size={20} name="sparkles" color={color} />
             </View>
           ),
         }}
@@ -78,9 +90,9 @@ export default function TabLayout() {
         options={{
           title: "Programmes",
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
+            <View style={styles.iconWrap}>
               {focused && <View style={styles.activeGlow} />}
-              <IconSymbol size={22} name="moon.fill" color={color} />
+              <IconSymbol size={20} name="moon.fill" color={color} />
             </View>
           ),
         }}
@@ -90,9 +102,9 @@ export default function TabLayout() {
         options={{
           title: "Journal",
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
+            <View style={styles.iconWrap}>
               {focused && <View style={styles.activeGlow} />}
-              <IconSymbol size={22} name="book.fill" color={color} />
+              <IconSymbol size={20} name="book.fill" color={color} />
             </View>
           ),
         }}
@@ -102,9 +114,9 @@ export default function TabLayout() {
         options={{
           title: "Profil",
           tabBarIcon: ({ color, focused }) => (
-            <View style={styles.iconWrapper}>
+            <View style={styles.iconWrap}>
               {focused && <View style={styles.activeGlow} />}
-              <IconSymbol size={22} name="person.fill" color={color} />
+              <IconSymbol size={20} name="person.fill" color={color} />
             </View>
           ),
         }}
@@ -114,22 +126,23 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconWrapper: {
+  iconWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 36,
-    height: 28,
+    width: 32,
+    height: 24,
+    position: 'relative',
   },
   activeGlow: {
     position: 'absolute',
-    bottom: -4,
-    width: 20,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: GOLD,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(201,168,76,0.18)',
+    // Halo radial doré
     shadowColor: GOLD,
-    shadowRadius: 6,
-    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    shadowOpacity: 0.5,
     shadowOffset: { width: 0, height: 0 },
   },
 });

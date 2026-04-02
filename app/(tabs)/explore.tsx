@@ -388,19 +388,20 @@ export default function ExploreScreen() {
   );
 }
 
-// Palette Sanctuaire du Sommeil
-const NIGHT_BG     = '#07051C';
-const GOLD         = '#D4A853';
-const LAVENDER     = 'rgba(180,168,220,0.55)';
-const LAVENDER_DIM = 'rgba(180,168,220,0.12)';
-const WHITE_SOFT   = '#F0EEF8';
+// Palette SomnioPax v3
+const NIGHT_BG     = '#03020F';
+const GOLD         = '#C9A84C';
+const LAVENDER     = 'rgba(237,233,255,0.55)';
+const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
+const LAVENDER_MED = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT   = '#EDE9FF';
 const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+const GLASS_BORDER = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 18, paddingTop: 0 },
   header: { paddingTop: 18, marginBottom: 18 },
-  title: { fontFamily: 'CormorantGaramond-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4, letterSpacing: -0.3 },
+  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4, letterSpacing: -0.3 },
   subtitle: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },
   searchBar: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 14,
@@ -417,17 +418,17 @@ const styles = StyleSheet.create({
   categoryEmoji: { fontSize: 12 },
   categoryChipText: { fontSize: 11, fontWeight: '500', letterSpacing: 0.3 },
   loadingContainer: { alignItems: 'center', paddingVertical: 32, gap: 10 },
-  loadingText: { fontSize: 13, color: LAVENDER },
+  loadingText: { fontSize: 13, color: LAVENDER_MED },
   emptyContainer: { alignItems: 'center', paddingVertical: 40, gap: 8 },
   emptyEmoji: { fontSize: 40 },
-  emptyTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 20, color: WHITE_SOFT },
-  emptyText: { fontSize: 13, color: LAVENDER, textAlign: 'center' },
-  sectionCount: { fontSize: 11, color: LAVENDER, marginBottom: 12, letterSpacing: 0.3 },
+  emptyTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: WHITE_SOFT },
+  emptyText: { fontSize: 13, color: LAVENDER_MED, textAlign: 'center' },
+  sectionCount: { fontSize: 11, color: LAVENDER_MED, marginBottom: 12, letterSpacing: 0.3 },
 
   // Sections
   section: { marginBottom: 28 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  sectionTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 19, color: WHITE_SOFT },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: WHITE_SOFT },
   sectionDesc: { fontSize: 11, color: LAVENDER, marginBottom: 4, letterSpacing: 0.2 },
   seeAll: { fontSize: 10, color: GOLD, letterSpacing: 0.5 },
 
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
   gridItem: { width: '47%' },
 
   // Carte grille verticale
-  card: { borderRadius: 16, overflow: 'hidden', marginBottom: 0, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
+  card: { borderRadius: 18, overflow: 'hidden', marginBottom: 0, backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER },
   coverBlock: {
     height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative',
   },
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
   cardDuration: { fontSize: 10, color: LAVENDER },
 
   // Carte horizontale
-  hCard: { borderRadius: 14, overflow: 'hidden', width: 150, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
+  hCard: { borderRadius: 16, overflow: 'hidden', width: 150, backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER },
   hCover: { height: 90, justifyContent: 'center', alignItems: 'center', position: 'relative' },
   hCoverEmoji: { fontSize: 30 },
   hFavBtn: {
