@@ -293,3 +293,10 @@
 - [x] Refondre Profil avec le nouveau thème SomnioPax
 - [x] Refondre Journeys avec le nouveau thème SomnioPax
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 36 : Amélioration barre de navigation
+
+- [x] Rendre le fond de la tab bar plus opaque (fond sombre solide)
+- [x] Renforcer la bordure supérieure
+- [x] Améliorer le contraste des icônes inactives
+- [x] Sauvegarder le checkpoint
