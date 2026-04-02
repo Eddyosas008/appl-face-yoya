@@ -6,8 +6,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useUser } from '@/lib/user-context';
-import { MOOD_EMOJIS, MOOD_LABELS, MEDITATIONS } from '@/lib/mock-data';
+import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { trpc } from '@/lib/trpc';
+import { useAuth } from '@/hooks/use-auth';
 
 const MOOD_SCORE: Record<string, number> = {
   happy: 5,
@@ -36,7 +38,6 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
   const height = 140;
   const padding = { top: 16, right: 16, bottom: 32, left: 28 };
 
-  // Get last 7 days
   const days = useMemo(() => {
     const result = [];
     for (let i = 6; i >= 0; i--) {
@@ -50,9 +51,8 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
 
   const dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
   const today = new Date();
-  const todayDow = today.getDay(); // 0=Sun
-  // Map to French week starting Monday
-  const startDow = (todayDow + 6) % 7; // Monday=0
+  const todayDow = today.getDay();
+  const startDow = (todayDow + 6) % 7;
   const labels = Array.from({ length: 7 }, (_, i) => {
     const dow = (startDow - 6 + i + 7) % 7;
     return dayLabels[dow];
@@ -82,7 +82,6 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
     dp,
   }));
 
-  // Build smooth path
   const validPoints = points.filter((p) => p.y !== null) as { x: number; y: number; dp: any }[];
 
   let pathD = '';
@@ -112,68 +111,31 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
             <Stop offset="100%" stopColor="#C084FC" stopOpacity="0" />
           </SvgGradient>
         </Defs>
-
-        {/* Grid lines */}
         {[1, 2, 3, 4].map((level) => {
           const y = padding.top + chartH - ((level - 1) / 4) * chartH;
           return (
-            <Line
-              key={level}
-              x1={padding.left}
-              y1={y}
-              x2={width - padding.right}
-              y2={y}
-              stroke={colors.border}
-              strokeWidth="1"
-              strokeDasharray="4,4"
-            />
+            <Line key={level} x1={padding.left} y1={y} x2={width - padding.right} y2={y}
+              stroke={colors.border} strokeWidth="1" strokeDasharray="4,4" />
           );
         })}
-
-        {/* Area fill */}
-        {hasData && areaD && (
-          <Path d={areaD} fill="url(#moodGrad)" />
-        )}
-
-        {/* Line */}
-        {hasData && pathD && (
-          <Path d={pathD} stroke="#C084FC" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        )}
-
-        {/* Points */}
+        {hasData && areaD && <Path d={areaD} fill="url(#moodGrad)" />}
+        {hasData && pathD && <Path d={pathD} stroke="#C084FC" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />}
         {points.map((p, i) => {
           if (p.y === null) return null;
           const color = p.dp ? (MOOD_COLOR[p.dp.mood] || '#C084FC') : '#C084FC';
-          return (
-            <React.Fragment key={i}>
-              <Circle cx={p.x} cy={p.y} r={5} fill={color} stroke="#FFFFFF" strokeWidth="2" />
-            </React.Fragment>
-          );
+          return <Circle key={i} cx={p.x} cy={p.y} r={5} fill={color} stroke="#FFFFFF" strokeWidth="2" />;
         })}
-
-        {/* Day labels */}
         {points.map((p, i) => (
-          <SvgText
-            key={`label-${i}`}
-            x={p.x}
-            y={height - 4}
-            textAnchor="middle"
-            fontSize="11"
-            fill={colors.muted}
-          >
+          <SvgText key={`label-${i}`} x={p.x} y={height - 4} textAnchor="middle" fontSize="11" fill={colors.muted}>
             {labels[i]}
           </SvgText>
         ))}
-
-        {/* No data message */}
         {!hasData && (
           <SvgText x={width / 2} y={height / 2} textAnchor="middle" fontSize="13" fill={colors.muted}>
             Aucune donnée cette semaine
           </SvgText>
         )}
       </Svg>
-
-      {/* Y-axis labels */}
       <View style={[StyleSheet.absoluteFill, { paddingTop: padding.top, paddingBottom: padding.bottom, paddingLeft: 0, paddingRight: width - padding.left + 4 }]}>
         {['😊', '😌', '😐', '😔'].map((emoji, i) => (
           <View key={i} style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end' }}>
@@ -187,10 +149,26 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
 
 export default function ProgressScreen() {
   const colors = useColors();
+  const { isAuthenticated } = useAuth();
   const { profile, checkIns, sessionHistory, journalEntries } = useUser();
 
-  const totalSessions = sessionHistory.length;
-  const totalMinutes = sessionHistory.reduce((sum, s) => sum + (s.duration || 0), 0);
+  // Sessions depuis la DB (si connecté)
+  const { data: dbSessions = [] } = trpc.sessions.list.useQuery(
+    { limit: 10 },
+    { enabled: isAuthenticated }
+  );
+
+  // Programmes en cours
+  const { data: inProgressPrograms = [] } = trpc.programs.inProgress.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
+  // Stats
+  const totalSessions = isAuthenticated ? dbSessions.length || sessionHistory.length : sessionHistory.length;
+  const totalMinutes = isAuthenticated
+    ? (dbSessions as any[]).reduce((sum, s) => sum + (s.duration || 0), 0)
+    : sessionHistory.reduce((sum, s) => sum + (s.duration || 0), 0);
   const streak = profile?.currentStreak || 0;
   const journalCount = journalEntries.length;
 
@@ -207,30 +185,25 @@ export default function ProgressScreen() {
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }, [last30]);
 
-  // Recent sessions
-  const recentSessions = useMemo(() => {
-    return sessionHistory
-      .slice(-5)
-      .reverse()
-      .map((s) => ({
-        ...s,
-        meditation: MEDITATIONS.find((m) => m.id === s.meditationId),
-      }));
-  }, [sessionHistory]);
-
-  // Weekly minutes chart data
+  // Weekly minutes chart data (from DB sessions if authenticated)
   const weeklyMinutes = useMemo(() => {
     const result = Array(7).fill(0);
     const now = new Date();
-    sessionHistory.forEach((s) => {
-      const d = new Date(s.completedAt);
+    const source = isAuthenticated && dbSessions.length > 0 ? dbSessions : sessionHistory;
+    (source as any[]).forEach((s) => {
+      const d = new Date(s.completedAt ?? s.createdAt);
       const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
       if (diff < 7) result[6 - diff] += s.duration || 0;
     });
     return result;
-  }, [sessionHistory]);
+  }, [sessionHistory, dbSessions, isAuthenticated]);
 
   const maxWeeklyMin = Math.max(...weeklyMinutes, 1);
+
+  // Sessions à afficher
+  const displaySessions = isAuthenticated && dbSessions.length > 0
+    ? (dbSessions as any[]).slice(0, 5)
+    : sessionHistory.slice(-5).reverse();
 
   return (
     <ScreenContainer>
@@ -255,7 +228,7 @@ export default function ProgressScreen() {
             { value: totalSessions, label: 'Sessions', emoji: '🧘‍♀️' },
             { value: totalMinutes, label: 'Minutes', emoji: '⏱️' },
             { value: streak, label: 'Jours streak', emoji: '🔥' },
-            { value: journalCount, label: 'Entrées journal', emoji: '📖' },
+            { value: journalCount, label: 'Journal', emoji: '📖' },
           ].map((stat) => (
             <View key={stat.label} style={[styles.statCard, { backgroundColor: colors.surface }]}>
               <Text style={styles.statEmoji}>{stat.emoji}</Text>
@@ -264,6 +237,38 @@ export default function ProgressScreen() {
             </View>
           ))}
         </View>
+
+        {/* Programmes en cours */}
+        {(inProgressPrograms as any[]).length > 0 && (
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>Programmes en cours</Text>
+            {(inProgressPrograms as any[]).map((prog, i) => (
+              <Pressable
+                key={prog.id}
+                style={({ pressed }) => [
+                  styles.sessionRow,
+                  i < inProgressPrograms.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+                  { opacity: pressed ? 0.8 : 1 },
+                ]}
+                onPress={() => router.push(`/program-day/${prog.programSlug}/${prog.nextDay}` as never)}
+              >
+                <Text style={{ fontSize: 28 }}>{prog.programEmoji}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.sessionTitle, { color: colors.foreground }]} numberOfLines={1}>
+                    {prog.programTitle}
+                  </Text>
+                  <Text style={[styles.sessionMeta, { color: colors.muted }]}>
+                    Jour {prog.nextDay}/{prog.programDurationDays} · {prog.progressPct}% complété
+                  </Text>
+                  <View style={[styles.miniBarBg, { backgroundColor: colors.border }]}>
+                    <View style={[styles.miniBarFill, { width: `${prog.progressPct}%` as any, backgroundColor: colors.primary }]} />
+                  </View>
+                </View>
+                <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         {/* Mood chart */}
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
@@ -303,7 +308,7 @@ export default function ProgressScreen() {
         {/* Mood distribution */}
         {moodCounts.length > 0 && (
           <View style={[styles.card, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>Émotions dominantes (30 jours)</Text>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>Humeurs ce mois</Text>
             {moodCounts.map(([mood, count]) => {
               const pct = last30.length > 0 ? (count / last30.length) * 100 : 0;
               return (
@@ -311,9 +316,7 @@ export default function ProgressScreen() {
                   <Text style={styles.moodEmoji}>{MOOD_EMOJIS[mood]}</Text>
                   <Text style={[styles.moodLabel, { color: colors.foreground }]}>{MOOD_LABELS[mood]}</Text>
                   <View style={[styles.moodBarBg, { backgroundColor: colors.border }]}>
-                    <View
-                      style={[styles.moodBarFill, { width: `${pct}%`, backgroundColor: MOOD_COLOR[mood] || colors.primary }]}
-                    />
+                    <View style={[styles.moodBarFill, { width: `${pct}%` as any, backgroundColor: MOOD_COLOR[mood] || colors.primary }]} />
                   </View>
                   <Text style={[styles.moodPct, { color: colors.muted }]}>{Math.round(pct)}%</Text>
                 </View>
@@ -323,20 +326,20 @@ export default function ProgressScreen() {
         )}
 
         {/* Recent sessions */}
-        {recentSessions.length > 0 && (
+        {displaySessions.length > 0 && (
           <View style={[styles.card, { backgroundColor: colors.surface }]}>
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>Sessions récentes</Text>
-            {recentSessions.map((s, i) => (
-              <View key={i} style={[styles.sessionRow, i < recentSessions.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+            {displaySessions.map((s: any, i: number) => (
+              <View key={i} style={[styles.sessionRow, i < displaySessions.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
                 <View style={[styles.sessionIcon, { backgroundColor: `${colors.primary}20` }]}>
                   <Text style={{ fontSize: 18 }}>🧘‍♀️</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.sessionTitle, { color: colors.foreground }]} numberOfLines={1}>
-                    {s.meditation?.title || 'Méditation'}
+                    {s.meditationTitle || s.meditation?.title || 'Méditation'}
                   </Text>
                   <Text style={[styles.sessionMeta, { color: colors.muted }]}>
-                    {s.duration} min · {new Date(s.completedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                    {s.duration} min · {new Date(s.completedAt ?? s.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                   </Text>
                 </View>
                 <View style={[styles.durationBadge, { backgroundColor: `${colors.primary}15` }]}>
@@ -399,6 +402,8 @@ const styles = StyleSheet.create({
   sessionMeta: { fontSize: 12, marginTop: 2 },
   durationBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   durationText: { fontSize: 12, fontWeight: '600' },
+  miniBarBg: { height: 4, borderRadius: 2, overflow: 'hidden', marginTop: 4 },
+  miniBarFill: { height: '100%', borderRadius: 2 },
   emptyCard: { borderRadius: 18, padding: 28, alignItems: 'center' },
   emptyTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
   emptySub: { fontSize: 14, lineHeight: 20, textAlign: 'center', marginBottom: 20 },

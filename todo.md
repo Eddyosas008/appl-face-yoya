@@ -186,3 +186,31 @@
 - [x] Ajouter la route tRPC programs.completed dans routers.ts
 - [x] Intégrer la section dans l'écran profil avec cartes gradient, badges et dates
 - [x] Ajouter les styles pour les cartes de programmes complétés
+
+## Phase 28 : Développement continu et améliorations globales
+
+### Home
+- [x] Remplacer les cartes programmes hardcodées par des données dynamiques depuis la DB
+- [x] Ajouter une section "Programme en cours" sur la Home si l'utilisateur a un programme actif
+- [x] Ajouter un 4ème stat "Programmes" dans la carte de stats du profil
+
+### Backend
+- [x] Ajouter route tRPC programs.inProgress pour les programmes en cours
+- [x] Améliorer la route programs.list pour inclure la progression utilisateur
+- [x] Ajouter la fonction getCompletedPrograms dans db.ts
+
+### Profil
+- [x] Ajouter compteur de programmes terminés dans les stats du profil
+- [x] Ajouter section "Programmes en cours" dans le profil avec progression et bouton Reprendre
+
+### Explore / Méditations
+- [x] Ajouter un filtre "Favoris" dans l'écran Explore
+
+### Journal
+- [x] Ajouter recherche et filtres par humeur dans le journal
+- [x] Ajouter bouton supprimer les entrées du journal
+
+### Progress
+- [x] Connecter les sessions récentes depuis la DB
+- [x] Ajouter section "Programmes en cours" dans Progress
+- [x] Améliorer les stats avec données DB (minutes, sessions)

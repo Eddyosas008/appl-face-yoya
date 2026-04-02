@@ -45,22 +45,27 @@ export default function ExploreScreen() {
     limit: 200,
   });
 
-  // Construire la liste de catégories avec "Tout" en premier
+  // Construire la liste de catégories avec "Tout" et "Favoris" en premier
   const categoryTabs = useMemo(() => [
     { slug: 'all', name: 'Tout', emoji: '' },
+    { slug: 'favorites', name: 'Favoris', emoji: '❤️' },
     ...dbCategories,
   ], [dbCategories]);
 
-  // Filtrer les méditations selon la recherche et la catégorie active
+  // Filtrer les méditations selon la recherche, la catégorie active et les favoris
   const filtered = useMemo(() => {
     return dbMeditations.filter((m) => {
       const matchSearch = !search ||
         m.title.toLowerCase().includes(search.toLowerCase()) ||
         (m.subtitle ?? '').toLowerCase().includes(search.toLowerCase());
-      const matchCat = activeCategory === 'all' || m.categorySlug === activeCategory;
+      const matchCat = activeCategory === 'all'
+        ? true
+        : activeCategory === 'favorites'
+          ? favorites.includes(String(m.id))
+          : m.categorySlug === activeCategory;
       return matchSearch && matchCat;
     });
-  }, [dbMeditations, search, activeCategory]);
+  }, [dbMeditations, search, activeCategory, favorites]);
 
   const isLoading = loadingCats || loadingMeds;
 

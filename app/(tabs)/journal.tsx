@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList, TextInput, Modal, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable, FlatList, TextInput, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
@@ -33,15 +33,28 @@ export default function JournalScreen() {
   const [mood, setMood] = useState<MoodState | null>(null);
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
+  const [search, setSearch] = useState('');
+  const [filterMood, setFilterMood] = useState<MoodState | null>(null);
   const prompt = PROMPTS[new Date().getDate() % PROMPTS.length];
 
   // Backend queries
-  const { data: entries = [], isLoading: listLoading, refetch } = trpc.journal.list.useQuery(
+  const { data: allEntries = [], isLoading: listLoading, refetch } = trpc.journal.list.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
   const createMutation = trpc.journal.create.useMutation({ onSuccess: () => refetch() });
   const deleteMutation = trpc.journal.delete.useMutation({ onSuccess: () => refetch() });
+
+  // Filtrage local
+  const entries = useMemo(() => {
+    return allEntries.filter((e) => {
+      const matchSearch = !search ||
+        (e.title ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (e.content ?? '').toLowerCase().includes(search.toLowerCase());
+      const matchMood = !filterMood || e.mood === filterMood;
+      return matchSearch && matchMood;
+    });
+  }, [allEntries, search, filterMood]);
 
   async function handleSave() {
     if (!content.trim() || !mood) return;
@@ -55,6 +68,21 @@ export default function JournalScreen() {
     setContent('');
     setTitle('');
     setMood(null);
+  }
+
+  function handleDelete(id: number) {
+    Alert.alert(
+      'Supprimer cette entrée ?',
+      'Cette action est irréversible.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: () => deleteMutation.mutate({ id }),
+        },
+      ]
+    );
   }
 
   function formatDate(date: Date) {
@@ -78,9 +106,53 @@ export default function JournalScreen() {
             <View style={styles.header}>
               <Text style={[styles.title, { color: colors.foreground }]}>Mon journal</Text>
               <Text style={[styles.subtitle, { color: colors.muted }]}>
-                {entries.length} entrée{entries.length !== 1 ? 's' : ''}
+                {allEntries.length} entrée{allEntries.length !== 1 ? 's' : ''}
               </Text>
             </View>
+
+            {/* Barre de recherche */}
+            <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <IconSymbol name="magnifyingglass" size={16} color={colors.muted} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.foreground }]}
+                placeholder="Rechercher dans le journal..."
+                placeholderTextColor={colors.muted}
+                value={search}
+                onChangeText={setSearch}
+                returnKeyType="search"
+              />
+              {search.length > 0 && (
+                <Pressable onPress={() => setSearch('')}>
+                  <IconSymbol name="xmark.circle.fill" size={16} color={colors.muted} />
+                </Pressable>
+              )}
+            </View>
+
+            {/* Filtres par humeur */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 16 }}
+              contentContainerStyle={{ gap: 8 }}
+            >
+              <Pressable
+                style={[styles.moodFilter, { backgroundColor: !filterMood ? colors.primary : colors.surface, borderColor: !filterMood ? colors.primary : colors.border }]}
+                onPress={() => setFilterMood(null)}
+              >
+                <Text style={[styles.moodFilterText, { color: !filterMood ? '#FFF' : colors.foreground }]}>Tout</Text>
+              </Pressable>
+              {MOODS.map((m) => (
+                <Pressable
+                  key={m}
+                  style={[styles.moodFilter, { backgroundColor: filterMood === m ? colors.primary : colors.surface, borderColor: filterMood === m ? colors.primary : colors.border }]}
+                  onPress={() => setFilterMood(filterMood === m ? null : m)}
+                >
+                  <Text style={styles.moodFilterEmoji}>{MOOD_EMOJIS[m]}</Text>
+                  <Text style={[styles.moodFilterText, { color: filterMood === m ? '#FFF' : colors.foreground }]}>{MOOD_LABELS[m]}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
             <View style={[styles.promptCard, { backgroundColor: `${colors.primary}10`, borderColor: `${colors.primary}30` }]}>
               <Text style={[styles.promptLabel, { color: colors.primary }]}>Invitation du jour</Text>
               <Text style={[styles.promptText, { color: colors.foreground }]}>{prompt}</Text>
@@ -92,16 +164,29 @@ export default function JournalScreen() {
                 <Text style={styles.writeButtonText}>Écrire</Text>
               </Pressable>
             </View>
+
+            {/* Aucun résultat de filtre */}
+            {!listLoading && allEntries.length > 0 && entries.length === 0 && (
+              <View style={styles.empty}>
+                <Text style={styles.emptyEmoji}>🔍</Text>
+                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Aucun résultat</Text>
+                <Text style={[styles.emptySubtitle, { color: colors.muted }]}>
+                  {search ? `Aucune entrée pour "${search}"` : 'Aucune entrée avec cette humeur'}
+                </Text>
+              </View>
+            )}
           </View>
         }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📖</Text>
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Votre journal est vide</Text>
-            <Text style={[styles.emptySubtitle, { color: colors.muted }]}>
-              Commencez à écrire vos pensées et émotions pour mieux vous comprendre.
-            </Text>
-          </View>
+          !listLoading ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyEmoji}>📖</Text>
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Votre journal est vide</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.muted }]}>
+                Commencez à écrire vos pensées et émotions pour mieux vous comprendre.
+              </Text>
+            </View>
+          ) : null
         }
         renderItem={({ item }) => (
           <View style={[styles.entryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -111,6 +196,12 @@ export default function JournalScreen() {
                 <Text style={[styles.entryTitle, { color: colors.foreground }]}>{item.title}</Text>
                 <Text style={[styles.entryDate, { color: colors.muted }]}>{formatDate(new Date(item.createdAt))}</Text>
               </View>
+              <Pressable
+                style={({ pressed }) => [styles.deleteBtn, { opacity: pressed ? 0.6 : 1 }]}
+                onPress={() => handleDelete(item.id)}
+              >
+                <IconSymbol name="trash" size={16} color={colors.error} />
+              </Pressable>
             </View>
             <Text style={[styles.entryContent, { color: colors.muted }]} numberOfLines={3}>
               {item.content}
@@ -176,6 +267,21 @@ const styles = StyleSheet.create({
   header: { paddingTop: 16, marginBottom: 16 },
   title: { fontSize: 26, fontWeight: '800', marginBottom: 4 },
   subtitle: { fontSize: 13 },
+  // Recherche
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', borderRadius: 14,
+    borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 10,
+    gap: 8, marginBottom: 12,
+  },
+  searchInput: { flex: 1, fontSize: 14 },
+  // Filtres humeur
+  moodFilter: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6,
+    borderWidth: 1.5,
+  },
+  moodFilterEmoji: { fontSize: 14 },
+  moodFilterText: { fontSize: 12, fontWeight: '600' },
   promptCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 24 },
   promptLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
   promptText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: 14 },
@@ -192,6 +298,7 @@ const styles = StyleSheet.create({
   entryTitle: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
   entryDate: { fontSize: 12 },
   entryContent: { fontSize: 13, lineHeight: 18 },
+  deleteBtn: { padding: 6 },
   modal: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5 },
   modalCancel: { fontSize: 15 },

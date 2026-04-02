@@ -485,6 +485,39 @@ export async function upsertProgramDay(data: InsertProgramDay) {
   await db.insert(programDays).values(data).onDuplicateKeyUpdate({ set: { ...data } });
 }
 
+// Retourne les programmes en cours (démarrés mais non terminés)
+export async function getInProgressPrograms(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const progresses = await db
+    .select()
+    .from(userProgramProgress)
+    .where(and(eq(userProgramProgress.userId, userId), eq(userProgramProgress.isCompleted, false)))
+    .orderBy(desc(userProgramProgress.lastActivityAt));
+  if (progresses.length === 0) return [];
+  const results = await Promise.all(
+    progresses.map(async (prog) => {
+      const program = await getSleepProgramBySlug(prog.programSlug);
+      const completedDays: number[] = JSON.parse(prog.completedDays || "[]");
+      const totalDays = program?.durationDays ?? 1;
+      const progressPct = Math.round((completedDays.length / totalDays) * 100);
+      return {
+        ...prog,
+        programTitle: program?.title ?? prog.programSlug,
+        programEmoji: program?.emoji ?? "🌙",
+        programDurationDays: totalDays,
+        programCoverColor: program?.coverColor ?? "#1E1B4B",
+        programCoverColor2: program?.coverColor2 ?? "#312E81",
+        programLevel: program?.level ?? "beginner",
+        completedDaysCount: completedDays.length,
+        progressPct,
+        nextDay: prog.currentDay,
+      };
+    })
+  );
+  return results;
+}
+
 // Retourne les programmes terminés avec les infos du programme associé
 export async function getCompletedPrograms(userId: number) {
   const db = await getDb();

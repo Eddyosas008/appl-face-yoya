@@ -47,6 +47,11 @@ export default function ProfileScreen() {
     undefined,
     { enabled: isAuthenticated }
   );
+  // Programmes en cours
+  const { data: inProgressPrograms = [] } = trpc.programs.inProgress.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
   const updateProfileMutation = trpc.profile.update.useMutation({
     onSuccess: () => refetchProfile(),
   });
@@ -176,6 +181,11 @@ export default function ProfileScreen() {
             <Text style={[styles.statValue, { color: colors.primary }]}>{profile?.currentStreak || 0}</Text>
             <Text style={[styles.statLabel, { color: colors.muted }]}>Jours 🔥</Text>
           </View>
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.primary }]}>{completedPrograms?.length || 0}</Text>
+            <Text style={[styles.statLabel, { color: colors.muted }]}>Programmes 🏆</Text>
+          </View>
         </View>
 
         {topMoodEntry && (
@@ -184,6 +194,49 @@ export default function ProfileScreen() {
             <Text style={styles.moodRecapEmoji}>{MOOD_EMOJIS[topMoodEntry[0] as keyof typeof MOOD_EMOJIS]}</Text>
             <Text style={[styles.moodRecapText, { color: colors.foreground }]}>{MOOD_LABELS[topMoodEntry[0] as keyof typeof MOOD_LABELS]}</Text>
           </View>
+        )}
+
+        {/* Section Programmes en cours */}
+        {isAuthenticated && inProgressPrograms.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Programmes en cours 📊</Text>
+            <View style={styles.completedList}>
+              {inProgressPrograms.map((prog: any) => (
+                <TouchableOpacity
+                  key={prog.id}
+                  activeOpacity={0.85}
+                  style={styles.completedCard}
+                  onPress={() => router.push(`/program-day/${prog.programSlug}/${prog.nextDay}` as never)}
+                >
+                  <LinearGradient
+                    colors={[prog.programCoverColor ?? '#1E1B4B', prog.programCoverColor2 ?? '#312E81']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.completedCardGradient}
+                  >
+                    <View style={styles.completedCardLeft}>
+                      <Text style={styles.completedCardEmoji}>{prog.programEmoji}</Text>
+                      <View style={styles.completedCardInfo}>
+                        <Text style={styles.completedCardTitle} numberOfLines={1}>{prog.programTitle}</Text>
+                        <View style={styles.completedCardMeta}>
+                          <View style={[styles.completedBadge, { backgroundColor: 'rgba(99,102,241,0.25)' }]}>
+                            <Text style={[styles.completedBadgeText, { color: '#818CF8' }]}>Jour {prog.nextDay}/{prog.programDurationDays}</Text>
+                          </View>
+                          <Text style={styles.completedCardLevel}>{prog.progressPct}% complété</Text>
+                        </View>
+                        <View style={[styles.inProgressBarBg, { marginTop: 4 }]}>
+                          <View style={[styles.inProgressBarFill, { width: `${prog.progressPct}%` as any }]} />
+                        </View>
+                      </View>
+                    </View>
+                    <View style={styles.completedCardRight}>
+                      <Text style={styles.completedCardChevron}>›</Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
         )}
 
         {/* Section Programmes complétés */}
@@ -434,6 +487,9 @@ const styles = StyleSheet.create({
   subscribeButton: { marginHorizontal: 20, borderRadius: 999, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
   subscribeButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   premiumDisclaimer: { fontSize: 11, textAlign: 'center', paddingHorizontal: 20 },
+  // Barre de progression
+  inProgressBarBg: { width: '100%', height: 4, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden' },
+  inProgressBarFill: { height: 4, backgroundColor: '#4ADE80', borderRadius: 2 },
   // Programmes terminés
   completedList: { gap: 12, marginBottom: 24 },
   completedCard: { borderRadius: 16, overflow: 'hidden' },

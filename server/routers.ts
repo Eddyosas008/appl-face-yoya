@@ -339,6 +339,11 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
       return db.getCompletedPrograms(ctx.user.id);
     }),
 
+    // Programmes en cours (démarrés mais non terminés)
+    inProgress: protectedProcedure.query(async ({ ctx }) => {
+      return db.getInProgressPrograms(ctx.user.id);
+    }),
+
     // Démarrer un programme
     start: protectedProcedure
       .input(z.object({ programSlug: z.string() }))

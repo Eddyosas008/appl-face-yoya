@@ -76,6 +76,9 @@ export default function HomeScreen() {
   const { data: dbMeditations = [] } = trpc.catalog.list.useQuery({ categorySlug: 'sleep', limit: 3 });
   const { data: sleepStats } = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: sleepLogs = [] } = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
+  // Programmes depuis la DB
+  const { data: dbPrograms = [] } = trpc.programs.list.useQuery();
+  const { data: inProgressPrograms = [] } = trpc.programs.inProgress.useQuery(undefined, { enabled: isAuthenticated });
 
   // Modal saisie sommeil
   const [showSleepModal, setShowSleepModal] = useState(false);
@@ -325,6 +328,42 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* ── PROGRAMME EN COURS ───────────────────────── */}
+        {isAuthenticated && inProgressPrograms.length > 0 && (
+          <View style={[styles.section, { paddingHorizontal: 16 }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>▶️ Continuer</Text>
+            {inProgressPrograms.slice(0, 1).map((prog: any) => (
+              <Pressable
+                key={prog.id}
+                style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
+                onPress={() => router.push(`/program-day/${prog.programSlug}/${prog.nextDay}` as never)}
+              >
+                <LinearGradient
+                  colors={[prog.programCoverColor ?? '#1E1B4B', prog.programCoverColor2 ?? '#312E81']}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                  style={styles.inProgressCard}
+                >
+                  <View style={styles.inProgressLeft}>
+                    <Text style={styles.inProgressEmoji}>{prog.programEmoji}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.inProgressLabel}>PROGRAMME EN COURS</Text>
+                      <Text style={styles.inProgressTitle} numberOfLines={1}>{prog.programTitle}</Text>
+                      <Text style={styles.inProgressDay}>Jour {prog.nextDay} / {prog.programDurationDays}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.inProgressRight}>
+                    <Text style={styles.inProgressPct}>{prog.progressPct}%</Text>
+                    <View style={styles.inProgressBarBg}>
+                      <View style={[styles.inProgressBarFill, { width: `${prog.progressPct}%` as any }]} />
+                    </View>
+                    <Text style={styles.inProgressCta}>Reprendre →</Text>
+                  </View>
+                </LinearGradient>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
         {/* ── PROGRAMMES STRUCTURÉS ─────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -339,26 +378,25 @@ export default function HomeScreen() {
               <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
             </Pressable>
           </View>
-
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 16 }}>
-            {[
-              { slug: 'initiation-sommeil', emoji: '🌙', title: 'Initiation', days: 2, color: ['#1E1B4B', '#312E81'] as [string, string], desc: 'Découvrez les bases' },
-              { slug: 'retrouver-sommeil', emoji: '🌛', title: 'Retrouver le sommeil', days: 7, color: ['#1E3A5F', '#1E40AF'] as [string, string], desc: 'Anti-insomnie' },
-              { slug: 'transformation-sommeil', emoji: '✨', title: 'Transformation', days: 21, color: ['#2D1B69', '#5B21B6'] as [string, string], desc: 'Restructuration complète' },
-              { slug: 'maitre-sommeil', emoji: '🌟', title: 'Maître du sommeil', days: 30, color: ['#1A0533', '#7C3AED'] as [string, string], desc: 'Programme expert' },
-            ].map((prog) => (
+            {(dbPrograms.length > 0 ? dbPrograms : [
+              { slug: 'initiation-sommeil', emoji: '🌙', title: 'Initiation', durationDays: 2, coverColor: '#1E1B4B', coverColor2: '#312E81', description: 'Découvrez les bases' },
+              { slug: 'retrouver-sommeil', emoji: '🌛', title: 'Retrouver le sommeil', durationDays: 7, coverColor: '#1E3A5F', coverColor2: '#1E40AF', description: 'Anti-insomnie' },
+              { slug: 'transformation-sommeil', emoji: '✨', title: 'Transformation', durationDays: 21, coverColor: '#2D1B69', coverColor2: '#5B21B6', description: 'Restructuration complète' },
+              { slug: 'maitre-sommeil', emoji: '🌟', title: 'Maître du sommeil', durationDays: 30, coverColor: '#1A0533', coverColor2: '#7C3AED', description: 'Programme expert' },
+            ]).map((prog: any) => (
               <Pressable
                 key={prog.slug}
                 style={({ pressed }) => [styles.programCard, { opacity: pressed ? 0.9 : 1 }]}
                 onPress={() => router.push(`/program/${prog.slug}` as never)}
               >
-                <LinearGradient colors={prog.color} style={styles.programGradient}>
+                <LinearGradient colors={[prog.coverColor ?? '#1E1B4B', prog.coverColor2 ?? '#312E81']} style={styles.programGradient}>
                   <Text style={styles.programEmoji}>{prog.emoji}</Text>
                   <View style={styles.programDaysBadge}>
-                    <Text style={styles.programDaysText}>{prog.days}j</Text>
+                    <Text style={styles.programDaysText}>{prog.durationDays}j</Text>
                   </View>
                   <Text style={styles.programTitle}>{prog.title}</Text>
-                  <Text style={styles.programDesc}>{prog.desc}</Text>
+                  <Text style={styles.programDesc}>{prog.description}</Text>
                   <View style={styles.programStartBtn}>
                     <Text style={styles.programStartText}>Commencer →</Text>
                   </View>
@@ -621,6 +659,18 @@ const styles = StyleSheet.create({
   programDesc: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
   programStartBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start' },
   programStartText: { color: '#FFF', fontSize: 12, fontWeight: '600' },
+  // Programme en cours
+  inProgressCard: { borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  inProgressLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  inProgressEmoji: { fontSize: 36 },
+  inProgressLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
+  inProgressTitle: { color: '#FFF', fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  inProgressDay: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
+  inProgressRight: { alignItems: 'flex-end', gap: 6, minWidth: 80 },
+  inProgressPct: { color: '#FFF', fontSize: 20, fontWeight: '800' },
+  inProgressBarBg: { width: 80, height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
+  inProgressBarFill: { height: 6, backgroundColor: '#4ADE80', borderRadius: 3 },
+  inProgressCta: { color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600' },
 
   // Accès rapide
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
