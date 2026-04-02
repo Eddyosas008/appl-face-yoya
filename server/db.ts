@@ -485,6 +485,21 @@ export async function upsertProgramDay(data: InsertProgramDay) {
   await db.insert(programDays).values(data).onDuplicateKeyUpdate({ set: { ...data } });
 }
 
+// Mettre à jour uniquement l'audio d'un jour de programme
+export async function updateProgramDayAudio(
+  programSlug: string,
+  dayNumber: number,
+  audioUrl: string | null,
+  audioDurationSeconds: number = 0
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(programDays)
+    .set({ audioUrl: audioUrl ?? undefined, audioDurationSeconds })
+    .where(and(eq(programDays.programSlug, programSlug), eq(programDays.dayNumber, dayNumber)));
+}
+
 // Retourne les programmes en cours (démarrés mais non terminés)
 export async function getInProgressPrograms(userId: number) {
   const db = await getDb();

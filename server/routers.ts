@@ -396,10 +396,38 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
         sleepTip: z.string().optional(),
         journalPrompt: z.string().optional(),
         estimatedMinutes: z.number().optional(),
+        audioUrl: z.string().nullable().optional(),
+        audioDurationSeconds: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         await db.upsertProgramDay(input as Parameters<typeof db.upsertProgramDay>[0]);
         return { success: true };
+      }),
+
+    // Admin : mettre à jour uniquement l'audio d'un jour de programme
+    updateDayAudio: protectedProcedure
+      .input(z.object({
+        programSlug: z.string(),
+        dayNumber: z.number(),
+        audioUrl: z.string().nullable(),
+        audioDurationSeconds: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new Error("Unauthorized");
+        await db.updateProgramDayAudio(
+          input.programSlug,
+          input.dayNumber,
+          input.audioUrl,
+          input.audioDurationSeconds ?? 0
+        );
+        return { success: true };
+      }),
+
+    // Récupérer tous les jours d'un programme (admin + utilisateur)
+    getDays: protectedProcedure
+      .input(z.object({ programSlug: z.string() }))
+      .query(async ({ input }) => {
+        return db.getProgramDays(input.programSlug);
       }),
   }),
 
@@ -494,6 +522,59 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
     stats: protectedProcedure
       .query(async ({ ctx }) => {
         return db.getSleepStats(ctx.user.id);
+      }),
+
+    // Rapport hebdomadaire de sommeil (7 derniers jours vs 7 jours précédents)
+    weeklyReport: protectedProcedure
+      .query(async ({ ctx }) => {
+        const logs = await db.getSleepLogs(ctx.user.id, 14);
+        const now = new Date();
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        const fourteenDaysAgo = new Date(now);
+        fourteenDaysAgo.setDate(now.getDate() - 14);
+
+        const thisWeek = logs.filter((l) => new Date(l.sleepDate) >= sevenDaysAgo);
+        const lastWeek = logs.filter((l) => {
+          const d = new Date(l.sleepDate);
+          return d >= fourteenDaysAgo && d < sevenDaysAgo;
+        });
+
+        const avg = (arr: typeof logs, field: 'durationMinutes' | 'quality') => {
+          const vals = arr.map((l) => l[field]).filter((v): v is number => v != null);
+          return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+        };
+
+        const thisAvgDuration = avg(thisWeek, 'durationMinutes');
+        const lastAvgDuration = avg(lastWeek, 'durationMinutes');
+        const thisAvgQuality = avg(thisWeek, 'quality');
+        const lastAvgQuality = avg(lastWeek, 'quality');
+
+        const durationTrend = thisAvgDuration != null && lastAvgDuration != null
+          ? thisAvgDuration > lastAvgDuration ? 'up' : thisAvgDuration < lastAvgDuration ? 'down' : 'stable'
+          : 'stable';
+        const qualityTrend = thisAvgQuality != null && lastAvgQuality != null
+          ? thisAvgQuality > lastAvgQuality ? 'up' : thisAvgQuality < lastAvgQuality ? 'down' : 'stable'
+          : 'stable';
+
+        return {
+          thisWeek: {
+            nights: thisWeek.length,
+            avgDurationMinutes: thisAvgDuration,
+            avgQuality: thisAvgQuality,
+          },
+          lastWeek: {
+            nights: lastWeek.length,
+            avgDurationMinutes: lastAvgDuration,
+            avgQuality: lastAvgQuality,
+          },
+          trends: { duration: durationTrend, quality: qualityTrend },
+          dailyData: thisWeek.map((l) => ({
+            date: l.sleepDate,
+            durationMinutes: l.durationMinutes,
+            quality: l.quality,
+          })),
+        };
       }),
   }),
 });

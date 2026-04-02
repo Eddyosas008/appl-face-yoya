@@ -263,6 +263,10 @@ export default function SleepTrackerScreen() {
     enabled: isAuthenticated,
   });
 
+  const { data: weeklyReport } = trpc.sleep.weeklyReport.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+
   const createMutation = trpc.sleep.create.useMutation({
     onSuccess: () => {
       utils.sleep.list.invalidate();
@@ -398,6 +402,43 @@ export default function SleepTrackerScreen() {
           </View>
         )}
 
+        {/* Rapport hebdomadaire */}
+        {weeklyReport && weeklyReport.thisWeek.nights > 0 && (
+          <View style={[styles.chartCard, { marginBottom: 12 }]}>
+            <Text style={styles.chartTitle}>📊 Bilan de la semaine</Text>
+            <Text style={styles.chartSubtitle}>7 derniers jours vs semaine précédente</Text>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+              <View style={{ flex: 1, backgroundColor: '#8B5CF622', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 22, fontWeight: '700', color: '#8B5CF6' }}>{weeklyReport.thisWeek.nights}</Text>
+                <Text style={{ fontSize: 11, color: '#8B5CF6', marginTop: 2 }}>Nuits</Text>
+              </View>
+              <View style={{ flex: 1, backgroundColor: '#22C55E22', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 22, fontWeight: '700', color: '#22C55E' }}>
+                  {weeklyReport.thisWeek.avgDurationMinutes != null
+                    ? `${Math.floor(weeklyReport.thisWeek.avgDurationMinutes / 60)}h${String(weeklyReport.thisWeek.avgDurationMinutes % 60).padStart(2, '0')}`
+                    : '--'}
+                </Text>
+                <Text style={{ fontSize: 11, color: '#22C55E', marginTop: 2 }}>Durée moy.</Text>
+                {weeklyReport.trends.duration !== 'stable' && (
+                  <Text style={{ fontSize: 10, color: weeklyReport.trends.duration === 'up' ? '#22C55E' : '#EF4444', marginTop: 2 }}>
+                    {weeklyReport.trends.duration === 'up' ? '↑ Hausse' : '↓ Baisse'}
+                  </Text>
+                )}
+              </View>
+              <View style={{ flex: 1, backgroundColor: '#F59E0B22', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                <Text style={{ fontSize: 22, fontWeight: '700', color: '#F59E0B' }}>
+                  {weeklyReport.thisWeek.avgQuality != null ? `${weeklyReport.thisWeek.avgQuality}/5` : '--'}
+                </Text>
+                <Text style={{ fontSize: 11, color: '#F59E0B', marginTop: 2 }}>Qualité moy.</Text>
+                {weeklyReport.trends.quality !== 'stable' && (
+                  <Text style={{ fontSize: 10, color: weeklyReport.trends.quality === 'up' ? '#22C55E' : '#EF4444', marginTop: 2 }}>
+                    {weeklyReport.trends.quality === 'up' ? '↑ Améliorée' : '↓ Dégradée'}
+                  </Text>
+                )}
+              </View>
+            </View>
+          </View>
+        )}
         {/* Graphique hebdomadaire */}
         <View style={styles.chartCard}>
           <Text style={styles.chartTitle}>Progression des 7 derniers jours</Text>

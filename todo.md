@@ -222,3 +222,16 @@
 - [x] Créer le script de seed pour les jours 1-30 du programme Maître du sommeil (30 jours complets)
 - [x] Exécuter les scripts de seed : 21 jours insérés (0 erreur) + 30 jours insérés (0 erreur)
 - [x] Contenu enrichi : descriptions détaillées, routines du soir, conseils scientifiques, prompts de journal, méditations, exercices de respiration, sons d'ambiance, durée estimée
+
+## Phase 30 : Gestion audio admin + améliorations fonctionnelles
+
+- [x] Créer l'écran admin /admin/audio-manager pour gérer les URLs audio des programDays
+- [x] Route tRPC programs.updateDayAudio (admin) pour mettre à jour audioUrl + audioDurationSeconds
+- [x] Route tRPC programs.getDays pour lister les jours d'un programme
+- [x] Ajouter lien vers audio-manager dans la section Administration du profil
+- [x] Créer l'écran /journal/[id] pour afficher une entrée de journal en plein écran avec édition
+- [x] Connecter les cartes du journal vers l'écran de détail (navigation + hint)
+- [x] Ajouter route tRPC sleep.weeklyReport (bilan 7j vs 7j précédents avec tendances)
+- [x] Intégrer le widget rapport hebdomadaire dans l'écran Sleep Tracker
+- [x] Ajouter section Administration dans le profil avec lien audio-manager
+- [x] 0 erreur TypeScript réelle confirmée (npx tsc --noEmit)

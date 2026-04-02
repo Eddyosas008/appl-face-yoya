@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, TextInput, Modal, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
@@ -28,6 +29,7 @@ const MOOD_MAP: Partial<Record<MoodState, DbMood>> = {
 
 export default function JournalScreen() {
   const colors = useColors();
+  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [isWriting, setIsWriting] = useState(false);
   const [mood, setMood] = useState<MoodState | null>(null);
@@ -189,7 +191,10 @@ export default function JournalScreen() {
           ) : null
         }
         renderItem={({ item }) => (
-          <View style={[styles.entryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Pressable
+            style={({ pressed }) => [styles.entryCard, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.92 : 1 }]}
+            onPress={() => router.push(`/journal/${item.id}` as never)}
+          >
             <View style={styles.entryHeader}>
               <Text style={styles.entryMoodEmoji}>{item.mood ? MOOD_EMOJIS[item.mood] : "📝"}</Text>
               <View style={styles.entryMeta}>
@@ -198,7 +203,7 @@ export default function JournalScreen() {
               </View>
               <Pressable
                 style={({ pressed }) => [styles.deleteBtn, { opacity: pressed ? 0.6 : 1 }]}
-                onPress={() => handleDelete(item.id)}
+                onPress={(e) => { e.stopPropagation?.(); handleDelete(item.id); }}
               >
                 <IconSymbol name="trash" size={16} color={colors.error} />
               </Pressable>
@@ -206,7 +211,8 @@ export default function JournalScreen() {
             <Text style={[styles.entryContent, { color: colors.muted }]} numberOfLines={3}>
               {item.content}
             </Text>
-          </View>
+            <Text style={[styles.tapHint, { color: colors.muted }]}>Appuyer pour lire et modifier →</Text>
+          </Pressable>
         )}
       />
 
@@ -298,6 +304,7 @@ const styles = StyleSheet.create({
   entryTitle: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
   entryDate: { fontSize: 12 },
   entryContent: { fontSize: 13, lineHeight: 18 },
+  tapHint: { fontSize: 11, marginTop: 6, textAlign: 'right', opacity: 0.6 },
   deleteBtn: { padding: 6 },
   modal: { flex: 1 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5 },
