@@ -46,8 +46,7 @@ export default function TabLayout() {
           letterSpacing: 0.4,
           textTransform: 'uppercase',
         },
-        // Indicateur actif : point doré sous l'icône
-        tabBarIndicatorStyle: { backgroundColor: GOLD },
+
       }}
     >
       <Tabs.Screen

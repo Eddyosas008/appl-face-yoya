@@ -270,3 +270,14 @@
 - [x] Refondre l'écran Journal avec le nouveau thème
 - [x] Refondre l'écran Journeys avec le nouveau thème
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 34 : Refonte lecteur de méditation — Style Sanctuaire du Sommeil
+
+- [x] Analyser la structure complète du lecteur de méditation
+- [x] Appliquer fond indigo nuit + étoiles animées (SVG)
+- [x] Refondre la pochette (cover art glassmorphisme + gradient)
+- [x] Refondre les contrôles audio (boutons or, barre de progression dorée)
+- [x] Refondre les métadonnées (titre Cormorant Garamond, catégorie or)
+- [x] Refondre la section script de méditation (cartes glass)
+- [x] Refondre les méditations similaires (cartes glass)
+- [x] Vérifier TypeScript et sauvegarder le checkpoint

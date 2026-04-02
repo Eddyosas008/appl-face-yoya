@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   // Carte sommeil
   sleepCard: { backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   sleepCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'linear-gradient(135deg, #2A1F6A, #1A144A)', borderWidth: 0.5, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1A144A' },
+  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1A144A', borderWidth: 0.5, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center' },
   sleepCardTitle: { fontSize: 13, fontWeight: '500', color: WHITE_SOFT, marginBottom: 2 },
   sleepCardSub: { fontSize: 10.5, color: LAVENDER, letterSpacing: 0.3 },
   arrowBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: GOLD_SOFT, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', alignItems: 'center', justifyContent: 'center' },
