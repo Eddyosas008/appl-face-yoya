@@ -10,6 +10,7 @@ import { trpc } from '@/lib/trpc';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
+import { AnimatedScreen } from '@/components/animated-screen';
 import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
 
 const PREMIUM_FEATURES = [
@@ -138,6 +139,7 @@ export default function ProfileScreen() {
 
   return (
     <ScreenContainer>
+      <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
           <View style={[styles.avatarContainer, { backgroundColor: `${colors.primary}20` }]}>
@@ -448,6 +450,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+      </AnimatedScreen>
     </ScreenContainer>
   );
 }

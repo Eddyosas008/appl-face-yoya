@@ -12,6 +12,7 @@ import { useUser } from '@/lib/user-context';
 import { trpc } from '@/lib/trpc';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AnimatedScreen } from '@/components/animated-screen';
 
 // Formater la durée en minutes
 function formatDuration(seconds: number): string {
@@ -107,7 +108,7 @@ export default function ExploreScreen() {
   const { data: dbCategories = [], isLoading: loadingCats } = trpc.catalog.categories.useQuery();
 
   // Charger toutes les méditations depuis la DB
-  const { data: dbMeditations = [], isLoading: loadingMeds } = trpc.catalog.list.useQuery({ limit: 300 });
+  const { data: dbMeditations = [], isLoading: loadingMeds } = trpc.catalog.list.useQuery({ limit: 200 });
 
   const isLoading = loadingCats || loadingMeds;
 
@@ -160,6 +161,7 @@ export default function ExploreScreen() {
 
   return (
     <ScreenContainer>
+      <AnimatedScreen preset="fadeSlideUp" duration={320}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* En-tête */}
         <View style={styles.header}>
@@ -384,6 +386,7 @@ export default function ExploreScreen() {
 
         <View style={{ height: 32 }} />
       </ScrollView>
+      </AnimatedScreen>
     </ScreenContainer>
   );
 }

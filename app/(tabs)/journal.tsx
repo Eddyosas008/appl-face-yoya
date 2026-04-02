@@ -8,6 +8,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import type { MoodState } from '@/shared/wellness-types';
+import { AnimatedScreen } from '@/components/animated-screen';
 
 const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'anxious', 'sad'];
 
@@ -93,6 +94,7 @@ export default function JournalScreen() {
 
   return (
     <ScreenContainer>
+      <AnimatedScreen preset="fadeSlideUp" duration={300}>
       {listLoading && (
         <View style={{ alignItems: 'center', paddingVertical: 16 }}>
           <ActivityIndicator color={colors.primary} />
@@ -264,6 +266,7 @@ export default function JournalScreen() {
           </ScrollView>
         </View>
       </Modal>
+      </AnimatedScreen>
     </ScreenContainer>
   );
 }

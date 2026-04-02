@@ -11,6 +11,7 @@ import { useUser } from '@/lib/user-context';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AnimatedScreen, AnimatedItem } from '@/components/animated-screen';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

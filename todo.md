@@ -311,3 +311,18 @@
 - [x] Refondre les écrans auth (welcome, sign-in, sign-up) avec SomnioPax v3
 - [x] Refondre breathing.tsx, checkin.tsx, ambient.tsx, programs/index.tsx
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 38 : Animations de transition fluides [TERMINÉE]
+
+- [x] Créer le composant AnimatedScreen (fade-in + slide-up à l'entrée)
+- [x] Configurer les transitions stack dans app/_layout.tsx (slide horizontal natif)
+- [x] Appliquer AnimatedScreen sur les écrans principaux (Home, Explore, Journal, Profil, Journeys)
+- [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 38b : Correction affichage catégories et méditations [TERMINÉE]
+
+- [x] Diagnostiquer la route tRPC catalog.list — limite 200 dépassée par requête limit:300
+- [x] Augmenter la limite maximale de catalog.list de 200 à 500 dans routers.ts
+- [x] Corriger explore.tsx pour utiliser limit:200 au lieu de limit:300
+- [x] Vérifier que les 20 catégories et 45 méditations s'affichent correctement
+- [x] Vérifier TypeScript et sauvegarder le checkpoint

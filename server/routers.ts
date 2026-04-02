@@ -271,7 +271,7 @@ export const appRouter = router({
         categorySlug: z.string().optional(),
         level: z.enum(["beginner", "intermediate", "advanced"]).optional(),
         isFeatured: z.boolean().optional(),
-        limit: z.number().min(1).max(200).default(100),
+        limit: z.number().min(1).max(500).default(100),
       }).optional())
       .query(async ({ input }) => {
         return db.getMeditations(input);

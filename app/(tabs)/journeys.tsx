@@ -12,6 +12,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { AnimatedScreen } from "@/components/animated-screen";
 
 const FILTERS = [
   { key: "all", label: "Tous", emoji: "🌙" },
@@ -63,6 +64,7 @@ export default function JourneysScreen() {
 
   return (
     <ScreenContainer>
+      <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}
         <LinearGradient colors={["#1A0533", "#0D0B1E"]} style={styles.header}>
@@ -254,6 +256,7 @@ export default function JourneysScreen() {
           </View>
         )}
       </ScrollView>
+      </AnimatedScreen>
     </ScreenContainer>
   );
 }

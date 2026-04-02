@@ -129,23 +129,35 @@ export default function RootLayout() {
           {/* Default to hiding native headers so raw route segments don't appear (e.g. "(tabs)", "products/[id]"). */}
           {/* If a screen needs the native header, explicitly enable it and set a human title via Stack.Screen options. */}
           {/* in order for ios apps tab switching to work properly, use presentation: "fullScreenModal" for login page, whenever you decide to use presentation: "modal*/}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "slide_from_right",
+              animationDuration: 280,
+              gestureEnabled: true,
+              gestureDirection: "horizontal",
+              contentStyle: { backgroundColor: '#03020F' },
+            }}
+          >
+            <Stack.Screen name="index" options={{ animation: "fade" }} />
+            <Stack.Screen name="(auth)" options={{ animation: "fade", animationDuration: 350 }} />
+            <Stack.Screen name="(tabs)" options={{ animation: "fade", animationDuration: 350 }} />
             <Stack.Screen name="onboarding" options={{ animation: "slide_from_right", gestureEnabled: false }} />
-            <Stack.Screen name="meditation/[id]" options={{ presentation: "modal" }} />
-            <Stack.Screen name="journey/[id]" />
-            <Stack.Screen name="checkin" options={{ presentation: "modal" }} />
-            <Stack.Screen name="chat" />
-            <Stack.Screen name="breathing" />
-            <Stack.Screen name="ambient" />
-            <Stack.Screen name="progress" />
-            <Stack.Screen name="notifications-settings" />
-            <Stack.Screen name="program/[slug]" />
-            <Stack.Screen name="program-day/[slug]/[day]" />
-            <Stack.Screen name="sleep-tracker" />
-            <Stack.Screen name="oauth/callback" />
+            <Stack.Screen name="meditation/[id]" options={{ presentation: "modal", animation: "slide_from_bottom", animationDuration: 320 }} />
+            <Stack.Screen name="journey/[id]" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="checkin" options={{ presentation: "modal", animation: "slide_from_bottom", animationDuration: 320 }} />
+            <Stack.Screen name="chat" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="breathing" options={{ animation: "slide_from_bottom", animationDuration: 350 }} />
+            <Stack.Screen name="ambient" options={{ animation: "slide_from_bottom", animationDuration: 350 }} />
+            <Stack.Screen name="progress" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="notifications-settings" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="program/[slug]" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="program-day/[slug]/[day]" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="sleep-tracker" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="stats" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="programs/index" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="program-complete/[slug]" options={{ animation: "fade", animationDuration: 400 }} />
+            <Stack.Screen name="oauth/callback" options={{ animation: "fade" }} />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
