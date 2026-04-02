@@ -246,6 +246,14 @@ export default function CheckInScreen() {
   );
 }
 
+// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
+const CI_GOLD    = '#C9A84C';
+const CI_WHITE   = '#EDE9FF';
+const CI_LAV     = 'rgba(184,174,255,0.55)';
+const CI_LAV_DIM = 'rgba(184,174,255,0.35)';
+const CI_BORDER  = 'rgba(180,160,255,0.12)';
+const CI_GLASS   = 'rgba(255,255,255,0.04)';
+
 const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 20,
@@ -259,15 +267,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   headerTitle: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 16,
-    fontWeight: '700',
+    color: CI_WHITE,
   },
   section: {
     marginBottom: 28,
   },
   sectionTitle: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 16,
-    fontWeight: '700',
+    color: CI_WHITE,
     lineHeight: 22,
     marginBottom: 14,
   },
@@ -279,7 +289,9 @@ const styles = StyleSheet.create({
   moodItem: {
     width: '22%',
     borderRadius: 14,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: CI_BORDER,
+    backgroundColor: CI_GLASS,
     padding: 10,
     alignItems: 'center',
     gap: 4,
@@ -291,6 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     textAlign: 'center',
+    color: CI_LAV,
   },
   scaleContainer: {
     marginBottom: 20,
@@ -299,6 +312,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 10,
+    color: CI_LAV,
   },
   scaleButtons: {
     flexDirection: 'row',
@@ -308,31 +322,43 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     borderRadius: 12,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: CI_BORDER,
+    backgroundColor: CI_GLASS,
     alignItems: 'center',
     justifyContent: 'center',
   },
   scaleButtonText: {
     fontSize: 15,
     fontWeight: '700',
+    color: CI_LAV,
   },
   noteInput: {
     borderRadius: 14,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: CI_BORDER,
+    backgroundColor: CI_GLASS,
     padding: 14,
     fontSize: 14,
     lineHeight: 20,
     minHeight: 100,
+    color: CI_WHITE,
   },
   submitButton: {
     borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
+    backgroundColor: CI_GOLD,
+    shadowColor: CI_GOLD,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   submitButtonText: {
-    color: '#FFFFFF',
+    color: '#03020F',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   // Done state
   doneContainer: {
@@ -346,8 +372,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   doneTitle: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 26,
-    fontWeight: '800',
+    color: CI_WHITE,
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -356,12 +383,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: 'center',
     marginBottom: 32,
+    color: CI_LAV,
   },
   recommendCard: {
     width: '100%',
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
+    borderColor: CI_BORDER,
+    backgroundColor: CI_GLASS,
     marginBottom: 16,
   },
   recommendLabel: {
@@ -370,35 +400,42 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
+    color: CI_GOLD,
   },
   recommendTitle: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 18,
-    fontWeight: '800',
+    color: CI_WHITE,
     marginBottom: 4,
   },
   recommendSub: {
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 14,
+    color: CI_LAV,
   },
   recommendButton: {
     borderRadius: 999,
     paddingVertical: 13,
     alignItems: 'center',
+    backgroundColor: CI_GOLD,
   },
   recommendButtonText: {
-    color: '#FFFFFF',
+    color: '#03020F',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   closeButton: {
     borderRadius: 999,
     paddingVertical: 13,
     paddingHorizontal: 32,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: CI_BORDER,
+    backgroundColor: CI_GLASS,
   },
   closeButtonText: {
     fontSize: 14,
     fontWeight: '600',
+    color: CI_LAV,
   },
 });

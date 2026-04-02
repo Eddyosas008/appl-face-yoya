@@ -389,15 +389,26 @@ export default function ProgramCompleteScreen() {
   );
 }
 
+// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
+const PC_BG      = '#03020F';
+const PC_SURFACE = 'rgba(255,255,255,0.04)';
+const PC_BORDER  = 'rgba(180,160,255,0.12)';
+const PC_GOLD    = '#C9A84C';
+const PC_GOLD_BG = 'rgba(201,168,76,0.14)';
+const PC_WHITE   = '#EDE9FF';
+const PC_LAV     = 'rgba(184,174,255,0.55)';
+const PC_LAV_DIM = 'rgba(184,174,255,0.35)';
+const PC_SUCCESS = 'rgba(74,222,128,0.8)';
+
 const styles = StyleSheet.create({
   confettiContainer: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     height: 400,
     zIndex: 10,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   scroll: { paddingBottom: 60 },
 
@@ -406,131 +417,135 @@ const styles = StyleSheet.create({
     paddingTop: 48,
     paddingBottom: 40,
     paddingHorizontal: 24,
-    alignItems: "center",
+    alignItems: 'center',
   },
   congratsLabel: {
     fontSize: 13,
-    fontWeight: "800",
-    color: "#FCD34D",
+    fontWeight: '800',
+    color: PC_GOLD,
     letterSpacing: 3,
     marginBottom: 8,
   },
   heroTitle: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 28,
-    fontWeight: "800",
-    color: "#FFFFFF",
+    color: PC_WHITE,
     marginBottom: 4,
-    textAlign: "center",
+    textAlign: 'center',
   },
   programName: {
+    fontFamily: 'PlayfairDisplay-Italic',
     fontSize: 18,
-    color: "rgba(255,255,255,0.75)",
+    color: PC_LAV,
     marginBottom: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
   completedBadge: {
-    backgroundColor: "rgba(34,197,94,0.2)",
+    backgroundColor: 'rgba(74,222,128,0.08)',
     borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.5)",
+    borderColor: 'rgba(74,222,128,0.3)',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
   },
   completedBadgeText: {
-    color: "#86EFAC",
+    color: PC_SUCCESS,
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 
   // Message
   messageCard: {
     marginHorizontal: 20,
     marginTop: 24,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: PC_SURFACE,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(167,139,250,0.2)",
+    borderColor: PC_BORDER,
   },
   messageTitle: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 18,
-    fontWeight: "800",
-    color: "#E9D5FF",
+    color: PC_WHITE,
     marginBottom: 10,
   },
   messageText: {
     fontSize: 14,
-    color: "rgba(255,255,255,0.7)",
+    color: PC_LAV,
     lineHeight: 22,
     marginBottom: 14,
   },
   messageQuote: {
     fontSize: 13,
-    color: "#A78BFA",
-    fontStyle: "italic",
+    color: PC_GOLD,
+    fontStyle: 'italic',
     lineHeight: 20,
-    borderLeftWidth: 3,
-    borderLeftColor: "#7C3AED",
+    borderLeftWidth: 2,
+    borderLeftColor: PC_GOLD,
     paddingLeft: 12,
   },
 
   // Stats
   statsSection: { marginHorizontal: 20, marginTop: 24 },
-  statsTitle: { fontSize: 16, fontWeight: "700", color: "#E9D5FF", marginBottom: 12 },
-  statsGrid: { flexDirection: "row", gap: 10 },
+  statsTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 12 },
+  statsGrid: { flexDirection: 'row', gap: 10 },
 
   // Badges
   badgesSection: {
     marginHorizontal: 20,
     marginTop: 24,
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: PC_SURFACE,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(167,139,250,0.15)",
+    borderColor: PC_BORDER,
   },
-  badgesTitle: { fontSize: 16, fontWeight: "700", color: "#E9D5FF", marginBottom: 16 },
-  badgesRow: { flexDirection: "row", justifyContent: "space-around" },
-  badgeItem: { alignItems: "center", gap: 6 },
+  badgesTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 16 },
+  badgesRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  badgeItem: { alignItems: 'center', gap: 6 },
   badgeEmoji: { fontSize: 36 },
   badgeLabel: {
     fontSize: 11,
-    color: "rgba(255,255,255,0.6)",
-    textAlign: "center",
+    color: PC_LAV_DIM,
+    textAlign: 'center',
     lineHeight: 16,
   },
 
   // Programme suivant
   nextSection: { marginHorizontal: 20, marginTop: 24 },
-  nextTitle: { fontSize: 16, fontWeight: "700", color: "#E9D5FF", marginBottom: 12 },
+  nextTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 12 },
   nextCard: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 14,
+    backgroundColor: PC_SURFACE,
+    borderWidth: 1,
+    borderColor: PC_BORDER,
   },
   nextEmoji: { fontSize: 36 },
   nextInfo: { flex: 1 },
-  nextLabel: { fontSize: 11, color: "rgba(255,255,255,0.6)", marginBottom: 2 },
-  nextName: { fontSize: 16, fontWeight: "800", color: "#fff", marginBottom: 4 },
-  nextDays: { fontSize: 12, color: "rgba(255,255,255,0.7)" },
-  nextArrow: { fontSize: 20, color: "rgba(255,255,255,0.7)" },
+  nextLabel: { fontSize: 11, color: PC_LAV_DIM, marginBottom: 2 },
+  nextName: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 4 },
+  nextDays: { fontSize: 12, color: PC_LAV_DIM },
+  nextArrow: { fontSize: 20, color: PC_GOLD },
 
   // Actions
   actions: { marginHorizontal: 20, marginTop: 28, gap: 12 },
   shareBtn: {
     borderWidth: 1,
-    borderColor: "rgba(167,139,250,0.4)",
+    borderColor: PC_BORDER,
     borderRadius: 14,
     paddingVertical: 14,
-    alignItems: "center",
-    backgroundColor: "rgba(124,58,237,0.1)",
+    alignItems: 'center',
+    backgroundColor: PC_SURFACE,
   },
-  shareBtnText: { color: "#A78BFA", fontSize: 15, fontWeight: "700" },
-  homeBtn: { borderRadius: 14, overflow: "hidden" },
-  homeBtnGradient: { paddingVertical: 16, alignItems: "center" },
-  homeBtnText: { color: "#fff", fontSize: 16, fontWeight: "800" },
-  programsBtn: { alignItems: "center", paddingVertical: 8 },
-  programsBtnText: { color: "rgba(255,255,255,0.5)", fontSize: 14 },
+  shareBtnText: { color: PC_LAV, fontSize: 15, fontWeight: '700' },
+  homeBtn: { borderRadius: 14, overflow: 'hidden' },
+  homeBtnGradient: { paddingVertical: 16, alignItems: 'center' },
+  homeBtnText: { color: PC_BG, fontSize: 16, fontWeight: '800' },
+  programsBtn: { alignItems: 'center', paddingVertical: 8 },
+  programsBtnText: { color: PC_LAV_DIM, fontSize: 14 },
 });

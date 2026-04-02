@@ -11,7 +11,13 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
-import { useColors } from "@/hooks/use-colors";
+// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
+const PR_GOLD    = '#C9A84C';
+const PR_WHITE   = '#EDE9FF';
+const PR_LAV     = 'rgba(184,174,255,0.55)';
+const PR_LAV_DIM = 'rgba(184,174,255,0.35)';
+const PR_BORDER  = 'rgba(180,160,255,0.12)';
+const PR_GLASS   = 'rgba(255,255,255,0.04)';
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: "Débutant",
@@ -28,7 +34,6 @@ const FILTERS = [
 
 export default function ProgramsListScreen() {
   const router = useRouter();
-  const colors = useColors();
   const [activeFilter, setActiveFilter] = useState("all");
 
   const { data: programs, isLoading } = trpc.programs.list.useQuery();
@@ -51,10 +56,10 @@ export default function ProgramsListScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={[styles.backBtnText, { color: colors.primary }]}>← Retour</Text>
+            <Text style={styles.backBtnText}>← Retour</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>📅 Programmes</Text>
-          <Text style={[styles.headerSub, { color: colors.muted }]}>
+          <Text style={styles.headerSub}>
             Des parcours structurés pour transformer votre sommeil
           </Text>
         </View>
@@ -77,7 +82,7 @@ export default function ProgramsListScreen() {
               <Text
                 style={[
                   styles.filterChipText,
-                  activeFilter === f.key ? styles.filterChipTextActive : { color: colors.muted },
+                  activeFilter === f.key ? styles.filterChipTextActive : styles.filterChipText,
                 ]}
               >
                 {f.label}
@@ -176,59 +181,64 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 40 },
   header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
   backBtn: { marginBottom: 12 },
-  backBtnText: { fontSize: 15, fontWeight: "600" },
-  headerTitle: { fontSize: 26, fontWeight: "800", color: "#ECEDEE", marginBottom: 4 },
-  headerSub: { fontSize: 14 },
+  backBtnText: { fontSize: 15, fontWeight: '600', color: PR_LAV },
+  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 26, color: PR_WHITE, marginBottom: 4 },
+  headerSub: { fontSize: 14, color: PR_LAV },
   filtersRow: { paddingHorizontal: 20, paddingVertical: 12, gap: 8 },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#1E1B4B",
+    backgroundColor: PR_GLASS,
     borderWidth: 1,
-    borderColor: "#312E81",
+    borderColor: PR_BORDER,
   },
-  filterChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
-  filterChipText: { fontSize: 13, fontWeight: "600" },
-  filterChipTextActive: { color: "#fff" },
-  loadingBox: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 60 },
+  filterChipActive: { backgroundColor: 'rgba(201,168,76,0.14)', borderColor: 'rgba(201,168,76,0.35)' },
+  filterChipText: { fontSize: 13, fontWeight: '600', color: PR_LAV },
+  filterChipTextActive: { color: PR_GOLD },
+  loadingBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
   list: { paddingHorizontal: 16, gap: 16 },
   card: {
     borderRadius: 20,
     padding: 20,
-    overflow: "hidden",
+    overflow: 'hidden',
+    backgroundColor: PR_GLASS,
+    borderWidth: 1,
+    borderColor: PR_BORDER,
   },
-  cardBadgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 12 },
+  cardBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   badge: {
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: PR_GLASS,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: PR_BORDER,
   },
-  badgeFeatured: { backgroundColor: "rgba(251,191,36,0.25)" },
-  badgePremium: { backgroundColor: "rgba(167,139,250,0.3)" },
-  badgeText: { color: "#fff", fontSize: 11, fontWeight: "600" },
+  badgeFeatured: { backgroundColor: 'rgba(201,168,76,0.12)', borderColor: 'rgba(201,168,76,0.25)' },
+  badgePremium: { backgroundColor: 'rgba(184,174,255,0.10)', borderColor: PR_BORDER },
+  badgeText: { color: PR_WHITE, fontSize: 11, fontWeight: '600' },
   cardEmoji: { fontSize: 36, marginBottom: 8 },
-  cardTitle: { fontSize: 22, fontWeight: "800", color: "#fff", marginBottom: 4 },
-  cardSub: { fontSize: 14, color: "rgba(255,255,255,0.75)", marginBottom: 8 },
-  cardDesc: { fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 19, marginBottom: 12 },
+  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: PR_WHITE, marginBottom: 4 },
+  cardSub: { fontSize: 14, color: PR_LAV, marginBottom: 8 },
+  cardDesc: { fontSize: 13, color: PR_LAV_DIM, lineHeight: 19, marginBottom: 12 },
   progressBox: { marginTop: 8 },
   progressBarBg: {
     height: 6,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: PR_BORDER,
     borderRadius: 3,
     marginBottom: 6,
   },
   progressBarFill: {
     height: 6,
-    backgroundColor: "#A78BFA",
+    backgroundColor: PR_GOLD,
     borderRadius: 3,
   },
-  progressText: { fontSize: 12, color: "rgba(255,255,255,0.7)" },
+  progressText: { fontSize: 12, color: PR_LAV_DIM },
   startRow: { marginTop: 12 },
   startBtn: {
-    color: "#fff",
-    fontWeight: "700",
+    color: PR_GOLD,
+    fontWeight: '700',
     fontSize: 15,
   },
 });

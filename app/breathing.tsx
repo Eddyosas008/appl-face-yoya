@@ -387,44 +387,52 @@ export default function BreathingScreen() {
   );
 }
 
+// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
+const B_GOLD    = '#C9A84C';
+const B_WHITE   = '#EDE9FF';
+const B_LAV     = 'rgba(184,174,255,0.55)';
+const B_LAV_DIM = 'rgba(184,174,255,0.35)';
+const B_BORDER  = 'rgba(180,160,255,0.12)';
+const B_GLASS   = 'rgba(255,255,255,0.04)';
+
 const styles = StyleSheet.create({
   headerGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 420 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  topTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '700' },
+  topTitle: { fontFamily: 'PlayfairDisplay-Medium', color: B_WHITE, fontSize: 17 },
   exerciseContent: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 60 },
-  cycleText: { fontSize: 14, fontWeight: '600', marginBottom: 32, letterSpacing: 0.5 },
+  cycleText: { fontSize: 14, fontWeight: '600', marginBottom: 32, letterSpacing: 0.5, color: B_GOLD },
   circleWrapper: { width: 260, height: 260, alignItems: 'center', justifyContent: 'center', marginBottom: 32 },
-  circleOuter: { width: 240, height: 240, borderRadius: 120, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  circleOuter: { width: 240, height: 240, borderRadius: 120, borderWidth: 1, borderColor: 'rgba(201,168,76,0.3)', alignItems: 'center', justifyContent: 'center' },
   circleInner: { width: 200, height: 200, borderRadius: 100, alignItems: 'center', justifyContent: 'center' },
   circleCore: { width: 160, height: 160, borderRadius: 80, alignItems: 'center', justifyContent: 'center' },
   circleEmoji: { fontSize: 48 },
-  circlePhaseLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  circleTimer: { color: '#FFFFFF', fontSize: 42, fontWeight: '800' },
-  instruction: { color: 'rgba(255,255,255,0.85)', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 28, paddingHorizontal: 16 },
+  circlePhaseLabel: { color: B_GOLD, fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  circleTimer: { fontFamily: 'PlayfairDisplay-Medium', color: B_WHITE, fontSize: 42 },
+  instruction: { color: B_LAV, fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 28, paddingHorizontal: 16 },
   phaseIndicators: { flexDirection: 'row', gap: 16, marginBottom: 36, flexWrap: 'wrap', justifyContent: 'center' },
   phaseItem: { alignItems: 'center', gap: 6 },
-  phaseDot: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.3)' },
-  phaseLabel: { color: '#FFFFFF', fontSize: 11 },
+  phaseDot: { height: 8, borderRadius: 4, backgroundColor: B_BORDER },
+  phaseLabel: { color: B_LAV_DIM, fontSize: 11 },
   exerciseControls: { gap: 12, width: '100%', alignItems: 'center' },
-  mainBtn: { backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 999, paddingVertical: 16, paddingHorizontal: 48, borderWidth: 1, borderColor: 'rgba(255,255,255,0.4)' },
-  stopBtn: { backgroundColor: 'rgba(255,255,255,0.15)' },
-  mainBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  mainBtn: { backgroundColor: B_GOLD, borderRadius: 999, paddingVertical: 16, paddingHorizontal: 48 },
+  stopBtn: { backgroundColor: B_GLASS, borderWidth: 1, borderColor: B_BORDER },
+  mainBtnText: { color: '#03020F', fontSize: 16, fontWeight: '800' },
   secondaryBtn: { paddingVertical: 10 },
-  secondaryBtnText: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
-  durationHint: { color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 20 },
+  secondaryBtnText: { color: B_LAV_DIM, fontSize: 14 },
+  durationHint: { color: B_LAV_DIM, fontSize: 12, marginTop: 20 },
   // List styles
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
   listHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 24 },
-  listTitle: { fontSize: 22, fontWeight: '800' },
-  listSubtitle: { fontSize: 14, marginTop: 2 },
-  techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center' },
+  listTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: B_WHITE },
+  listSubtitle: { fontSize: 14, marginTop: 2, color: B_LAV },
+  techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', backgroundColor: B_GLASS, borderWidth: 1, borderColor: B_BORDER },
   techniqueLeft: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   techniqueEmoji: { fontSize: 32, marginTop: 2 },
-  techniqueName: { color: '#FFFFFF', fontSize: 17, fontWeight: '700', marginBottom: 4 },
-  techniqueDesc: { color: 'rgba(255,255,255,0.75)', fontSize: 13, lineHeight: 18, marginBottom: 10 },
+  techniqueName: { color: B_WHITE, fontSize: 17, fontWeight: '700', marginBottom: 4 },
+  techniqueDesc: { color: B_LAV, fontSize: 13, lineHeight: 18, marginBottom: 10 },
   techniqueMeta: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  benefitBadge: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
-  benefitText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
-  cyclesText: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
+  benefitBadge: { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(201,168,76,0.2)' },
+  benefitText: { color: B_GOLD, fontSize: 11, fontWeight: '600' },
+  cyclesText: { color: B_LAV_DIM, fontSize: 11 },
 });

@@ -657,26 +657,40 @@ export default function StatsScreen() {
   );
 }
 
+// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
+const ST_BG      = '#03020F';
+const ST_SURFACE = 'rgba(255,255,255,0.04)';
+const ST_BORDER  = 'rgba(180,160,255,0.12)';
+const ST_GOLD    = '#C9A84C';
+const ST_GOLD_BG = 'rgba(201,168,76,0.12)';
+const ST_WHITE   = '#EDE9FF';
+const ST_LAV     = 'rgba(184,174,255,0.55)';
+const ST_LAV_DIM = 'rgba(184,174,255,0.35)';
+
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
+    backgroundColor: ST_BG,
   },
-  backBtn: { width: 40, height: 40, justifyContent: "center" },
-  backArrow: { fontSize: 24 },
-  headerTitle: { fontSize: 18, fontWeight: "700" },
+  backBtn: { width: 40, height: 40, justifyContent: 'center' },
+  backArrow: { fontSize: 24, color: ST_LAV },
+  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: ST_WHITE },
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     marginBottom: 16,
+    backgroundColor: ST_SURFACE,
+    borderWidth: 1,
+    borderColor: ST_BORDER,
   },
-  cardTitle: { fontSize: 16, fontWeight: "700", marginBottom: 2 },
-  cardSubtitle: { fontSize: 12, marginBottom: 4 },
-  sectionLabel: { fontSize: 12, fontWeight: "600", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 },
+  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: ST_WHITE, marginBottom: 2 },
+  cardSubtitle: { fontSize: 12, color: ST_LAV_DIM, marginBottom: 4 },
+  sectionLabel: { fontSize: 12, fontWeight: '600', color: ST_GOLD, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   emptyChart: {
     height: CHART_HEIGHT,
     borderRadius: 12,
@@ -698,28 +712,34 @@ const styles = StyleSheet.create({
   summaryRow: { flexDirection: "row", gap: 10, marginBottom: 16 },
   summaryCard: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 14,
-    alignItems: "center",
+    alignItems: 'center',
     gap: 4,
+    backgroundColor: ST_SURFACE,
+    borderWidth: 1,
+    borderColor: ST_BORDER,
   },
   summaryEmoji: { fontSize: 22 },
-  summaryValue: { fontSize: 18, fontWeight: "700" },
-  summaryLabel: { fontSize: 11, textAlign: "center" },
+  summaryValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: ST_GOLD },
+  summaryLabel: { fontSize: 11, textAlign: 'center', color: ST_LAV_DIM },
   tabBar: {
-    flexDirection: "row",
-    borderRadius: 12,
+    flexDirection: 'row',
+    borderRadius: 16,
     padding: 4,
     marginBottom: 16,
     gap: 4,
+    backgroundColor: ST_SURFACE,
+    borderWidth: 1,
+    borderColor: ST_BORDER,
   },
   tab: {
     flex: 1,
     paddingVertical: 8,
-    borderRadius: 9,
-    alignItems: "center",
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  tabText: { fontSize: 11, fontWeight: "600" },
+  tabText: { fontSize: 11, fontWeight: '600', color: ST_LAV_DIM },
   moodDistRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -727,25 +747,26 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   moodDot: { width: 10, height: 10, borderRadius: 5 },
-  moodDistLabel: { fontSize: 13, width: 100 },
-  moodDistBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: "hidden" },
+  moodDistLabel: { fontSize: 13, width: 100, color: ST_WHITE },
+  moodDistBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: ST_BORDER },
   moodDistBarFill: { height: 6, borderRadius: 3 },
-  moodDistCount: { fontSize: 12, width: 24, textAlign: "right" },
+  moodDistCount: { fontSize: 12, width: 24, textAlign: 'right', color: ST_LAV_DIM },
   sleepStats: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
+    borderTopColor: ST_BORDER,
   },
-  sleepStatItem: { flex: 1, alignItems: "center" },
-  sleepStatValue: { fontSize: 18, fontWeight: "700" },
-  sleepStatLabel: { fontSize: 11, marginTop: 2 },
-  sleepStatDivider: { width: 1, marginHorizontal: 8 },
+  sleepStatItem: { flex: 1, alignItems: 'center' },
+  sleepStatValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: ST_GOLD },
+  sleepStatLabel: { fontSize: 11, marginTop: 2, color: ST_LAV_DIM },
+  sleepStatDivider: { width: 1, marginHorizontal: 8, backgroundColor: ST_BORDER },
   trendsList: { gap: 12, marginTop: 8 },
-  trendItem: { flexDirection: "row", alignItems: "center", gap: 12 },
+  trendItem: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   trendEmoji: { fontSize: 24, width: 32 },
   trendContent: { flex: 1 },
-  trendLabel: { fontSize: 14, fontWeight: "600" },
-  trendDesc: { fontSize: 12, marginTop: 2 },
-  trendArrow: { fontSize: 22, fontWeight: "700" },
+  trendLabel: { fontSize: 14, fontWeight: '600', color: ST_WHITE },
+  trendDesc: { fontSize: 12, marginTop: 2, color: ST_LAV_DIM },
+  trendArrow: { fontSize: 22, fontWeight: '700' },
 });

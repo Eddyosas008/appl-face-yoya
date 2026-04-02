@@ -300,3 +300,14 @@
 - [x] Renforcer la bordure supérieure
 - [x] Améliorer le contraste des icônes inactives
 - [x] Sauvegarder le checkpoint
+
+## Phase 37 : Thème SomnioPax v3 — Écrans secondaires [TERMINÉE]
+
+- [x] Refondre /sleep-tracker (fond #03020F, graphiques or, cartes glass)
+- [x] Refondre /stats (fond #03020F, graphiques SVG or, Playfair Display)
+- [x] Refondre /program/[slug] (fond #03020F, timeline glass, progression or)
+- [x] Refondre /program-day/[slug]/[day] (fond #03020F, lecteur audio or, minuteur)
+- [x] Refondre /program-complete/[slug] (fond #03020F, particules dorées, Playfair)
+- [x] Refondre les écrans auth (welcome, sign-in, sign-up) avec SomnioPax v3
+- [x] Refondre breathing.tsx, checkin.tsx, ambient.tsx, programs/index.tsx
+- [x] Vérifier TypeScript et sauvegarder le checkpoint
