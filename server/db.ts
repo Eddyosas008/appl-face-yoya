@@ -654,3 +654,115 @@ export async function getSleepStats(userId: number) {
   };
 }
 
+// ─── Statistiques avancées 30 jours ──────────────────────────────────────────
+
+export async function getMood30Days(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+  const dateStr = thirtyDaysAgo.toISOString().split("T")[0];
+  const rows = await db
+    .select({ createdAt: checkIns.createdAt, mood: checkIns.mood })
+    .from(checkIns)
+    .where(eq(checkIns.userId, userId))
+    .orderBy(asc(checkIns.createdAt))
+    .limit(60);
+  const byDate = new Map<string, string>();
+  for (const row of rows) {
+    const rowDate = row.createdAt instanceof Date
+      ? row.createdAt.toISOString().split("T")[0]
+      : String(row.createdAt).split("T")[0];
+    if (rowDate >= dateStr) {
+      byDate.set(rowDate, row.mood ?? "neutral");
+    }
+  }
+  return Array.from(byDate.entries()).map(([date, mood]) => ({ date, mood }));
+}
+
+export async function getSleep30Days(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+  const dateStr = thirtyDaysAgo.toISOString().split("T")[0];
+  const rows = await db
+    .select({
+      sleepDate: sleepLogs.sleepDate,
+      durationMinutes: sleepLogs.durationMinutes,
+      quality: sleepLogs.quality,
+    })
+    .from(sleepLogs)
+    .where(eq(sleepLogs.userId, userId))
+    .orderBy(asc(sleepLogs.sleepDate))
+    .limit(60);
+  return rows.filter((r) => r.sleepDate >= dateStr);
+}
+
+export async function getSessions30Days(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+  const rows = await db
+    .select({
+      completedAt: sessionHistory.completedAt,
+      duration: sessionHistory.duration,
+      category: sessionHistory.category,
+    })
+    .from(sessionHistory)
+    .where(eq(sessionHistory.userId, userId))
+    .orderBy(asc(sessionHistory.completedAt))
+    .limit(200);
+  return rows.filter((r) => {
+    if (!r.completedAt) return false;
+    return new Date(r.completedAt) >= thirtyDaysAgo;
+  });
+}
+
+export async function getWellnessScore(userId: number): Promise<{
+  score: number;
+  moodScore: number;
+  sleepScore: number;
+  consistencyScore: number;
+  label: string;
+}> {
+  const db = await getDb();
+  if (!db) return { score: 0, moodScore: 0, sleepScore: 0, consistencyScore: 0, label: "Pas de données" };
+
+  const MOOD_WEIGHTS: Record<string, number> = {
+    happy: 5, grateful: 5, calm: 4, neutral: 3,
+    tired: 2, anxious: 2, sad: 1, overwhelmed: 1,
+  };
+
+  const moodData = await getMood30Days(userId);
+  const recentMoods = moodData.slice(-7);
+  const moodScore = recentMoods.length > 0
+    ? Math.round((recentMoods.reduce((s, m) => s + (MOOD_WEIGHTS[m.mood] ?? 3), 0) / recentMoods.length) * 20)
+    : 0;
+
+  const sleepData = await getSleep30Days(userId);
+  const recentSleep = sleepData.slice(-7);
+  const avgDuration = recentSleep.length > 0
+    ? recentSleep.reduce((s, l) => s + (l.durationMinutes ?? 0), 0) / recentSleep.length
+    : 0;
+  const avgQuality = recentSleep.length > 0
+    ? recentSleep.reduce((s, l) => s + (l.quality ?? 0), 0) / recentSleep.length
+    : 0;
+  const durationScore = Math.min(100, (avgDuration / 480) * 100);
+  const qualityScore = (avgQuality / 5) * 100;
+  const sleepScore = Math.round((durationScore + qualityScore) / 2);
+
+  const sessionsData = await getSessions30Days(userId);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  const recentSessions = sessionsData.filter(
+    (s) => s.completedAt && new Date(s.completedAt) >= sevenDaysAgo
+  );
+  const consistencyScore = Math.min(100, Math.round((recentSessions.length / 7) * 100));
+
+  const score = Math.round((moodScore * 0.35) + (sleepScore * 0.45) + (consistencyScore * 0.20));
+  const label = score >= 80 ? "Excellent" : score >= 60 ? "Bon" : score >= 40 ? "Moyen" : "À améliorer";
+
+  return { score, moodScore, sleepScore, consistencyScore, label };
+}

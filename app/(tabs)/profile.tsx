@@ -292,6 +292,19 @@ export default function ProfileScreen() {
           </>
         )}
 
+        {/* Lien vers les statistiques avancées */}
+        <Pressable
+          style={({ pressed }) => [styles.statsAdvancedBtn, { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 }]}
+          onPress={() => router.push('/stats' as never)}
+        >
+          <Text style={styles.statsAdvancedEmoji}>📊</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.statsAdvancedTitle}>Statistiques avancées</Text>
+            <Text style={styles.statsAdvancedSub}>Graphiques 30j · Score bien-être · Tendances</Text>
+          </View>
+          <Text style={styles.statsAdvancedArrow}>›</Text>
+        </Pressable>
+
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Paramètres</Text>
         <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
           <Pressable
@@ -522,4 +535,10 @@ const styles = StyleSheet.create({
   completedCardRight: { alignItems: 'center', gap: 4 },
   completedTrophy: { fontSize: 22 },
   completedCardChevron: { color: 'rgba(255,255,255,0.5)', fontSize: 22, lineHeight: 24 },
+  // Statistiques avancées
+  statsAdvancedBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 16, gap: 12, marginBottom: 20 },
+  statsAdvancedEmoji: { fontSize: 28 },
+  statsAdvancedTitle: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  statsAdvancedSub: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
+  statsAdvancedArrow: { color: 'rgba(255,255,255,0.8)', fontSize: 28, lineHeight: 30 },
 });

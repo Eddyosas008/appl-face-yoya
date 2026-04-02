@@ -47,6 +47,10 @@ import {
   upsertProgramDay,
   upsertSleepProgram,
   upsertUserProfile,
+  getMood30Days,
+  getSleep30Days,
+  getSessions30Days,
+  getWellnessScore,
 } from "./db";
 // Namespace alias pour compatibilité avec le code existant utilisant db.xxx
 const db = {
@@ -92,6 +96,10 @@ const db = {
   upsertProgramDay,
   upsertSleepProgram,
   upsertUserProfile,
+  getMood30Days,
+  getSleep30Days,
+  getSessions30Days,
+  getWellnessScore,
 };
 
 const MoodEnum = z.enum(["anxious", "sad", "neutral", "calm", "happy", "energetic", "grateful"]);
@@ -664,6 +672,25 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
           })),
         };
       }),
+  }),
+
+  // ─── Statistiques avancées ─────────────────────────────────────────────────
+  stats: router({
+    mood30: protectedProcedure.query(async ({ ctx }) => {
+      return getMood30Days(ctx.user.id);
+    }),
+
+    sleep30: protectedProcedure.query(async ({ ctx }) => {
+      return getSleep30Days(ctx.user.id);
+    }),
+
+    sessions30: protectedProcedure.query(async ({ ctx }) => {
+      return getSessions30Days(ctx.user.id);
+    }),
+
+    wellnessScore: protectedProcedure.query(async ({ ctx }) => {
+      return getWellnessScore(ctx.user.id);
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

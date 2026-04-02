@@ -249,3 +249,12 @@
 - [x] Ajouter styles miniMedCard dans le StyleSheet de Home
 - [x] Remplacer import * as db par imports nommés explicites dans routers.ts (correction watcher TS)
 - [x] 0 erreur TypeScript réelle confirmée (npx tsc --noEmit)
+
+## Phase 32 : Écran statistiques avancées 30j
+
+- [x] Créer routes tRPC stats.mood30j, stats.sleep30j, stats.wellnessScore
+- [x] Créer l'écran /stats avec graphiques SVG humeur 30j et sommeil 30j
+- [x] Ajouter score de bien-être global calculé (humeur + sommeil + sessions)
+- [x] Ajouter section tendances (semaine vs semaine précédente)
+- [x] Connecter depuis le profil (bouton "Statistiques avancées")
+- [x] Vérifier TypeScript et sauvegarder le checkpoint
