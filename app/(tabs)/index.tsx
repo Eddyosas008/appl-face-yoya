@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
   Animated, Dimensions, Platform, Modal, TextInput,
 } from 'react-native';
-// Note: useRef, useState, useEffect imported from React above
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/screen-container';
@@ -15,254 +14,285 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Problématiques du sommeil
+// ─── Constantes de design ────────────────────────────────────────────────────
+const NIGHT_BG     = '#07051C';
+const INDIGO_DEEP  = '#12103A';
+const INDIGO_MID   = '#2D1A6E';
+const GOLD         = '#D4A853';
+const GOLD_SOFT    = 'rgba(212,168,83,0.15)';
+const LAVENDER     = 'rgba(180,168,220,0.55)';
+const LAVENDER_DIM = 'rgba(180,168,220,0.12)';
+const WHITE_SOFT   = '#F0EEF8';
+const GLASS_BG     = 'rgba(255,255,255,0.04)';
+const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+
+// ─── Données statiques ───────────────────────────────────────────────────────
 const SLEEP_ISSUES = [
-  { id: 'insomnia', emoji: '😶', label: 'Insomnie', desc: 'Difficultés à s\'endormir', color: '#4F46E5' },
-  { id: 'wakeup', emoji: '😴', label: 'Réveils nocturnes', desc: 'Se réveiller la nuit', color: '#7C3AED' },
-  { id: 'stress', emoji: '😰', label: 'Stress du soir', desc: 'Pensées envahissantes', color: '#9333EA' },
-  { id: 'anxiety', emoji: '😟', label: 'Anxiété', desc: 'Ruminations mentales', color: '#6D28D9' },
-  { id: 'quality', emoji: '🥱', label: 'Sommeil léger', desc: 'Pas assez reposant', color: '#5B21B6' },
-  { id: 'rhythm', emoji: '🌀', label: 'Rythme perturbé', desc: 'Décalage horaire, travail', color: '#4338CA' },
+  { id: 'insomnia',  emoji: '😶', label: 'Insomnie',         desc: "Difficultés à s'endormir",  color: '#4F46E5' },
+  { id: 'wakeup',   emoji: '😴', label: 'Réveils nocturnes', desc: 'Se réveiller la nuit',       color: '#7C3AED' },
+  { id: 'stress',   emoji: '😰', label: 'Stress du soir',    desc: 'Pensées envahissantes',      color: '#9333EA' },
+  { id: 'anxiety',  emoji: '😟', label: 'Anxiété',           desc: 'Ruminations mentales',       color: '#6D28D9' },
+  { id: 'quality',  emoji: '🥱', label: 'Sommeil léger',     desc: 'Pas assez reposant',         color: '#5B21B6' },
+  { id: 'rhythm',   emoji: '🌀', label: 'Rythme perturbé',   desc: 'Décalage horaire, travail',  color: '#4338CA' },
 ];
 
-// Conseils d'hygiène du sommeil
 const SLEEP_TIPS = [
-  { emoji: '📵', title: 'Écrans éteints', desc: 'Évitez les écrans 1h avant le coucher. La lumière bleue perturbe la mélatonine.' },
-  { emoji: '🌡️', title: 'Chambre fraîche', desc: 'La température idéale pour dormir est entre 16 et 19°C.' },
-  { emoji: '⏰', title: 'Horaires fixes', desc: 'Se coucher et se lever à la même heure renforce votre horloge biologique.' },
-  { emoji: '☕', title: 'Caféine avant 14h', desc: 'La caféine reste active 6 à 8h dans l\'organisme. Évitez-la l\'après-midi.' },
-  { emoji: '🛁', title: 'Bain chaud', desc: 'Un bain chaud 1h avant le coucher abaisse la température corporelle et favorise l\'endormissement.' },
-  { emoji: '📖', title: 'Routine du soir', desc: 'Un rituel régulier (lecture, méditation) signale à votre cerveau qu\'il est temps de dormir.' },
+  { emoji: '📵', title: 'Écrans éteints',   desc: 'Évitez les écrans 1h avant le coucher. La lumière bleue perturbe la mélatonine.' },
+  { emoji: '🌡️', title: 'Chambre fraîche',  desc: 'La température idéale pour dormir est entre 16 et 19°C.' },
+  { emoji: '⏰', title: 'Horaires fixes',   desc: 'Se coucher et se lever à la même heure renforce votre horloge biologique.' },
+  { emoji: '☕', title: 'Caféine avant 14h', desc: "La caféine reste active 6 à 8h dans l'organisme. Évitez-la l'après-midi." },
+  { emoji: '🛁', title: 'Bain chaud',        desc: "Un bain chaud 1h avant le coucher abaisse la température corporelle et favorise l'endormissement." },
+  { emoji: '📖', title: 'Routine du soir',   desc: 'Un rituel régulier (lecture, méditation) signale à votre cerveau qu\'il est temps de dormir.' },
 ];
 
-// Citations nocturnes
 const SLEEP_QUOTES = [
-  { text: "Le sommeil est la meilleure méditation.", author: "Dalaï Lama" },
-  { text: "Chaque nuit, nous mourons un peu pour renaître le matin.", author: "Proverbe" },
-  { text: "Un bon rire et un long sommeil sont les deux meilleurs remèdes.", author: "Proverbe irlandais" },
-  { text: "Le sommeil est le fil d'or qui relie la santé et nos corps.", author: "Thomas Dekker" },
+  { text: 'Le sommeil est la meilleure méditation.',                          author: 'Dalaï Lama' },
+  { text: 'Chaque nuit, nous mourons un peu pour renaître le matin.',         author: 'Proverbe' },
+  { text: 'Un bon rire et un long sommeil sont les deux meilleurs remèdes.',  author: 'Proverbe irlandais' },
+  { text: 'Le sommeil est le fil d\'or qui relie la santé et nos corps.',     author: 'Thomas Dekker' },
 ];
 
-function getTimeGreeting(): { greeting: string; emoji: string; isNight: boolean } {
+const SCIENCE_CARDS = [
+  { emoji: '🧠', title: 'Cycles du sommeil',  desc: 'Un cycle dure 90 min. Vous en avez besoin de 4 à 6 par nuit pour récupérer pleinement.', color: '#1E3A5F' },
+  { emoji: '🌡️', title: 'Mélatonine',         desc: "L'hormone du sommeil se libère dans l'obscurité. Évitez la lumière bleue après 20h.",    color: '#2D1B69' },
+  { emoji: '💤', title: 'Sommeil profond',     desc: 'Le sommeil profond (N3) est essentiel à la récupération physique et à la mémoire.',       color: '#1A0533' },
+  { emoji: '⚡', title: 'REM et créativité',   desc: 'Le sommeil paradoxal (REM) stimule la créativité et régule les émotions.',               color: '#1E1B4B' },
+];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function getTimeGreeting(): { greeting: string; isNight: boolean } {
   const h = new Date().getHours();
-  if (h >= 21 || h < 6) return { greeting: 'Bonne nuit', emoji: '🌙', isNight: true };
-  if (h < 12) return { greeting: 'Bonjour', emoji: '☀️', isNight: false };
-  if (h < 18) return { greeting: 'Bon après-midi', emoji: '🌤️', isNight: false };
-  return { greeting: 'Bonsoir', emoji: '🌙', isNight: true };
+  if (h >= 21 || h < 6) return { greeting: 'Bonne nuit',      isNight: true };
+  if (h < 12)           return { greeting: 'Bonjour',          isNight: false };
+  if (h < 18)           return { greeting: 'Bon après-midi',   isNight: false };
+  return                       { greeting: 'Bonsoir',          isNight: true };
 }
 
-function getMoonPhase(): string {
+function getMoonPhaseLabel(): string {
+  const phases = ['Nouvelle lune', 'Croissant', 'Premier quartier', 'Gibbeuse croissante', 'Pleine lune', 'Gibbeuse décroissante', 'Dernier quartier', 'Croissant décroissant'];
+  return phases[new Date().getDate() % 8];
+}
+
+function getMoonEmoji(): string {
   const phases = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
-  const day = new Date().getDate();
-  return phases[day % 8];
+  return phases[new Date().getDate() % 8];
 }
 
+// ─── Composant étoiles animées ───────────────────────────────────────────────
+function StarField() {
+  const stars = useRef(
+    Array.from({ length: 50 }, (_, i) => ({
+      x: Math.random() * 100,
+      y: Math.random() * 60,
+      size: Math.random() * 2 + 1,
+      anim: new Animated.Value(Math.random()),
+      delay: i * 80,
+    }))
+  ).current;
+
+  useEffect(() => {
+    stars.forEach((star) => {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(star.anim, { toValue: 1, duration: 2000 + Math.random() * 2000, delay: star.delay, useNativeDriver: true }),
+          Animated.timing(star.anim, { toValue: 0.2, duration: 2000 + Math.random() * 2000, useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+    });
+  }, []);
+
+  return (
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+      {stars.map((star, i) => (
+        <Animated.View
+          key={i}
+          style={{
+            position: 'absolute',
+            left: `${star.x}%` as any,
+            top: `${star.y}%` as any,
+            width: star.size,
+            height: star.size,
+            borderRadius: star.size / 2,
+            backgroundColor: WHITE_SOFT,
+            opacity: star.anim,
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+// ─── Écran principal ─────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const colors = useColors();
   const { profile } = useUser();
   const { isAuthenticated } = useAuth();
-  const { greeting, emoji: timeEmoji, isNight } = getTimeGreeting();
-  const moonPhase = getMoonPhase();
+  const { greeting, isNight } = getTimeGreeting();
+  const moonPhase = getMoonPhaseLabel();
+  const moonEmoji = getMoonEmoji();
   const quoteIndex = new Date().getDate() % SLEEP_QUOTES.length;
   const quote = SLEEP_QUOTES[quoteIndex];
 
   // Animations
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const moonAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const moonAnim  = useRef(new Animated.Value(0)).current;
   const [tipIndex, setTipIndex] = useState(0);
 
-  // Stats depuis la DB
-  const { data: sessionStats } = trpc.sessions.stats.useQuery(undefined, { enabled: isAuthenticated });
+  // Données DB
+  const { data: sessionStats }       = trpc.sessions.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: dbMeditations = [] } = trpc.catalog.list.useQuery({ categorySlug: 'sleep', limit: 6 });
   const { data: allCategories = [] } = trpc.catalog.categories.useQuery();
-  // Méditation du jour : rotation quotidienne basée sur la date
-  const todayMed = dbMeditations.length > 0
-    ? dbMeditations[new Date().getDate() % dbMeditations.length]
-    : null;
-  const { data: sleepStats } = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
-  const { data: sleepLogs = [] } = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
-  // Programmes depuis la DB
-  const { data: dbPrograms = [] } = trpc.programs.list.useQuery();
+  const todayMed = dbMeditations.length > 0 ? dbMeditations[new Date().getDate() % dbMeditations.length] : null;
+  const { data: sleepStats }         = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: sleepLogs = [] }     = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
+  const { data: dbPrograms = [] }    = trpc.programs.list.useQuery();
   const { data: inProgressPrograms = [] } = trpc.programs.inProgress.useQuery(undefined, { enabled: isAuthenticated });
 
   // Modal saisie sommeil
   const [showSleepModal, setShowSleepModal] = useState(false);
-  const [sleepBedtime, setSleepBedtime] = useState('22:30');
-  const [sleepWakeTime, setSleepWakeTime] = useState('07:00');
-  const [sleepQuality, setSleepQuality] = useState(3);
-  const [sleepNotes, setSleepNotes] = useState('');
+  const [sleepBedtime,   setSleepBedtime]   = useState('22:30');
+  const [sleepWakeTime,  setSleepWakeTime]  = useState('07:00');
+  const [sleepQuality,   setSleepQuality]   = useState(3);
+  const [sleepNotes,     setSleepNotes]     = useState('');
   const createSleepLog = trpc.sleep.create.useMutation({
-    onSuccess: () => {
-      setShowSleepModal(false);
-      setSleepNotes('');
-    },
+    onSuccess: () => { setShowSleepModal(false); setSleepNotes(''); },
   });
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayLog = sleepLogs.find((l: { sleepDate: string; bedtime?: string | null; wakeTime?: string | null; quality?: number | null }) => l.sleepDate === todayStr);
+  const todayLog = sleepLogs.find((l: any) => l.sleepDate === todayStr);
 
   function handleSaveSleep() {
-    createSleepLog.mutate({
-      sleepDate: todayStr,
-      bedtime: sleepBedtime,
-      wakeTime: sleepWakeTime,
-      quality: sleepQuality,
-      notes: sleepNotes.trim() || undefined,
-    });
+    createSleepLog.mutate({ sleepDate: todayStr, bedtime: sleepBedtime, wakeTime: sleepWakeTime, quality: sleepQuality, notes: sleepNotes.trim() || undefined });
   }
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(moonAnim, { toValue: 8, duration: 3000, useNativeDriver: true }),
-          Animated.timing(moonAnim, { toValue: 0, duration: 3000, useNativeDriver: true }),
-        ])
-      ),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.loop(Animated.sequence([
+        Animated.timing(moonAnim, { toValue: 10, duration: 3500, useNativeDriver: true }),
+        Animated.timing(moonAnim, { toValue: 0,  duration: 3500, useNativeDriver: true }),
+      ])),
     ]).start();
-
-    // Rotation des conseils toutes les 5 secondes
-    const interval = setInterval(() => {
-      setTipIndex(i => (i + 1) % SLEEP_TIPS.length);
-    }, 5000);
+    const interval = setInterval(() => setTipIndex(i => (i + 1) % SLEEP_TIPS.length), 5000);
     return () => clearInterval(interval);
   }, []);
 
-  const firstName = profile?.firstName ?? 'vous';
-  const streak = sessionStats?.currentStreak ?? 0;
+  const firstName    = profile?.firstName ?? 'vous';
+  const streak       = sessionStats?.currentStreak ?? 0;
   const totalSessions = sessionStats?.totalSessions ?? 0;
-  const totalMinutes = sessionStats?.totalMinutes ?? 0;
+  const totalMinutes  = sessionStats?.totalMinutes ?? 0;
+  const currentTime   = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <ScreenContainer containerClassName="bg-background">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
-      >
-        {/* ── HERO NOCTURNE ─────────────────────────────── */}
-        <LinearGradient
-          colors={['#0F0C29', '#302B63', '#24243E']}
-          style={styles.hero}
-        >
-          {/* Étoiles décoratives */}
-          <View style={styles.starsContainer}>
-            {['✦', '✧', '✦', '✧', '✦', '✧', '✦'].map((s, i) => (
-              <Text key={i} style={[styles.star, { left: `${10 + i * 13}%`, top: `${15 + (i % 3) * 20}%`, opacity: 0.4 + (i % 3) * 0.2 }]}>{s}</Text>
-            ))}
-          </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-          {/* Lune animée */}
-          <Animated.View style={[styles.moonContainer, { transform: [{ translateY: moonAnim }] }]}>
-            <Text style={styles.moonEmoji}>{moonPhase}</Text>
-          </Animated.View>
+        {/* ── HERO NOCTURNE ──────────────────────────────────────────────── */}
+        <View style={styles.heroWrapper}>
+          <LinearGradient
+            colors={[INDIGO_DEEP, '#0C0828', NIGHT_BG]}
+            style={styles.hero}
+          >
+            <StarField />
 
-          <Animated.View style={[styles.heroContent, { opacity: fadeAnim }]}>
-            <Text style={styles.heroGreeting}>{timeEmoji} {greeting}, {firstName}</Text>
-            <Text style={styles.heroTitle}>Votre sanctuaire{'\n'}du sommeil</Text>
-            <Text style={styles.heroSubtitle}>
-              Retrouvez un sommeil profond et réparateur grâce à des méditations guidées et des programmes personnalisés.
-            </Text>
+            {/* Lune animée */}
+            <Animated.View style={[styles.moonContainer, { transform: [{ translateY: moonAnim }] }]}>
+              <View style={styles.moonRing}>
+                <Text style={styles.moonEmoji}>{moonEmoji}</Text>
+              </View>
+            </Animated.View>
 
-            {/* Heure actuelle */}
-            <View style={styles.timeWidget}>
-              <Text style={styles.timeWidgetText}>
-                🕐 {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            <Animated.View style={[styles.heroContent, { opacity: fadeAnim }]}>
+              {/* Salutation */}
+              <Text style={styles.heroGreeting}>
+                {isNight ? '🌙' : '☀️'} {greeting}, {firstName}
               </Text>
-              <Text style={styles.timeWidgetSep}>·</Text>
-              <Text style={styles.timeWidgetText}>
-                Phase lunaire {moonPhase}
-              </Text>
-            </View>
-          </Animated.View>
-        </LinearGradient>
 
-        {/* ── STATS SOMMEIL ─────────────────────────────── */}
+              {/* Titre Cormorant Garamond */}
+              <Text style={styles.heroTitle}>Votre sanctuaire{'\n'}du sommeil</Text>
+
+              <Text style={styles.heroSubtitle}>
+                Retrouvez un sommeil profond et réparateur grâce à des méditations guidées.
+              </Text>
+
+              {/* Pilule heure + phase lunaire */}
+              <View style={styles.moonPill}>
+                <View style={styles.moonDot} />
+                <Text style={styles.moonPillText}>{currentTime} · {moonPhase}</Text>
+              </View>
+            </Animated.View>
+          </LinearGradient>
+        </View>
+
+        {/* ── STATS ──────────────────────────────────────────────────────── */}
         <Animated.View style={[styles.statsRow, { opacity: fadeAnim }]}>
-          <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={styles.statEmoji}>🔥</Text>
-            <Text style={[styles.statValue, { color: colors.foreground }]}>{streak}</Text>
-            <Text style={[styles.statLabel, { color: colors.muted }]}>Jours de suite</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={styles.statEmoji}>🧘</Text>
-            <Text style={[styles.statValue, { color: colors.foreground }]}>{totalSessions}</Text>
-            <Text style={[styles.statLabel, { color: colors.muted }]}>Séances</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={styles.statEmoji}>⏱️</Text>
-            <Text style={[styles.statValue, { color: colors.foreground }]}>{totalMinutes}</Text>
-            <Text style={[styles.statLabel, { color: colors.muted }]}>Minutes</Text>
-          </View>
+          {[
+            { icon: '🔥', value: streak,        label: 'Jours suite' },
+            { icon: '🧘', value: totalSessions,  label: 'Séances'    },
+            { icon: '⏱',  value: totalMinutes,   label: 'Minutes'    },
+          ].map((s, i) => (
+            <View key={i} style={styles.statCard}>
+              <Text style={styles.statIcon}>{s.icon}</Text>
+              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </View>
+          ))}
         </Animated.View>
 
-        {/* ── WIDGET SUIVI DU SOMMEIL ──────────────────── */}
-        <View style={[styles.section, { paddingHorizontal: 16 }]}>
+        {/* ── DIVIDER ────────────────────────────────────────────────────── */}
+        <View style={styles.divider} />
+
+        {/* ── SUIVI DU SOMMEIL ───────────────────────────────────────────── */}
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🛏️ Suivi du sommeil</Text>
-              <Text style={[styles.sectionSub, { color: colors.muted }]}>Enregistrez votre nuit</Text>
+              <Text style={styles.sectionTitle}>🛏 Suivi du sommeil</Text>
+              <Text style={styles.sectionSub}>Enregistrez votre nuit</Text>
             </View>
-            <Pressable
-              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-              onPress={() => router.push('/sleep-tracker' as never)}
-            >
-              <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
+            <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]} onPress={() => router.push('/sleep-tracker' as never)}>
+              <Text style={styles.seeAll}>Voir tout</Text>
             </Pressable>
           </View>
 
+          {/* Carte sommeil glassmorphisme */}
           <Pressable
-            style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
+            style={({ pressed }) => [styles.sleepCard, { opacity: pressed ? 0.88 : 1 }]}
             onPress={() => isAuthenticated ? setShowSleepModal(true) : router.push('/(auth)/signin' as never)}
           >
-            <LinearGradient
-              colors={todayLog ? ['#0D3B2E', '#065F46'] : ['#1E1B4B', '#312E81']}
-              style={styles.sleepWidget}
-            >
-              <View style={styles.sleepWidgetLeft}>
-                <Text style={styles.sleepWidgetEmoji}>{todayLog ? '✅' : '🌙'}</Text>
-                <View>
-                  <Text style={styles.sleepWidgetTitle}>
-                    {todayLog ? 'Nuit enregistrée' : 'Enregistrer cette nuit'}
-                  </Text>
-                  {todayLog ? (
-                    <Text style={styles.sleepWidgetSub}>
-                      {todayLog.bedtime} → {todayLog.wakeTime} · Qualité {todayLog.quality}/5
-                    </Text>
-                  ) : (
-                    <Text style={styles.sleepWidgetSub}>Heure de coucher, lever, qualité</Text>
-                  )}
-                </View>
+            <View style={styles.sleepCardLeft}>
+              <View style={styles.sleepCardIcon}>
+                <Text style={{ fontSize: 18 }}>{todayLog ? '✅' : '🌙'}</Text>
               </View>
-              <View style={styles.sleepWidgetRight}>
-                {sleepStats && (
-                  <View style={styles.sleepMiniStats}>
-                    <Text style={styles.sleepMiniVal}>{sleepStats.avgQuality?.toFixed(1) ?? '—'}</Text>
-                    <Text style={styles.sleepMiniLabel}>Qualité moy.</Text>
-                  </View>
-                )}
-                <IconSymbol name="chevron.right" size={18} color="rgba(255,255,255,0.6)" />
+              <View>
+                <Text style={styles.sleepCardTitle}>{todayLog ? 'Nuit enregistrée' : 'Enregistrer cette nuit'}</Text>
+                <Text style={styles.sleepCardSub}>
+                  {todayLog ? `${todayLog.bedtime} → ${todayLog.wakeTime} · Qualité ${todayLog.quality}/5` : 'Coucher · Lever · Qualité'}
+                </Text>
               </View>
-            </LinearGradient>
+            </View>
+            <View style={styles.arrowBtn}>
+              <Text style={styles.arrowBtnText}>›</Text>
+            </View>
           </Pressable>
 
           {/* Mini graphique barres 7 jours */}
           {sleepLogs.length > 0 && (
-            <View style={[styles.sleepMiniChart, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.sleepMiniChartTitle, { color: colors.muted }]}>7 dernières nuits</Text>
+            <View style={styles.sleepMiniChart}>
+              <Text style={styles.sleepMiniChartTitle}>7 dernières nuits</Text>
               <View style={styles.sleepBars}>
                 {Array.from({ length: 7 }, (_, i) => {
                   const d = new Date();
                   d.setDate(d.getDate() - (6 - i));
                   const dateStr = d.toISOString().split('T')[0];
-                  const log = sleepLogs.find((l: { sleepDate: string; quality: number | null }) => l.sleepDate === dateStr);
+                  const log = sleepLogs.find((l: any) => l.sleepDate === dateStr);
                   const quality = log?.quality ?? 0;
-                  const barH = quality > 0 ? (quality / 5) * 48 : 4;
-                  const barColor = quality >= 4 ? '#10B981' : quality >= 3 ? '#6366F1' : quality > 0 ? '#F59E0B' : colors.border;
+                  const barH = quality > 0 ? (quality / 5) * 44 : 3;
+                  const barColor = quality >= 4 ? '#4ADE80' : quality >= 3 ? GOLD : quality > 0 ? '#F97316' : GLASS_BORDER;
                   return (
                     <View key={dateStr} style={styles.sleepBarCol}>
                       <View style={[styles.sleepBar, { height: barH, backgroundColor: barColor }]} />
-                      <Text style={[styles.sleepBarLabel, { color: colors.muted }]}>
+                      <Text style={styles.sleepBarLabel}>
                         {['D', 'L', 'M', 'M', 'J', 'V', 'S'][d.getDay()]}
                       </Text>
                     </View>
@@ -272,50 +302,49 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-        {/* ── MÉDITATION DU SOIR ──────────────────────────────────────────── */}
+
+        {/* ── MÉDITATION DU SOIR ─────────────────────────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🌙 Méditation du soir</Text>
-              <Text style={[styles.sectionSub, { color: colors.muted }]}>Recommandée pour bien dormir ce soir</Text>
+              <Text style={styles.sectionTitle}>🌙 Méditation du soir</Text>
+              <Text style={styles.sectionSub}>Recommandée pour ce soir</Text>
             </View>
-            <Pressable
-              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-              onPress={() => router.push('/explore' as never)}
-            >
-              <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
+            <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]} onPress={() => router.push('/explore' as never)}>
+              <Text style={styles.seeAll}>Voir tout</Text>
             </Pressable>
           </View>
+
+          {/* Carte méditation featured */}
           <Pressable
-            style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
-            onPress={() => todayMed
-              ? router.push(`/meditation/${todayMed.slug}` as never)
-              : router.push('/explore' as never)}
+            style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
+            onPress={() => todayMed ? router.push(`/meditation/${todayMed.slug}` as never) : router.push('/explore' as never)}
           >
             <LinearGradient
-              colors={todayMed?.coverColor ? [todayMed.coverColor, '#312E81'] : ['#1E1B4B', '#312E81', '#4338CA']}
+              colors={['#2D1A6E', '#1E1250', '#2A1060']}
               style={styles.featuredCard}
             >
-              <View style={styles.featuredContent}>
-                <Text style={styles.featuredEmoji}>
-                  {allCategories.find(c => c.slug === todayMed?.categorySlug)?.emoji ?? '😴'}
+              {/* Halo doré */}
+              <View style={styles.featuredHalo} />
+              <View style={styles.featuredLeft}>
+                <Text style={styles.featuredMoon}>
+                  {allCategories.find((c: any) => c.slug === todayMed?.categorySlug)?.emoji ?? '🌙'}
                 </Text>
-                <View style={styles.featuredText}>
-                  <Text style={styles.featuredLabel}>MÉDITATION DU SOIR</Text>
-                  <Text style={styles.featuredTitle}>
-                    {todayMed?.title ?? 'Voyage Nocturne'}
-                  </Text>
-                  <Text style={styles.featuredDuration}>
+                <View>
+                  <Text style={styles.featuredTag}>Méditation du soir</Text>
+                  <Text style={styles.featuredTitle}>{todayMed?.title ?? 'Voyage Nocturne'}</Text>
+                  <Text style={styles.featuredMeta}>
                     {todayMed ? `${Math.round(todayMed.audioDurationSeconds / 60)} min` : '15 min'} · {todayMed?.instructor ?? 'Sommeil profond'}
                   </Text>
                 </View>
-                <View style={styles.featuredPlayBtn}>
-                  <IconSymbol name="play.fill" size={20} color="#FFF" />
-                </View>
+              </View>
+              <View style={styles.playBtn}>
+                <Text style={styles.playBtnIcon}>▶</Text>
               </View>
             </LinearGradient>
           </Pressable>
-          {/* Autres méditations du soir */}
+
+          {/* Autres méditations */}
           {dbMeditations.length > 1 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingTop: 10, paddingRight: 16 }}>
               {dbMeditations.filter((m: any) => m.id !== todayMed?.id).slice(0, 5).map((med: any) => {
@@ -323,52 +352,44 @@ export default function HomeScreen() {
                 return (
                   <Pressable
                     key={med.id}
-                    style={({ pressed }) => [styles.miniMedCard, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 }]}
+                    style={({ pressed }) => [styles.miniMedCard, { opacity: pressed ? 0.85 : 1 }]}
                     onPress={() => router.push(`/meditation/${med.slug}` as never)}
                   >
-                    <View style={[styles.miniMedCover, { backgroundColor: med.coverColor ?? '#1E1B4B' }]}>
+                    <View style={[styles.miniMedCover, { backgroundColor: med.coverColor ?? INDIGO_MID }]}>
                       <Text style={styles.miniMedEmoji}>{cat?.emoji ?? '🧘'}</Text>
                     </View>
-                    <Text style={[styles.miniMedTitle, { color: colors.foreground }]} numberOfLines={2}>{med.title}</Text>
-                    <Text style={[styles.miniMedDur, { color: colors.muted }]}>{Math.round(med.audioDurationSeconds / 60)} min</Text>
+                    <Text style={styles.miniMedTitle} numberOfLines={2}>{med.title}</Text>
+                    <Text style={styles.miniMedDur}>{Math.round(med.audioDurationSeconds / 60)} min</Text>
                   </Pressable>
                 );
               })}
             </ScrollView>
-          )}     </View>
-
-        {/* ── PROBLÉMATIQUES DU SOMMEIL ─────────────────── */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🔍 Votre problématique</Text>
-          <Text style={[styles.sectionSub, { color: colors.muted }]}>Choisissez ce qui vous concerne</Text>
-
-          <View style={styles.issuesGrid}>
-            {SLEEP_ISSUES.map((issue) => (
-              <Pressable
-                key={issue.id}
-                style={({ pressed }) => [
-                  styles.issueCard,
-                  { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
-                ]}
-                onPress={() => router.push(`/programs` as never)}
-              >
-                <LinearGradient
-                  colors={[`${issue.color}30`, `${issue.color}10`]}
-                  style={styles.issueGradient}
-                >
-                  <Text style={styles.issueEmoji}>{issue.emoji}</Text>
-                  <Text style={[styles.issueLabel, { color: colors.foreground }]}>{issue.label}</Text>
-                  <Text style={[styles.issueDesc, { color: colors.muted }]}>{issue.desc}</Text>
-                </LinearGradient>
-              </Pressable>
-            ))}
-          </View>
+          )}
         </View>
 
-        {/* ── PROGRAMME EN COURS ───────────────────────── */}
+        {/* ── ACCÈS RAPIDES (mini cards) ─────────────────────────────────── */}
+        <View style={styles.miniCardsRow}>
+          {[
+            { emoji: '🌙', label: 'Relaxation',  route: '/explore' },
+            { emoji: '🌬', label: 'Respiration', route: '/breathing' },
+            { emoji: '⭐', label: 'Favoris',     route: '/explore' },
+            { emoji: '📖', label: 'Journal',     route: '/(tabs)/journal' },
+          ].map((item) => (
+            <Pressable
+              key={item.route + item.label}
+              style={({ pressed }) => [styles.miniCard, { opacity: pressed ? 0.8 : 1 }]}
+              onPress={() => router.push(item.route as never)}
+            >
+              <Text style={styles.miniCardIcon}>{item.emoji}</Text>
+              <Text style={styles.miniCardLabel}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* ── PROGRAMME EN COURS ─────────────────────────────────────────── */}
         {isAuthenticated && inProgressPrograms.length > 0 && (
-          <View style={[styles.section, { paddingHorizontal: 16 }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>▶️ Continuer</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>▶️ Continuer</Text>
             {inProgressPrograms.slice(0, 1).map((prog: any) => (
               <Pressable
                 key={prog.id}
@@ -376,7 +397,7 @@ export default function HomeScreen() {
                 onPress={() => router.push(`/program-day/${prog.programSlug}/${prog.nextDay}` as never)}
               >
                 <LinearGradient
-                  colors={[prog.programCoverColor ?? '#1E1B4B', prog.programCoverColor2 ?? '#312E81']}
+                  colors={[prog.programCoverColor ?? INDIGO_MID, prog.programCoverColor2 ?? '#312E81']}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                   style={styles.inProgressCard}
                 >
@@ -401,33 +422,30 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ── PROGRAMMES STRUCTURÉS ─────────────────────── */}
+        {/* ── PROGRAMMES ─────────────────────────────────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>📅 Programmes</Text>
-              <Text style={[styles.sectionSub, { color: colors.muted }]}>Du 2 au 30 jours pour transformer votre sommeil</Text>
+              <Text style={styles.sectionTitle}>📅 Programmes</Text>
+              <Text style={styles.sectionSub}>Du 2 au 30 jours pour transformer votre sommeil</Text>
             </View>
-            <Pressable
-              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
-              onPress={() => router.push('/programs' as never)}
-            >
-              <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
+            <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]} onPress={() => router.push('/programs' as never)}>
+              <Text style={styles.seeAll}>Voir tout</Text>
             </Pressable>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 16 }}>
             {(dbPrograms.length > 0 ? dbPrograms : [
-              { slug: 'initiation-sommeil', emoji: '🌙', title: 'Initiation', durationDays: 2, coverColor: '#1E1B4B', coverColor2: '#312E81', description: 'Découvrez les bases' },
-              { slug: 'retrouver-sommeil', emoji: '🌛', title: 'Retrouver le sommeil', durationDays: 7, coverColor: '#1E3A5F', coverColor2: '#1E40AF', description: 'Anti-insomnie' },
-              { slug: 'transformation-sommeil', emoji: '✨', title: 'Transformation', durationDays: 21, coverColor: '#2D1B69', coverColor2: '#5B21B6', description: 'Restructuration complète' },
-              { slug: 'maitre-sommeil', emoji: '🌟', title: 'Maître du sommeil', durationDays: 30, coverColor: '#1A0533', coverColor2: '#7C3AED', description: 'Programme expert' },
+              { slug: 'initiation-sommeil',    emoji: '🌙', title: 'Initiation',         durationDays: 2,  coverColor: '#1E1B4B', coverColor2: '#312E81', description: 'Découvrez les bases' },
+              { slug: 'retrouver-sommeil',     emoji: '🌛', title: 'Retrouver le sommeil', durationDays: 7, coverColor: '#1E3A5F', coverColor2: '#1E40AF', description: 'Anti-insomnie' },
+              { slug: 'transformation-sommeil', emoji: '✨', title: 'Transformation',     durationDays: 21, coverColor: '#2D1B69', coverColor2: '#5B21B6', description: 'Restructuration complète' },
+              { slug: 'maitre-sommeil',        emoji: '🌟', title: 'Maître du sommeil',  durationDays: 30, coverColor: '#1A0533', coverColor2: '#7C3AED', description: 'Programme expert' },
             ]).map((prog: any) => (
               <Pressable
                 key={prog.slug}
                 style={({ pressed }) => [styles.programCard, { opacity: pressed ? 0.9 : 1 }]}
                 onPress={() => router.push(`/program/${prog.slug}` as never)}
               >
-                <LinearGradient colors={[prog.coverColor ?? '#1E1B4B', prog.coverColor2 ?? '#312E81']} style={styles.programGradient}>
+                <LinearGradient colors={[prog.coverColor ?? INDIGO_MID, prog.coverColor2 ?? '#312E81']} style={styles.programGradient}>
                   <Text style={styles.programEmoji}>{prog.emoji}</Text>
                   <View style={styles.programDaysBadge}>
                     <Text style={styles.programDaysText}>{prog.durationDays}j</Text>
@@ -443,83 +461,53 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* ── ACCÈS RAPIDES ─────────────────────────────── */}
+        {/* ── PROBLÉMATIQUES ─────────────────────────────────────────────── */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>⚡ Accès rapide</Text>
-          <View style={styles.quickGrid}>
-            {[
-              { emoji: '🫁', label: 'Respiration', sub: '4-7-8 pour dormir', route: '/breathing' },
-              { emoji: '🎵', label: 'Sons d\'ambiance', sub: 'Pluie, forêt, océan', route: '/ambient' },
-              { emoji: '📖', label: 'Journal', sub: 'Notez votre nuit', route: '/(tabs)/journal' },
-              { emoji: '📊', label: 'Progression', sub: 'Votre évolution', route: '/progress' },
-            ].map((item) => (
+          <Text style={styles.sectionTitle}>🔍 Votre problématique</Text>
+          <Text style={styles.sectionSub}>Choisissez ce qui vous concerne</Text>
+          <View style={styles.issuesGrid}>
+            {SLEEP_ISSUES.map((issue) => (
               <Pressable
-                key={item.route}
-                style={({ pressed }) => [
-                  styles.quickCard,
-                  { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
-                ]}
-                onPress={() => router.push(item.route as never)}
+                key={issue.id}
+                style={({ pressed }) => [styles.issueCard, { opacity: pressed ? 0.85 : 1 }]}
+                onPress={() => router.push('/programs' as never)}
               >
-                <Text style={styles.quickEmoji}>{item.emoji}</Text>
-                <Text style={[styles.quickLabel, { color: colors.foreground }]}>{item.label}</Text>
-                <Text style={[styles.quickSub, { color: colors.muted }]}>{item.sub}</Text>
+                <LinearGradient colors={[`${issue.color}30`, `${issue.color}10`]} style={styles.issueGradient}>
+                  <Text style={styles.issueEmoji}>{issue.emoji}</Text>
+                  <Text style={styles.issueLabel}>{issue.label}</Text>
+                  <Text style={styles.issueDesc}>{issue.desc}</Text>
+                </LinearGradient>
               </Pressable>
             ))}
           </View>
         </View>
 
-        {/* ── CONSEIL DU SOIR ───────────────────────────── */}
-        <View style={[styles.section, { paddingHorizontal: 16 }]}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>💡 Conseil du soir</Text>
-          <Animated.View
-            style={[
-              styles.tipCard,
-              { backgroundColor: colors.surface, borderColor: `${colors.primary}30` },
-              { opacity: fadeAnim },
-            ]}
-          >
-            <LinearGradient
-              colors={[`${colors.primary}15`, `${colors.primary}05`]}
-              style={styles.tipGradient}
-            >
+        {/* ── CONSEIL DU SOIR ────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>💡 Conseil du soir</Text>
+          <Animated.View style={[styles.tipCard, { opacity: fadeAnim }]}>
+            <LinearGradient colors={[`${GOLD}18`, `${GOLD}06`]} style={styles.tipGradient}>
               <Text style={styles.tipEmoji}>{SLEEP_TIPS[tipIndex].emoji}</Text>
               <View style={styles.tipContent}>
-                <Text style={[styles.tipTitle, { color: colors.foreground }]}>{SLEEP_TIPS[tipIndex].title}</Text>
-                <Text style={[styles.tipDesc, { color: colors.muted }]}>{SLEEP_TIPS[tipIndex].desc}</Text>
+                <Text style={styles.tipTitle}>{SLEEP_TIPS[tipIndex].title}</Text>
+                <Text style={styles.tipDesc}>{SLEEP_TIPS[tipIndex].desc}</Text>
               </View>
             </LinearGradient>
-            {/* Indicateurs de pagination */}
             <View style={styles.tipDots}>
               {SLEEP_TIPS.map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.tipDot,
-                    { backgroundColor: i === tipIndex ? colors.primary : colors.border },
-                  ]}
-                />
+                <View key={i} style={[styles.tipDot, { backgroundColor: i === tipIndex ? GOLD : GLASS_BORDER }]} />
               ))}
             </View>
           </Animated.View>
         </View>
 
-        {/* ── SCIENCE DU SOMMEIL ────────────────────────── */}
+        {/* ── SCIENCE DU SOMMEIL ─────────────────────────────────────────── */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🔬 Science du sommeil</Text>
-          <Text style={[styles.sectionSub, { color: colors.muted }]}>Comprendre pour mieux dormir</Text>
-
+          <Text style={styles.sectionTitle}>🔬 Science du sommeil</Text>
+          <Text style={styles.sectionSub}>Comprendre pour mieux dormir</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 16 }}>
-            {[
-              { emoji: '🧠', title: 'Cycles du sommeil', desc: 'Un cycle dure 90 min. Vous en avez besoin de 4 à 6 par nuit pour récupérer pleinement.', color: '#1E3A5F' },
-              { emoji: '🌡️', title: 'Mélatonine', desc: 'L\'hormone du sommeil se libère dans l\'obscurité. Évitez la lumière bleue après 20h.', color: '#2D1B69' },
-              { emoji: '💤', title: 'Sommeil profond', desc: 'Le sommeil profond (N3) est essentiel à la récupération physique et à la consolidation de la mémoire.', color: '#1A0533' },
-              { emoji: '⚡', title: 'REM et créativité', desc: 'Le sommeil paradoxal (REM) stimule la créativité et régule les émotions. Ne le négligez pas.', color: '#1E1B4B' },
-            ].map((card, i) => (
-              <View
-                key={i}
-                style={[styles.scienceCard, { backgroundColor: card.color }]}
-              >
+            {SCIENCE_CARDS.map((card, i) => (
+              <View key={i} style={[styles.scienceCard, { backgroundColor: card.color }]}>
                 <Text style={styles.scienceEmoji}>{card.emoji}</Text>
                 <Text style={styles.scienceTitle}>{card.title}</Text>
                 <Text style={styles.scienceDesc}>{card.desc}</Text>
@@ -528,28 +516,19 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* ── CITATION NOCTURNE ─────────────────────────── */}
-        <View style={[styles.section, { paddingHorizontal: 16 }]}>
-          <LinearGradient
-            colors={['#0F0C29', '#302B63']}
-            style={styles.quoteCard}
-          >
-            <Text style={styles.quoteStars}>✦ ✧ ✦</Text>
+        {/* ── CITATION NOCTURNE ──────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <LinearGradient colors={[INDIGO_DEEP, '#0C0828']} style={styles.quoteCard}>
+            <Text style={styles.quoteStars}>✦  ✧  ✦</Text>
             <Text style={styles.quoteText}>"{quote.text}"</Text>
             <Text style={styles.quoteAuthor}>— {quote.author}</Text>
           </LinearGradient>
         </View>
 
-        {/* ── CTA CHECK-IN ──────────────────────────────── */}
-        <View style={[styles.section, { paddingHorizontal: 16 }]}>
-          <Pressable
-            style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
-            onPress={() => router.push('/checkin' as never)}
-          >
-            <LinearGradient
-              colors={['#7C3AED', '#4F46E5']}
-              style={styles.ctaCard}
-            >
+        {/* ── CTA CHECK-IN ───────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]} onPress={() => router.push('/checkin' as never)}>
+            <LinearGradient colors={[INDIGO_MID, '#4F46E5']} style={styles.ctaCard}>
               <Text style={styles.ctaEmoji}>🌙</Text>
               <View style={styles.ctaContent}>
                 <Text style={styles.ctaTitle}>Comment vous sentez-vous ce soir ?</Text>
@@ -559,78 +538,38 @@ export default function HomeScreen() {
             </LinearGradient>
           </Pressable>
         </View>
+
       </ScrollView>
 
-      {/* ── MODAL SAISIE SOMMEIL ──────────────────────── */}
-      <Modal
-        visible={showSleepModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowSleepModal(false)}
-      >
+      {/* ── MODAL SAISIE SOMMEIL ───────────────────────────────────────────── */}
+      <Modal visible={showSleepModal} transparent animationType="slide" onRequestClose={() => setShowSleepModal(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setShowSleepModal(false)}>
-          <Pressable style={[styles.modalSheet, { backgroundColor: '#1E1B4B' }]} onPress={e => e.stopPropagation()}>
+          <Pressable style={styles.modalSheet} onPress={e => e.stopPropagation()}>
             <View style={styles.modalHandle} />
-            <Text style={[styles.modalTitle, { color: '#FFF' }]}>🌙 Votre nuit</Text>
-            <Text style={[styles.modalSub, { color: 'rgba(255,255,255,0.6)' }]}>Enregistrez votre sommeil de cette nuit</Text>
+            <Text style={styles.modalTitle}>🌙 Votre nuit</Text>
+            <Text style={styles.modalSub}>Enregistrez votre sommeil de cette nuit</Text>
 
-            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>🛌 Heure de coucher</Text>
-            <TextInput
-              style={[styles.modalInput, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: '#FFF' }]}
-              value={sleepBedtime}
-              onChangeText={setSleepBedtime}
-              placeholder="ex. 22:30"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              returnKeyType="done"
-            />
+            <Text style={styles.modalLabel}>🛌 Heure de coucher</Text>
+            <TextInput style={styles.modalInput} value={sleepBedtime} onChangeText={setSleepBedtime} placeholder="ex. 22:30" placeholderTextColor="rgba(255,255,255,0.35)" returnKeyType="done" />
 
-            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>☀️ Heure de lever</Text>
-            <TextInput
-              style={[styles.modalInput, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: '#FFF' }]}
-              value={sleepWakeTime}
-              onChangeText={setSleepWakeTime}
-              placeholder="ex. 07:00"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              returnKeyType="done"
-            />
+            <Text style={styles.modalLabel}>☀️ Heure de lever</Text>
+            <TextInput style={styles.modalInput} value={sleepWakeTime} onChangeText={setSleepWakeTime} placeholder="ex. 07:00" placeholderTextColor="rgba(255,255,255,0.35)" returnKeyType="done" />
 
-            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>⭐ Qualité du sommeil</Text>
+            <Text style={styles.modalLabel}>⭐ Qualité du sommeil</Text>
             <View style={styles.qualityRow}>
               {[1, 2, 3, 4, 5].map(q => (
-                <Pressable
-                  key={q}
-                  style={[styles.qualityBtn, {
-                    backgroundColor: sleepQuality === q ? '#7C3AED' : 'rgba(255,255,255,0.1)',
-                    borderColor: sleepQuality === q ? '#7C3AED' : 'rgba(255,255,255,0.2)',
-                  }]}
-                  onPress={() => setSleepQuality(q)}
-                >
-                  <Text style={styles.qualityBtnText}>{['😫', '😕', '😐', '🙂', '😄'][q - 1]}</Text>
-                  <Text style={[styles.qualityBtnText, { fontSize: 12, color: '#FFF' }]}>{q}</Text>
+                <Pressable key={q} style={[styles.qualityBtn, { backgroundColor: sleepQuality === q ? GOLD : 'rgba(255,255,255,0.08)', borderColor: sleepQuality === q ? GOLD : GLASS_BORDER }]} onPress={() => setSleepQuality(q)}>
+                  <Text style={styles.qualityBtnEmoji}>{['😫', '😕', '😐', '🙂', '😄'][q - 1]}</Text>
+                  <Text style={[styles.qualityBtnNum, { color: sleepQuality === q ? NIGHT_BG : WHITE_SOFT }]}>{q}</Text>
                 </Pressable>
               ))}
             </View>
 
-            <Text style={[styles.modalLabel, { color: 'rgba(255,255,255,0.8)' }]}>📝 Notes (rêves, pensées...)</Text>
-            <TextInput
-              style={[styles.modalInput, styles.modalInputNotes, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: '#FFF' }]}
-              value={sleepNotes}
-              onChangeText={setSleepNotes}
-              placeholder="Notez vos rêves, vos pensées du soir..."
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
-              returnKeyType="default"
-            />
+            <Text style={styles.modalLabel}>📝 Notes (rêves, pensées...)</Text>
+            <TextInput style={[styles.modalInput, styles.modalInputNotes]} value={sleepNotes} onChangeText={setSleepNotes} placeholder="Notez vos rêves, vos pensées du soir..." placeholderTextColor="rgba(255,255,255,0.35)" multiline numberOfLines={3} textAlignVertical="top" returnKeyType="default" />
 
-            <Pressable
-              style={({ pressed }) => [styles.modalSaveBtn, { backgroundColor: '#7C3AED', opacity: pressed ? 0.85 : 1 }]}
-              onPress={handleSaveSleep}
-            >
-              <Text style={styles.modalSaveBtnText}>
-                {createSleepLog.isPending ? 'Enregistrement...' : 'Enregistrer ma nuit 🌙'}
-              </Text>
+            <Pressable style={({ pressed }) => [styles.modalSaveBtn, { opacity: pressed ? 0.85 : 1 }]} onPress={handleSaveSleep}>
+              <Text style={styles.modalSaveBtnText}>{createSleepLog.isPending ? 'Enregistrement...' : 'Enregistrer ma nuit 🌙'}</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -639,147 +578,154 @@ export default function HomeScreen() {
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   // Hero
-  hero: { paddingTop: 20, paddingBottom: 32, paddingHorizontal: 20, position: 'relative', minHeight: 280 },
-  starsContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  star: { position: 'absolute', color: '#FFF', fontSize: 10 },
-  moonContainer: { alignItems: 'center', marginBottom: 12 },
-  moonEmoji: { fontSize: 48 },
+  heroWrapper: { overflow: 'hidden' },
+  hero: { paddingTop: 24, paddingBottom: 36, paddingHorizontal: 24, position: 'relative', minHeight: 300 },
+  moonContainer: { alignItems: 'center', marginBottom: 16 },
+  moonRing: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(212,168,83,0.08)', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', alignItems: 'center', justifyContent: 'center' },
+  moonEmoji: { fontSize: 36 },
   heroContent: { alignItems: 'center' },
-  heroGreeting: { color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 8 },
-  heroTitle: { color: '#FFF', fontSize: 28, fontWeight: '800', textAlign: 'center', lineHeight: 36, marginBottom: 10 },
-  heroSubtitle: { color: 'rgba(255,255,255,0.65)', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 16 },
-  timeWidget: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8 },
-  timeWidgetText: { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
-  timeWidgetSep: { color: 'rgba(255,255,255,0.4)', fontSize: 13 },
+  heroGreeting: { fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: GOLD, marginBottom: 10, fontWeight: '500' },
+  heroTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 34, color: WHITE_SOFT, textAlign: 'center', lineHeight: 40, marginBottom: 12, letterSpacing: -0.3 },
+  heroSubtitle: { fontSize: 13, color: LAVENDER, textAlign: 'center', lineHeight: 20, paddingHorizontal: 16, marginBottom: 18 },
+  moonPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
+  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD, shadowColor: GOLD, shadowRadius: 4, shadowOpacity: 0.8 },
+  moonPillText: { color: 'rgba(240,238,248,0.75)', fontSize: 11, letterSpacing: 0.4 },
 
   // Stats
-  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 16, marginBottom: 4 },
-  statCard: { flex: 1, borderRadius: 16, padding: 14, alignItems: 'center', borderWidth: 1 },
-  statEmoji: { fontSize: 22, marginBottom: 4 },
-  statValue: { fontSize: 22, fontWeight: '800' },
-  statLabel: { fontSize: 11, textAlign: 'center', marginTop: 2 },
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 16, marginBottom: 4 },
+  statCard: { flex: 1, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 8, alignItems: 'center' },
+  statIcon: { fontSize: 16, marginBottom: 6 },
+  statValue: { fontFamily: 'CormorantGaramond-Medium', fontSize: 26, color: WHITE_SOFT, lineHeight: 28, marginBottom: 3 },
+  statLabel: { fontSize: 9.5, letterSpacing: 0.8, textTransform: 'uppercase', color: LAVENDER },
+
+  // Divider
+  divider: { height: 0.5, backgroundColor: LAVENDER_DIM, marginHorizontal: 24, marginVertical: 8 },
 
   // Sections
-  section: { marginTop: 24, paddingHorizontal: 16 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  sectionSub: { fontSize: 13, marginBottom: 12 },
-  seeAll: { fontSize: 13, fontWeight: '600', marginTop: 4 },
+  section: { marginTop: 22, paddingHorizontal: 18 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  sectionTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 19, color: WHITE_SOFT, marginBottom: 3 },
+  sectionSub: { fontSize: 11, color: LAVENDER, letterSpacing: 0.2 },
+  seeAll: { fontSize: 10.5, color: GOLD, letterSpacing: 0.5, marginTop: 4 },
 
-  // Méditation du soir
-  featuredCard: { borderRadius: 20, padding: 20 },
-  featuredContent: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  featuredEmoji: { fontSize: 40 },
-  featuredText: { flex: 1 },
-  featuredLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 },
-  featuredTitle: { color: '#FFF', fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  featuredDuration: { color: 'rgba(255,255,255,0.65)', fontSize: 13 },
-  featuredPlayBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  // Carte sommeil
+  sleepCard: { backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  sleepCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'linear-gradient(135deg, #2A1F6A, #1A144A)', borderWidth: 0.5, borderColor: GLASS_BORDER, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1A144A' },
+  sleepCardTitle: { fontSize: 13, fontWeight: '500', color: WHITE_SOFT, marginBottom: 2 },
+  sleepCardSub: { fontSize: 10.5, color: LAVENDER, letterSpacing: 0.3 },
+  arrowBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: GOLD_SOFT, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', alignItems: 'center', justifyContent: 'center' },
+  arrowBtnText: { color: GOLD, fontSize: 18, lineHeight: 20 },
 
-  // Problématiques
-  issuesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  issueCard: { width: (SCREEN_WIDTH - 32 - 10) / 2, borderRadius: 16, overflow: 'hidden', borderWidth: 1 },
-  issueGradient: { padding: 16 },
-  issueEmoji: { fontSize: 28, marginBottom: 8 },
-  issueLabel: { fontSize: 14, fontWeight: '700', marginBottom: 3 },
-  issueDesc: { fontSize: 12, lineHeight: 16 },
+  // Mini graphique sommeil
+  sleepMiniChart: { marginTop: 10, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 16, padding: 14 },
+  sleepMiniChartTitle: { fontSize: 11, color: LAVENDER, marginBottom: 10, letterSpacing: 0.3 },
+  sleepBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 52 },
+  sleepBarCol: { alignItems: 'center', flex: 1, gap: 4 },
+  sleepBar: { width: 12, borderRadius: 6, minHeight: 3 },
+  sleepBarLabel: { fontSize: 9, color: LAVENDER },
 
-  // Programmes
-  programCard: { width: 160 },
-  programGradient: { borderRadius: 20, padding: 16, height: 200, justifyContent: 'space-between' },
-  programEmoji: { fontSize: 32 },
-  programDaysBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
-  programDaysText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
-  programTitle: { color: '#FFF', fontSize: 15, fontWeight: '800', lineHeight: 20 },
-  programDesc: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
-  programStartBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start' },
-  programStartText: { color: '#FFF', fontSize: 12, fontWeight: '600' },
+  // Méditation featured
+  featuredCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(196,181,253,0.2)' },
+  featuredHalo: { position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(212,168,83,0.12)' },
+  featuredLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1, zIndex: 1 },
+  featuredMoon: { fontSize: 32 },
+  featuredTag: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(212,168,83,0.8)', marginBottom: 3 },
+  featuredTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 20, color: WHITE_SOFT, lineHeight: 22, marginBottom: 3 },
+  featuredMeta: { fontSize: 10.5, color: 'rgba(196,181,253,0.6)', letterSpacing: 0.3 },
+  playBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: GOLD, shadowRadius: 12, shadowOpacity: 0.4, elevation: 4 },
+  playBtnIcon: { color: NIGHT_BG, fontSize: 14, fontWeight: '700', paddingLeft: 2 },
+
+  // Mini méditations
+  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
+  miniMedCover: { height: 70, justifyContent: 'center', alignItems: 'center' },
+  miniMedEmoji: { fontSize: 26 },
+  miniMedTitle: { fontSize: 11, fontWeight: '600', color: WHITE_SOFT, lineHeight: 15, margin: 8, marginBottom: 2 },
+  miniMedDur: { fontSize: 10, color: LAVENDER, marginHorizontal: 8, marginBottom: 8 },
+
+  // Mini cards accès rapide
+  miniCardsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 18, marginTop: 22 },
+  miniCard: { flex: 1, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  miniCardIcon: { fontSize: 22 },
+  miniCardLabel: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: LAVENDER, textAlign: 'center' },
+
   // Programme en cours
   inProgressCard: { borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   inProgressLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   inProgressEmoji: { fontSize: 36 },
-  inProgressLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
-  inProgressTitle: { color: '#FFF', fontSize: 16, fontWeight: '700', marginBottom: 2 },
-  inProgressDay: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
+  inProgressLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
+  inProgressTitle: { color: WHITE_SOFT, fontSize: 15, fontWeight: '700', marginBottom: 2 },
+  inProgressDay: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
   inProgressRight: { alignItems: 'flex-end', gap: 6, minWidth: 80 },
-  inProgressPct: { color: '#FFF', fontSize: 20, fontWeight: '800' },
-  inProgressBarBg: { width: 80, height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
-  inProgressBarFill: { height: 6, backgroundColor: '#4ADE80', borderRadius: 3 },
-  inProgressCta: { color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: '600' },
+  inProgressPct: { color: WHITE_SOFT, fontSize: 20, fontWeight: '800' },
+  inProgressBarBg: { width: 80, height: 5, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' },
+  inProgressBarFill: { height: 5, backgroundColor: '#4ADE80', borderRadius: 3 },
+  inProgressCta: { color: GOLD, fontSize: 11, fontWeight: '600' },
 
-  // Accès rapide
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  quickCard: { width: (SCREEN_WIDTH - 32 - 10) / 2, borderRadius: 16, padding: 16, borderWidth: 1 },
-  quickEmoji: { fontSize: 28, marginBottom: 8 },
-  quickLabel: { fontSize: 14, fontWeight: '700', marginBottom: 3 },
-  quickSub: { fontSize: 12 },
+  // Programmes
+  programCard: { width: 158 },
+  programGradient: { borderRadius: 20, padding: 16, height: 200, justifyContent: 'space-between' },
+  programEmoji: { fontSize: 30 },
+  programDaysBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
+  programDaysText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
+  programTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 17, lineHeight: 20 },
+  programDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
+  programStartBtn: { backgroundColor: GOLD_SOFT, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
+  programStartText: { color: GOLD, fontSize: 11, fontWeight: '600' },
+
+  // Problématiques
+  issuesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  issueCard: { width: (SCREEN_WIDTH - 36 - 10) / 2, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: GLASS_BORDER },
+  issueGradient: { padding: 16 },
+  issueEmoji: { fontSize: 26, marginBottom: 8 },
+  issueLabel: { fontSize: 13, fontWeight: '600', color: WHITE_SOFT, marginBottom: 3 },
+  issueDesc: { fontSize: 11, color: LAVENDER, lineHeight: 16 },
 
   // Conseil du soir
-  tipCard: { borderRadius: 20, overflow: 'hidden', borderWidth: 1 },
+  tipCard: { borderRadius: 18, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.2)' },
   tipGradient: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18 },
-  tipEmoji: { fontSize: 36 },
+  tipEmoji: { fontSize: 34 },
   tipContent: { flex: 1 },
-  tipTitle: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
-  tipDesc: { fontSize: 13, lineHeight: 18 },
+  tipTitle: { fontSize: 14, fontWeight: '600', color: WHITE_SOFT, marginBottom: 4 },
+  tipDesc: { fontSize: 12, color: LAVENDER, lineHeight: 18 },
   tipDots: { flexDirection: 'row', justifyContent: 'center', gap: 6, paddingBottom: 12 },
-  tipDot: { width: 6, height: 6, borderRadius: 3 },
+  tipDot: { width: 5, height: 5, borderRadius: 2.5 },
 
   // Science
   scienceCard: { width: 200, borderRadius: 20, padding: 18 },
-  scienceEmoji: { fontSize: 32, marginBottom: 10 },
-  scienceTitle: { color: '#FFF', fontSize: 15, fontWeight: '700', marginBottom: 6 },
-  scienceDesc: { color: 'rgba(255,255,255,0.65)', fontSize: 12, lineHeight: 18 },
+  scienceEmoji: { fontSize: 30, marginBottom: 10 },
+  scienceTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 16, marginBottom: 6 },
+  scienceDesc: { color: 'rgba(255,255,255,0.6)', fontSize: 12, lineHeight: 18 },
 
   // Citation
   quoteCard: { borderRadius: 20, padding: 28, alignItems: 'center' },
-  quoteStars: { color: 'rgba(255,255,255,0.4)', fontSize: 14, letterSpacing: 8, marginBottom: 16 },
-  quoteText: { color: '#FFF', fontSize: 16, fontStyle: 'italic', textAlign: 'center', lineHeight: 24, marginBottom: 12 },
-  quoteAuthor: { color: 'rgba(255,255,255,0.5)', fontSize: 13 },
+  quoteStars: { color: 'rgba(212,168,83,0.5)', fontSize: 13, letterSpacing: 10, marginBottom: 16 },
+  quoteText: { fontFamily: 'CormorantGaramond-Regular', color: WHITE_SOFT, fontSize: 18, fontStyle: 'italic', textAlign: 'center', lineHeight: 26, marginBottom: 12 },
+  quoteAuthor: { color: LAVENDER, fontSize: 12, letterSpacing: 0.5 },
 
   // CTA
   ctaCard: { borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
-  ctaEmoji: { fontSize: 36 },
+  ctaEmoji: { fontSize: 34 },
   ctaContent: { flex: 1 },
-  ctaTitle: { color: '#FFF', fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  ctaSub: { color: 'rgba(255,255,255,0.65)', fontSize: 13 },
-
-  // Widget sommeil
-  sleepWidget: { borderRadius: 20, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  sleepWidgetLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  sleepWidgetEmoji: { fontSize: 32 },
-  sleepWidgetTitle: { color: '#FFF', fontSize: 15, fontWeight: '700', marginBottom: 3 },
-  sleepWidgetSub: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
-  sleepWidgetRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  sleepMiniStats: { alignItems: 'center' },
-  sleepMiniVal: { color: '#FFF', fontSize: 20, fontWeight: '800' },
-  sleepMiniLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 10 },
-  sleepMiniChart: { marginTop: 12, borderRadius: 16, padding: 14, borderWidth: 1 },
-  sleepMiniChartTitle: { fontSize: 12, marginBottom: 10 },
-  sleepBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 60 },
-  sleepBarCol: { alignItems: 'center', flex: 1, gap: 4 },
-  sleepBar: { width: 14, borderRadius: 7, minHeight: 4 },
-  sleepBarLabel: { fontSize: 10 },
+  ctaTitle: { fontFamily: 'CormorantGaramond-Medium', color: WHITE_SOFT, fontSize: 18, marginBottom: 4, lineHeight: 22 },
+  ctaSub: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
 
   // Modal sommeil
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modalSheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40 },
-  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)', alignSelf: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 22, fontWeight: '800', marginBottom: 6 },
-  modalSub: { fontSize: 14, marginBottom: 24 },
-  modalLabel: { fontSize: 13, fontWeight: '600', marginBottom: 8 },
-  modalInput: { borderRadius: 12, padding: 14, fontSize: 16, borderWidth: 1, marginBottom: 16 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#12103A', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, borderTopWidth: 0.5, borderColor: GLASS_BORDER },
+  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'center', marginBottom: 20 },
+  modalTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 24, color: WHITE_SOFT, marginBottom: 6 },
+  modalSub: { fontSize: 13, color: LAVENDER, marginBottom: 24 },
+  modalLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.75)', marginBottom: 8, letterSpacing: 0.3 },
+  modalInput: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 0.5, borderColor: GLASS_BORDER, borderRadius: 12, padding: 14, fontSize: 16, color: WHITE_SOFT, marginBottom: 16 },
   modalInputNotes: { minHeight: 80, paddingTop: 12 },
-  qualityRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
-  qualityBtn: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1 },
-  qualityBtnText: { fontSize: 16, fontWeight: '700' },
-  modalSaveBtn: { borderRadius: 16, padding: 18, alignItems: 'center' },
-  modalSaveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
-  // Mini cartes méditations du soir
-  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 130, borderWidth: 1 },
-  miniMedCover: { height: 72, justifyContent: 'center', alignItems: 'center' },
-  miniMedEmoji: { fontSize: 26 },
-  miniMedTitle: { fontSize: 11, fontWeight: '700', lineHeight: 15, margin: 8, marginBottom: 2 },
-  miniMedDur: { fontSize: 10, marginHorizontal: 8, marginBottom: 8 },
+  qualityRow: { flexDirection: 'row', gap: 8, marginBottom: 24 },
+  qualityBtn: { flex: 1, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5 },
+  qualityBtnEmoji: { fontSize: 18, marginBottom: 3 },
+  qualityBtnNum: { fontSize: 12, fontWeight: '700' },
+  modalSaveBtn: { backgroundColor: GOLD, borderRadius: 16, padding: 18, alignItems: 'center' },
+  modalSaveBtnText: { color: NIGHT_BG, fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
 });

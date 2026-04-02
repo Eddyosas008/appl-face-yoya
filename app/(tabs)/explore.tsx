@@ -237,15 +237,15 @@ export default function ExploreScreen() {
               style={({ pressed }) => [
                 styles.categoryChip,
                 {
-                  backgroundColor: activeCategory === item.slug ? colors.primary : colors.surface,
-                  borderColor: activeCategory === item.slug ? colors.primary : colors.border,
+                  backgroundColor: activeCategory === item.slug ? GOLD : 'rgba(255,255,255,0.04)',
+                  borderColor: activeCategory === item.slug ? GOLD : 'rgba(180,168,220,0.12)',
                   opacity: pressed ? 0.7 : 1,
                 },
               ]}
               onPress={() => setActiveCategory(item.slug)}
             >
               {item.emoji ? <Text style={styles.categoryEmoji}>{item.emoji}</Text> : null}
-              <Text style={[styles.categoryChipText, { color: activeCategory === item.slug ? '#FFF' : colors.foreground }]}>
+              <Text style={[styles.categoryChipText, { color: activeCategory === item.slug ? '#07051C' : 'rgba(180,168,220,0.85)' }]}>
                 {item.name}
               </Text>
             </Pressable>
@@ -388,45 +388,55 @@ export default function ExploreScreen() {
   );
 }
 
+// Palette Sanctuaire du Sommeil
+const NIGHT_BG     = '#07051C';
+const GOLD         = '#D4A853';
+const LAVENDER     = 'rgba(180,168,220,0.55)';
+const LAVENDER_DIM = 'rgba(180,168,220,0.12)';
+const WHITE_SOFT   = '#F0EEF8';
+const GLASS_BG     = 'rgba(255,255,255,0.04)';
+const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+
 const styles = StyleSheet.create({
-  scrollContent: { paddingHorizontal: 16, paddingTop: 0 },
-  header: { paddingTop: 16, marginBottom: 16 },
-  title: { fontSize: 26, fontWeight: '800', marginBottom: 4 },
-  subtitle: { fontSize: 13 },
+  scrollContent: { paddingHorizontal: 18, paddingTop: 0 },
+  header: { paddingTop: 18, marginBottom: 18 },
+  title: { fontFamily: 'CormorantGaramond-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4, letterSpacing: -0.3 },
+  subtitle: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },
   searchBar: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 14,
-    borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 10,
+    borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG,
+    paddingHorizontal: 14, paddingVertical: 10,
     gap: 8, marginBottom: 14,
   },
-  searchInput: { flex: 1, fontSize: 14 },
+  searchInput: { flex: 1, fontSize: 14, color: WHITE_SOFT },
   categoryChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7,
-    borderWidth: 1.5,
+    borderWidth: 0.5,
   },
-  categoryEmoji: { fontSize: 13 },
-  categoryChipText: { fontSize: 13, fontWeight: '600' },
+  categoryEmoji: { fontSize: 12 },
+  categoryChipText: { fontSize: 11, fontWeight: '500', letterSpacing: 0.3 },
   loadingContainer: { alignItems: 'center', paddingVertical: 32, gap: 10 },
-  loadingText: { fontSize: 14 },
+  loadingText: { fontSize: 13, color: LAVENDER },
   emptyContainer: { alignItems: 'center', paddingVertical: 40, gap: 8 },
   emptyEmoji: { fontSize: 40 },
-  emptyTitle: { fontSize: 18, fontWeight: '700' },
-  emptyText: { fontSize: 14, textAlign: 'center' },
-  sectionCount: { fontSize: 12, marginBottom: 12 },
+  emptyTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 20, color: WHITE_SOFT },
+  emptyText: { fontSize: 13, color: LAVENDER, textAlign: 'center' },
+  sectionCount: { fontSize: 11, color: LAVENDER, marginBottom: 12, letterSpacing: 0.3 },
 
   // Sections
   section: { marginBottom: 28 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  sectionTitle: { fontSize: 17, fontWeight: '800' },
-  sectionDesc: { fontSize: 12, marginBottom: 4 },
-  seeAll: { fontSize: 13, fontWeight: '600' },
+  sectionTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 19, color: WHITE_SOFT },
+  sectionDesc: { fontSize: 11, color: LAVENDER, marginBottom: 4, letterSpacing: 0.2 },
+  seeAll: { fontSize: 10, color: GOLD, letterSpacing: 0.5 },
 
   // Grille filtrée
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   gridItem: { width: '47%' },
 
   // Carte grille verticale
-  card: { borderRadius: 16, overflow: 'hidden', marginBottom: 0 },
+  card: { borderRadius: 16, overflow: 'hidden', marginBottom: 0, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
   coverBlock: {
     height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative',
   },
@@ -442,13 +452,13 @@ const styles = StyleSheet.create({
   },
   favButton: { position: 'absolute', top: 8, right: 8, borderRadius: 999, padding: 6 },
   cardInfo: { padding: 10 },
-  cardCategory: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  cardTitle: { fontSize: 13, fontWeight: '700', lineHeight: 18, marginBottom: 4 },
+  cardCategory: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, color: GOLD, marginBottom: 2 },
+  cardTitle: { fontSize: 12, fontWeight: '600', color: WHITE_SOFT, lineHeight: 17, marginBottom: 4 },
   cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cardDuration: { fontSize: 11 },
+  cardDuration: { fontSize: 10, color: LAVENDER },
 
   // Carte horizontale
-  hCard: { borderRadius: 14, overflow: 'hidden', width: 150 },
+  hCard: { borderRadius: 14, overflow: 'hidden', width: 150, backgroundColor: GLASS_BG, borderWidth: 0.5, borderColor: GLASS_BORDER },
   hCover: { height: 90, justifyContent: 'center', alignItems: 'center', position: 'relative' },
   hCoverEmoji: { fontSize: 30 },
   hFavBtn: {
@@ -456,13 +466,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 5,
   },
   hInfo: { padding: 8 },
-  hCategory: { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
-  hTitle: { fontSize: 12, fontWeight: '700', lineHeight: 16, marginBottom: 3 },
-  hDuration: { fontSize: 10 },
+  hCategory: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, color: GOLD, marginBottom: 2 },
+  hTitle: { fontSize: 12, fontWeight: '500', color: WHITE_SOFT, lineHeight: 16, marginBottom: 3 },
+  hDuration: { fontSize: 10, color: LAVENDER },
 
   // Feature cards
   featureCard: { borderRadius: 16, padding: 14, width: 140, height: 90, justifyContent: 'flex-end' },
   featureEmoji: { fontSize: 22, marginBottom: 4 },
-  featureName: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  featureSub: { color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 },
+  featureName: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
+  featureSub: { color: 'rgba(255,255,255,0.6)', fontSize: 10, marginTop: 2 },
 });

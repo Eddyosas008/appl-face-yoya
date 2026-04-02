@@ -59,26 +59,41 @@ export const Colors = {
 
 export type ThemeColorPalette = (typeof Colors)[ColorScheme];
 
+// Polices — Cormorant Garamond pour les titres, DM Sans pour le corps
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: "system-ui",
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: "ui-serif",
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
+    sans: "DMSans-Regular",
+    serif: "CormorantGaramond-Regular",
+    serifMedium: "CormorantGaramond-Medium",
+    serifLight: "CormorantGaramond-Light",
+    serifSemiBold: "CormorantGaramond-SemiBold",
     rounded: "ui-rounded",
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: "ui-monospace",
+  },
+  android: {
+    sans: "DMSans-Regular",
+    serif: "CormorantGaramond-Regular",
+    serifMedium: "CormorantGaramond-Medium",
+    serifLight: "CormorantGaramond-Light",
+    serifSemiBold: "CormorantGaramond-SemiBold",
+    rounded: "normal",
+    mono: "monospace",
   },
   default: {
     sans: "normal",
-    serif: "serif",
+    serif: "CormorantGaramond-Regular",
+    serifMedium: "CormorantGaramond-Medium",
+    serifLight: "CormorantGaramond-Light",
+    serifSemiBold: "CormorantGaramond-SemiBold",
     rounded: "normal",
     mono: "monospace",
   },
   web: {
     sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
+    serif: "'Cormorant Garamond', Georgia, serif",
+    serifMedium: "'Cormorant Garamond', Georgia, serif",
+    serifLight: "'Cormorant Garamond', Georgia, serif",
+    serifSemiBold: "'Cormorant Garamond', Georgia, serif",
     rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },

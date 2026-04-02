@@ -268,55 +268,65 @@ export default function JournalScreen() {
   );
 }
 
+// Palette Sanctuaire du Sommeil
+const NIGHT_BG     = '#07051C';
+const GOLD         = '#D4A853';
+const GOLD_SOFT    = 'rgba(212,168,83,0.10)';
+const LAVENDER     = 'rgba(180,168,220,0.55)';
+const WHITE_SOFT   = '#F0EEF8';
+const GLASS_BG     = 'rgba(255,255,255,0.04)';
+const GLASS_BORDER = 'rgba(180,168,220,0.12)';
+
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingBottom: 32 },
-  header: { paddingTop: 16, marginBottom: 16 },
-  title: { fontSize: 26, fontWeight: '800', marginBottom: 4 },
-  subtitle: { fontSize: 13 },
+  header: { paddingTop: 18, marginBottom: 18 },
+  title: { fontFamily: 'CormorantGaramond-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4 },
+  subtitle: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },
   // Recherche
   searchBar: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 14,
-    borderWidth: 1.5, paddingHorizontal: 14, paddingVertical: 10,
+    borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG,
+    paddingHorizontal: 14, paddingVertical: 10,
     gap: 8, marginBottom: 12,
   },
-  searchInput: { flex: 1, fontSize: 14 },
+  searchInput: { flex: 1, fontSize: 14, color: WHITE_SOFT },
   // Filtres humeur
   moodFilter: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6,
-    borderWidth: 1.5,
+    borderWidth: 0.5,
   },
-  moodFilterEmoji: { fontSize: 14 },
-  moodFilterText: { fontSize: 12, fontWeight: '600' },
-  promptCard: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 24 },
-  promptLabel: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
-  promptText: { fontSize: 16, fontWeight: '600', lineHeight: 22, marginBottom: 14 },
-  writeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, alignSelf: 'flex-start' },
-  writeButtonText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
+  moodFilterEmoji: { fontSize: 13 },
+  moodFilterText: { fontSize: 11, fontWeight: '500', letterSpacing: 0.2 },
+  promptCard: { borderRadius: 16, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', backgroundColor: GOLD_SOFT, padding: 16, marginBottom: 24 },
+  promptLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD, marginBottom: 6 },
+  promptText: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: WHITE_SOFT, lineHeight: 24, marginBottom: 14 },
+  writeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, alignSelf: 'flex-start', backgroundColor: GOLD },
+  writeButtonText: { color: NIGHT_BG, fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
   empty: { alignItems: 'center', paddingTop: 40 },
   emptyEmoji: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
-  emptySubtitle: { fontSize: 14, lineHeight: 20, textAlign: 'center' },
-  entryCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 12 },
+  emptyTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 20, color: WHITE_SOFT, marginBottom: 8 },
+  emptySubtitle: { fontSize: 13, color: LAVENDER, lineHeight: 20, textAlign: 'center' },
+  entryCard: { borderRadius: 16, borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, padding: 14, marginBottom: 12 },
   entryHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
-  entryMoodEmoji: { fontSize: 28 },
+  entryMoodEmoji: { fontSize: 26 },
   entryMeta: { flex: 1 },
-  entryTitle: { fontSize: 15, fontWeight: '700', marginBottom: 2 },
-  entryDate: { fontSize: 12 },
-  entryContent: { fontSize: 13, lineHeight: 18 },
-  tapHint: { fontSize: 11, marginTop: 6, textAlign: 'right', opacity: 0.6 },
+  entryTitle: { fontSize: 14, fontWeight: '600', color: WHITE_SOFT, marginBottom: 2 },
+  entryDate: { fontSize: 10, color: LAVENDER, letterSpacing: 0.2 },
+  entryContent: { fontSize: 12, color: LAVENDER, lineHeight: 18 },
+  tapHint: { fontSize: 10, color: GOLD, marginTop: 6, textAlign: 'right', opacity: 0.7, letterSpacing: 0.3 },
   deleteBtn: { padding: 6 },
-  modal: { flex: 1 },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5 },
-  modalCancel: { fontSize: 15 },
-  modalTitle: { fontSize: 16, fontWeight: '700' },
-  modalSave: { fontSize: 15, fontWeight: '700' },
+  modal: { flex: 1, backgroundColor: '#07051C' },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER },
+  modalCancel: { fontSize: 14, color: LAVENDER },
+  modalTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, color: WHITE_SOFT },
+  modalSave: { fontSize: 14, fontWeight: '700' },
   modalContent: { flex: 1, paddingHorizontal: 20 },
-  titleInput: { fontSize: 18, fontWeight: '700', paddingVertical: 14, borderBottomWidth: 1, marginBottom: 20 },
-  moodLabel: { fontSize: 15, fontWeight: '600', marginBottom: 12 },
+  titleInput: { fontSize: 16, fontWeight: '500', color: WHITE_SOFT, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER, marginBottom: 20 },
+  moodLabel: { fontFamily: 'CormorantGaramond-Medium', fontSize: 17, color: WHITE_SOFT, marginBottom: 12 },
   moodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  moodChip: { borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center', width: '22%' },
+  moodChip: { borderRadius: 12, borderWidth: 0.5, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center', width: '22%', backgroundColor: GLASS_BG },
   moodChipEmoji: { fontSize: 20, marginBottom: 2 },
-  moodChipLabel: { fontSize: 9, fontWeight: '600', textAlign: 'center' },
-  contentInput: { borderRadius: 14, borderWidth: 1.5, padding: 14, fontSize: 15, lineHeight: 22, minHeight: 200 },
+  moodChipLabel: { fontSize: 9, fontWeight: '500', textAlign: 'center', color: LAVENDER },
+  contentInput: { borderRadius: 14, borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, padding: 14, fontSize: 14, color: WHITE_SOFT, lineHeight: 22, minHeight: 200 },
 });

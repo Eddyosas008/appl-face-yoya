@@ -258,3 +258,15 @@
 - [x] Ajouter section tendances (semaine vs semaine précédente)
 - [x] Connecter depuis le profil (bouton "Statistiques avancées")
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 33 : Refonte visuelle — Style Sanctuaire du Sommeil
+
+- [x] Mettre à jour theme.config.js avec la palette indigo nuit / or / lavande
+- [x] Installer et configurer la police Cormorant Garamond (expo-font)
+- [x] Refondre l'écran Home avec le style glassmorphisme céleste
+- [x] Refondre la barre de navigation (fond sombre, icônes SVG fines, tab actif en or)
+- [x] Refondre l'écran Explore avec le nouveau thème
+- [x] Refondre l'écran Profil avec le nouveau thème
+- [x] Refondre l'écran Journal avec le nouveau thème
+- [x] Refondre l'écran Journeys avec le nouveau thème
+- [x] Vérifier TypeScript et sauvegarder le checkpoint
