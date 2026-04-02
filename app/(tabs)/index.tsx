@@ -73,7 +73,12 @@ export default function HomeScreen() {
 
   // Stats depuis la DB
   const { data: sessionStats } = trpc.sessions.stats.useQuery(undefined, { enabled: isAuthenticated });
-  const { data: dbMeditations = [] } = trpc.catalog.list.useQuery({ categorySlug: 'sleep', limit: 3 });
+  const { data: dbMeditations = [] } = trpc.catalog.list.useQuery({ categorySlug: 'sleep', limit: 6 });
+  const { data: allCategories = [] } = trpc.catalog.categories.useQuery();
+  // Méditation du jour : rotation quotidienne basée sur la date
+  const todayMed = dbMeditations.length > 0
+    ? dbMeditations[new Date().getDate() % dbMeditations.length]
+    : null;
   const { data: sleepStats } = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
   const { data: sleepLogs = [] } = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
   // Programmes depuis la DB
@@ -267,29 +272,41 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-
-        {/* ── MÉDITATION DU SOIR ────────────────────────── */}
+        {/* ── MÉDITATION DU SOIR ──────────────────────────────────────────── */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🌙 Ce soir</Text>
-          <Text style={[styles.sectionSub, { color: colors.muted }]}>Méditation recommandée pour bien dormir</Text>
-
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🌙 Méditation du soir</Text>
+              <Text style={[styles.sectionSub, { color: colors.muted }]}>Recommandée pour bien dormir ce soir</Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+              onPress={() => router.push('/explore' as never)}
+            >
+              <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
+            </Pressable>
+          </View>
           <Pressable
             style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
-            onPress={() => router.push('/explore' as never)}
+            onPress={() => todayMed
+              ? router.push(`/meditation/${todayMed.slug}` as never)
+              : router.push('/explore' as never)}
           >
             <LinearGradient
-              colors={['#1E1B4B', '#312E81', '#4338CA']}
+              colors={todayMed?.coverColor ? [todayMed.coverColor, '#312E81'] : ['#1E1B4B', '#312E81', '#4338CA']}
               style={styles.featuredCard}
             >
               <View style={styles.featuredContent}>
-                <Text style={styles.featuredEmoji}>😴</Text>
+                <Text style={styles.featuredEmoji}>
+                  {allCategories.find(c => c.slug === todayMed?.categorySlug)?.emoji ?? '😴'}
+                </Text>
                 <View style={styles.featuredText}>
                   <Text style={styles.featuredLabel}>MÉDITATION DU SOIR</Text>
                   <Text style={styles.featuredTitle}>
-                    {dbMeditations[0]?.title ?? 'Voyage Nocturne'}
+                    {todayMed?.title ?? 'Voyage Nocturne'}
                   </Text>
                   <Text style={styles.featuredDuration}>
-                    {dbMeditations[0] ? `${Math.round(dbMeditations[0].audioDurationSeconds / 60)} min` : '15 min'} · Sommeil profond
+                    {todayMed ? `${Math.round(todayMed.audioDurationSeconds / 60)} min` : '15 min'} · {todayMed?.instructor ?? 'Sommeil profond'}
                   </Text>
                 </View>
                 <View style={styles.featuredPlayBtn}>
@@ -298,7 +315,27 @@ export default function HomeScreen() {
               </View>
             </LinearGradient>
           </Pressable>
-        </View>
+          {/* Autres méditations du soir */}
+          {dbMeditations.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingTop: 10, paddingRight: 16 }}>
+              {dbMeditations.filter((m: any) => m.id !== todayMed?.id).slice(0, 5).map((med: any) => {
+                const cat = allCategories.find((c: any) => c.slug === med.categorySlug);
+                return (
+                  <Pressable
+                    key={med.id}
+                    style={({ pressed }) => [styles.miniMedCard, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 }]}
+                    onPress={() => router.push(`/meditation/${med.slug}` as never)}
+                  >
+                    <View style={[styles.miniMedCover, { backgroundColor: med.coverColor ?? '#1E1B4B' }]}>
+                      <Text style={styles.miniMedEmoji}>{cat?.emoji ?? '🧘'}</Text>
+                    </View>
+                    <Text style={[styles.miniMedTitle, { color: colors.foreground }]} numberOfLines={2}>{med.title}</Text>
+                    <Text style={[styles.miniMedDur, { color: colors.muted }]}>{Math.round(med.audioDurationSeconds / 60)} min</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}     </View>
 
         {/* ── PROBLÉMATIQUES DU SOMMEIL ─────────────────── */}
         <View style={styles.section}>
@@ -739,4 +776,10 @@ const styles = StyleSheet.create({
   qualityBtnText: { fontSize: 16, fontWeight: '700' },
   modalSaveBtn: { borderRadius: 16, padding: 18, alignItems: 'center' },
   modalSaveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  // Mini cartes méditations du soir
+  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 130, borderWidth: 1 },
+  miniMedCover: { height: 72, justifyContent: 'center', alignItems: 'center' },
+  miniMedEmoji: { fontSize: 26 },
+  miniMedTitle: { fontSize: 11, fontWeight: '700', lineHeight: 15, margin: 8, marginBottom: 2 },
+  miniMedDur: { fontSize: 10, marginHorizontal: 8, marginBottom: 8 },
 });

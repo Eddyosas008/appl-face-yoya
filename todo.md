@@ -235,3 +235,17 @@
 - [x] Intégrer le widget rapport hebdomadaire dans l'écran Sleep Tracker
 - [x] Ajouter section Administration dans le profil avec lien audio-manager
 - [x] 0 erreur TypeScript réelle confirmée (npx tsc --noEmit)
+
+## Phase 31 : Enrichissement méditations + améliorations globales
+
+- [x] Analyser l'état actuel des catégories et méditations en DB (8 catégories existantes)
+- [x] Appliquer migration pour ajouter colonne scriptText à la table meditations
+- [x] Créer script seed-meditations-enriched.ts avec 12 nouvelles catégories et 32 méditations
+- [x] Exécuter le seed : 12 catégories + 32 méditations insérées avec succès
+- [x] Réécrire l'écran Explore avec section "À la une", grille par catégorie, meilleur affichage
+- [x] Ajouter méditations similaires dans le lecteur de méditation
+- [x] Améliorer Home : méditation du jour dynamique (rotation quotidienne), mini-cartes méditations du soir
+- [x] Corriger le bug View non fermé dans Home (section Suivi du sommeil)
+- [x] Ajouter styles miniMedCard dans le StyleSheet de Home
+- [x] Remplacer import * as db par imports nommés explicites dans routers.ts (correction watcher TS)
+- [x] 0 erreur TypeScript réelle confirmée (npx tsc --noEmit)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Platform, ActivityIndicator, FlatList } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
@@ -171,6 +171,12 @@ export default function MeditationPlayerScreen() {
   const categoryInfo = categories.find(c => c.slug === meditation?.categorySlug);
   const coverColor = meditation?.coverColor ?? CATEGORY_COLORS[meditation?.categorySlug ?? ''] ?? '#7C3AED';
   const tags: string[] = meditation?.tags ? JSON.parse(meditation.tags) : [];
+
+  // Méditations similaires (même catégorie, exclure la courante)
+  const { data: allMeds = [] } = trpc.catalog.list.useQuery({ limit: 100 });
+  const similar = allMeds
+    .filter(m => m.categorySlug === meditation?.categorySlug && m.id !== meditation?.id)
+    .slice(0, 6);
 
   // État de chargement
   if (loadingMed) {
@@ -393,6 +399,45 @@ export default function MeditationPlayerScreen() {
               <Text style={[styles.scriptText, { color: colors.muted }]}>{meditation.scriptText}</Text>
             </View>
           )}
+
+          {/* Méditations similaires */}
+          {similar.length > 0 && (
+            <View style={styles.similarSection}>
+              <Text style={[styles.similarTitle, { color: colors.foreground }]}>🎯 Dans la même catégorie</Text>
+              <FlatList
+                horizontal
+                data={similar}
+                keyExtractor={item => String(item.id)}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12 }}
+                renderItem={({ item: sim }) => {
+                  const simCat = categories.find(c => c.slug === sim.categorySlug);
+                  const simColor = sim.coverColor ?? CATEGORY_COLORS[sim.categorySlug] ?? '#7C3AED';
+                  return (
+                    <Pressable
+                      style={({ pressed }) => [styles.simCard, { backgroundColor: colors.surface, opacity: pressed ? 0.85 : 1 }]}
+                      onPress={() => router.replace(`/meditation/${sim.slug}` as never)}
+                    >
+                      <View style={[styles.simCover, { backgroundColor: simColor }]}>
+                        <Text style={styles.simEmoji}>{simCat?.emoji ?? '🧘'}</Text>
+                      </View>
+                      <View style={styles.simInfo}>
+                        <Text style={[styles.simCatLabel, { color: colors.primary }]} numberOfLines={1}>
+                          {simCat?.name ?? sim.categorySlug}
+                        </Text>
+                        <Text style={[styles.simCardTitle, { color: colors.foreground }]} numberOfLines={2}>
+                          {sim.title}
+                        </Text>
+                        <Text style={[styles.simDuration, { color: colors.muted }]}>
+                          {Math.round(sim.audioDurationSeconds / 60)} min
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                }}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -460,4 +505,14 @@ const styles = StyleSheet.create({
   },
   scriptTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
   scriptText: { fontSize: 14, lineHeight: 22 },
+  // Méditations similaires
+  similarSection: { marginTop: 24 },
+  similarTitle: { fontSize: 17, fontWeight: '800', marginBottom: 14 },
+  simCard: { borderRadius: 14, overflow: 'hidden', width: 148 },
+  simCover: { height: 80, justifyContent: 'center', alignItems: 'center' },
+  simEmoji: { fontSize: 28 },
+  simInfo: { padding: 8 },
+  simCatLabel: { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
+  simCardTitle: { fontSize: 12, fontWeight: '700', lineHeight: 16, marginBottom: 3 },
+  simDuration: { fontSize: 10 },
 });
