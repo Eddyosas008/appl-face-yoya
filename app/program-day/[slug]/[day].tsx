@@ -443,15 +443,20 @@ export default function ProgramDayScreen() {
   );
 
   const completeDayMutation = trpc.programs.completeDay.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       utils.programs.progress.invalidate({ programSlug: slug ?? "" });
       utils.programs.myPrograms.invalidate();
       setIsCompleting(false);
-      Alert.alert(
-        "🎉 Jour complété !",
-        "Bravo ! Vous avez terminé ce jour du programme. Continuez ainsi pour transformer votre sommeil.",
-        [{ text: "Continuer", onPress: () => router.back() }]
-      );
+      if (data.isProgramCompleted) {
+        // Dernier jour : naviguer vers l'écran de félicitations
+        router.replace(`/program-complete/${slug}` as never);
+      } else {
+        Alert.alert(
+          "🎉 Jour complété !",
+          "Bravo ! Vous avez terminé ce jour du programme. Continuez ainsi pour transformer votre sommeil.",
+          [{ text: "Continuer", onPress: () => router.back() }]
+        );
+      }
     },
     onError: () => setIsCompleting(false),
   });

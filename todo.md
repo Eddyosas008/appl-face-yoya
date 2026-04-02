@@ -172,3 +172,10 @@
 - [x] Faire fonctionner le lecteur audio des jours de programme (audioUrl depuis DB)
 - [x] Créer l'écran liste /programs avec filtres et progression
 - [x] Corriger la navigation des cartes programmes (/programs/[slug] → /program/[slug])
+
+## Phase 26 : Écran de félicitations fin de programme
+
+- [x] Créer l'écran /program-complete/[slug] avec animations et statistiques
+- [x] Modifier completeDay dans routers.ts pour retourner isCompleted
+- [x] Connecter la navigation depuis program-day vers l'écran de félicitations
+- [x] Ajouter haptics et animation d'entrée sur l'écran de félicitations

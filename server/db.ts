@@ -450,7 +450,7 @@ export async function startProgram(userId: number, programSlug: string) {
   return getUserProgramProgress(userId, programSlug);
 }
 
-export async function completeProgramDay(userId: number, programSlug: string, dayNumber: number) {
+export async function completeProgramDay(userId: number, programSlug: string, dayNumber: number): Promise<{ isCompleted: boolean }> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const progress = await getUserProgramProgress(userId, programSlug);
@@ -468,6 +468,7 @@ export async function completeProgramDay(userId: number, programSlug: string, da
       lastActivityAt: new Date(),
     })
     .where(and(eq(userProgramProgress.userId, userId), eq(userProgramProgress.programSlug, programSlug)));
+  return { isCompleted };
 }
 
 export async function upsertSleepProgram(data: InsertSleepProgram) {

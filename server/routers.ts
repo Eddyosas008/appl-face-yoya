@@ -345,8 +345,8 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
     completeDay: protectedProcedure
       .input(z.object({ programSlug: z.string(), dayNumber: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await db.completeProgramDay(ctx.user.id, input.programSlug, input.dayNumber);
-        return { success: true };
+        const result = await db.completeProgramDay(ctx.user.id, input.programSlug, input.dayNumber);
+        return { success: true, isProgramCompleted: result.isCompleted };
       }),
 
     // Admin : créer/mettre à jour un programme
