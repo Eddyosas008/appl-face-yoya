@@ -1,0 +1,330 @@
+/**
+ * Script de seed enrichi — Programme "Transformation du sommeil" (21 jours)
+ * Chaque jour a un contenu unique, détaillé et progressif.
+ * Exécuter avec : npx tsx scripts/seed-transformation-21j.ts
+ */
+import "../scripts/load-env.js";
+import { drizzle } from "drizzle-orm/mysql2";
+import { programDays } from "../drizzle/schema";
+
+const db = drizzle(process.env.DATABASE_URL!);
+
+const TRANSFORMATION_DAYS = [
+  // ─── SEMAINE 1 : FONDATIONS ────────────────────────────────────────────────
+  {
+    dayNumber: 1,
+    title: "Jour 1 — Évaluation et fondations",
+    theme: "Semaine 1 : Fondations",
+    description: "Bienvenue dans votre transformation de 21 jours. Aujourd'hui, nous dressons un bilan honnête de votre sommeil actuel et posons les premières pierres de votre nouvelle hygiène nocturne. Pas de pression — juste de l'observation bienveillante.",
+    meditationSlug: "voyage-nocturne",
+    breathingExercise: "4-7-8",
+    ambientSound: "rain",
+    eveningRoutine: "1. Remplissez votre journal de sommeil initial (heure de coucher habituelle, durée, réveils, qualité sur 10)\n2. Identifiez vos 3 principaux saboteurs du sommeil (écrans, stress, horaires irréguliers...)\n3. Préparez votre chambre : température 18°C, obscurité totale, silence ou bruit blanc\n4. Méditez 15 minutes avec la méditation guidée\n5. Pratiquez 4 cycles de respiration 4-7-8 avant de vous allonger",
+    sleepTip: "La première étape de toute transformation est la prise de conscience. Tenir un journal de sommeil pendant 21 jours révèle des patterns invisibles à l'œil nu. Les chercheurs de l'Université de Pittsburgh ont montré que cette seule pratique améliore la qualité du sommeil de 15% en 3 semaines.",
+    journalPrompt: "Décrivez votre sommeil actuel en 5 mots. Quelle est la principale raison pour laquelle vous avez rejoint ce programme ? Qu'espérez-vous ressentir dans 21 jours ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 2,
+    title: "Jour 2 — Hygiène du sommeil avancée",
+    theme: "Semaine 1 : Fondations",
+    description: "L'hygiène du sommeil va bien au-delà d'éteindre les écrans. Aujourd'hui, nous explorons les 12 règles d'or du sommeil validées par la science — et vous choisissez les 3 que vous allez implémenter dès ce soir.",
+    meditationSlug: "relaxation-profonde",
+    breathingExercise: "coherence",
+    ambientSound: "forest",
+    eveningRoutine: "1. Choisissez une heure de coucher fixe et respectez-la (même le week-end)\n2. Évitez tout écran 90 minutes avant le coucher (pas juste 30 min)\n3. Préparez une tisane de valériane ou de passiflore\n4. Faites 10 minutes d'étirements doux ou de yoga yin\n5. Méditez avec la relaxation profonde guidée (15 min)\n6. Pratiquez 5 minutes de cohérence cardiaque (5 sec inspiration / 5 sec expiration)",
+    sleepTip: "La lumière bleue des écrans supprime la mélatonine pendant 2 à 3 heures. Mais le vrai problème est la stimulation cognitive : les réseaux sociaux, les emails et les séries activent votre cortex préfrontal au moment où il doit se mettre en veille. Remplacez les écrans par un livre physique, du dessin ou de la musique douce.",
+    journalPrompt: "Parmi les 12 règles d'hygiène du sommeil, lesquelles respectez-vous déjà ? Lesquelles vous semblent les plus difficiles à mettre en place ? Pourquoi ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 3,
+    title: "Jour 3 — Gestion du stress nocturne",
+    theme: "Semaine 1 : Fondations",
+    description: "Le stress est le premier ennemi du sommeil. Aujourd'hui, nous apprenons à 'vider' le mental avant le coucher grâce à des techniques issues de la psychologie cognitive et de la pleine conscience.",
+    meditationSlug: "foret-apaisante",
+    breathingExercise: "4-7-8",
+    ambientSound: "rain",
+    eveningRoutine: "1. À 20h : faites un 'vidage mental' — écrivez pendant 10 min tout ce qui vous préoccupe\n2. Pour chaque inquiétude, notez : est-ce que je peux agir dessus ce soir ? Si non, écrivez 'je m'en occupe demain'\n3. Faites une liste de 3 priorités pour demain (libère le mental)\n4. Méditez 15 min avec la méditation de la forêt apaisante\n5. Pratiquez la technique 4-7-8 : inspirez 4 sec, retenez 7 sec, expirez 8 sec (4 cycles)\n6. Visualisez un endroit sûr et paisible pendant 5 minutes",
+    sleepTip: "La technique du 'worry time' (temps des inquiétudes) consiste à réserver 20 minutes en début de soirée pour vous inquiéter activement. Quand une pensée anxieuse survient au lit, dites-vous : 'Je me suis déjà occupé de ça à 20h. Ce n'est plus le moment.' Cette technique réduit les ruminations nocturnes de 40% selon les études de Harvey & Farrell.",
+    journalPrompt: "Quelles sont les 3 pensées qui vous empêchent le plus souvent de dormir ? D'où viennent-elles (travail, relations, santé, finances) ? Pouvez-vous agir dessus ce soir ?",
+    estimatedMinutes: 35,
+  },
+  {
+    dayNumber: 4,
+    title: "Jour 4 — Respiration et système nerveux",
+    theme: "Semaine 1 : Fondations",
+    description: "Votre respiration est le seul pont entre votre système nerveux conscient et autonome. En maîtrisant votre souffle, vous pouvez littéralement activer le mode 'repos et digestion' en quelques minutes. Aujourd'hui, nous explorons 3 techniques de respiration pour le sommeil.",
+    meditationSlug: "pleine-lune",
+    breathingExercise: "coherence",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Technique 1 — Cohérence cardiaque : 5 min de respiration à 5 cycles/min (5 sec inspiration, 5 sec expiration)\n2. Technique 2 — 4-7-8 : 4 cycles (inspirez 4 sec, retenez 7 sec, expirez 8 sec)\n3. Technique 3 — Respiration abdominale : posez une main sur le ventre, l'autre sur la poitrine. Seul le ventre doit bouger. 10 respirations profondes.\n4. Méditez 15 min avec la méditation de la pleine lune\n5. Endormez-vous en respirant lentement, 6 respirations par minute",
+    sleepTip: "La respiration lente (moins de 10 cycles/min) active le nerf vague et stimule le système parasympathique. En 5 minutes de cohérence cardiaque, votre fréquence cardiaque se stabilise, votre tension artérielle baisse et votre cortisol diminue de 23%. C'est l'équivalent d'un somnifère naturel sans effets secondaires.",
+    journalPrompt: "Avez-vous essayé les 3 techniques de respiration ? Laquelle vous a semblé la plus efficace ? Comment vous êtes-vous senti après 5 minutes de cohérence cardiaque ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 5,
+    title: "Jour 5 — Alimentation et sommeil",
+    theme: "Semaine 1 : Fondations",
+    description: "Ce que vous mangez et buvez influence directement la qualité de votre sommeil. Aujourd'hui, nous explorons le lien fascinant entre microbiote intestinal, neurotransmetteurs et sommeil — et les aliments qui transforment vos nuits.",
+    meditationSlug: "gratitude-nocturne",
+    breathingExercise: "4-7-8",
+    ambientSound: "forest",
+    eveningRoutine: "1. Dînez au moins 3h avant le coucher (idéalement avant 20h)\n2. Choisissez un dîner riche en tryptophane : dinde, saumon, œufs, tofu, banane, noix de cajou\n3. Évitez l'alcool (il perturbe le sommeil paradoxal même en petite quantité)\n4. Buvez une tisane de camomille, passiflore ou mélisse\n5. Méditez 15 min avec la méditation de gratitude\n6. Notez 3 choses pour lesquelles vous êtes reconnaissant(e) ce soir",
+    sleepTip: "Le tryptophane est le précurseur de la sérotonine, qui se convertit en mélatonine la nuit. Mais pour que le tryptophane traverse la barrière hémato-encéphalique, il a besoin de glucides complexes. Un petit dîner de riz complet + dinde + légumes verts est le repas idéal pour un sommeil profond.",
+    journalPrompt: "Qu'avez-vous mangé et bu aujourd'hui ? À quelle heure avez-vous dîné ? Avez-vous consommé de la caféine après 14h ou de l'alcool ce soir ? Comment vous sentez-vous physiquement ?",
+    estimatedMinutes: 25,
+  },
+  {
+    dayNumber: 6,
+    title: "Jour 6 — Environnement optimal",
+    theme: "Semaine 1 : Fondations",
+    description: "Votre chambre est-elle un sanctuaire du sommeil ou une extension de votre bureau ? Aujourd'hui, nous optimisons chaque aspect de votre environnement nocturne selon les dernières recherches en chronobiologie.",
+    meditationSlug: "voyage-nocturne",
+    breathingExercise: "box",
+    ambientSound: "rain",
+    eveningRoutine: "1. Vérifiez la température : idéal entre 16 et 19°C (la baisse de température corporelle déclenche l'endormissement)\n2. Obscurité totale : masque de sommeil ou rideaux occultants (même un petit voyant LED perturbe le sommeil)\n3. Silence ou bruit blanc : ventilateur, humidificateur, ou application de bruit rose\n4. Rangez tout ce qui rappelle le travail (ordinateur, documents)\n5. Méditez 15 min avec la méditation voyage nocturne\n6. Pratiquez la respiration carrée : 4 sec inspiration, 4 sec rétention, 4 sec expiration, 4 sec rétention",
+    sleepTip: "La température de votre chambre est le facteur environnemental le plus important pour le sommeil. Votre corps doit baisser sa température centrale de 1 à 2°C pour initier le sommeil. Une chambre trop chaude (>20°C) empêche cette baisse et réduit le sommeil profond de 30%. Prenez une douche chaude 1h avant le coucher : la vasodilatation cutanée accélère la baisse de température centrale.",
+    journalPrompt: "Comment est votre chambre actuellement ? Température, lumière, bruit, ordre. Qu'avez-vous changé ce soir ? Avez-vous remarqué une différence dans votre endormissement ?",
+    estimatedMinutes: 25,
+  },
+  {
+    dayNumber: 7,
+    title: "Jour 7 — Bilan semaine 1",
+    theme: "Semaine 1 : Fondations",
+    description: "Félicitations ! Vous avez complété votre première semaine. Aujourd'hui est un jour de bilan et de célébration. Nous allons mesurer vos progrès, identifier ce qui fonctionne et préparer la semaine 2 qui sera plus intensive.",
+    meditationSlug: "relaxation-profonde",
+    breathingExercise: "coherence",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Relisez votre journal de sommeil de la semaine 1\n2. Calculez votre efficacité de sommeil : (temps dormi / temps au lit) × 100\n3. Identifiez les 3 pratiques qui vous ont le plus aidé cette semaine\n4. Créez votre rituel du soir personnalisé de 20 minutes\n5. Méditez 20 min avec la relaxation profonde guidée\n6. Écrivez votre intention pour la semaine 2",
+    sleepTip: "L'efficacité de sommeil est l'indicateur clé utilisé par les spécialistes du sommeil. Un score supérieur à 85% est considéré comme excellent. Si votre score est inférieur à 80%, la restriction du sommeil (que nous aborderons semaine 2) peut vous aider à le remonter rapidement.",
+    journalPrompt: "Quel est votre score d'efficacité de sommeil cette semaine ? Qu'est-ce qui a le plus changé depuis le Jour 1 ? Quel est votre engagement pour la semaine 2 ?",
+    estimatedMinutes: 35,
+  },
+
+  // ─── SEMAINE 2 : APPROFONDISSEMENT ────────────────────────────────────────
+  {
+    dayNumber: 8,
+    title: "Jour 8 — TCC-I : Restriction du sommeil",
+    theme: "Semaine 2 : Approfondissement",
+    description: "La thérapie cognitive et comportementale pour l'insomnie (TCC-I) est plus efficace que les somnifères à long terme. Sa technique phare, la restriction du sommeil, est contre-intuitive mais transformatrice. Aujourd'hui, nous l'appliquons ensemble.",
+    meditationSlug: "foret-apaisante",
+    breathingExercise: "4-7-8",
+    ambientSound: "forest",
+    eveningRoutine: "1. Calculez votre fenêtre de sommeil : si vous dormez en moyenne 6h, limitez votre temps au lit à 6h30 (ex : 23h30 → 6h00)\n2. Ne vous allongez pas avant votre heure de coucher fixée, même si vous êtes fatigué(e)\n3. Levez-vous à la même heure chaque matin, même le week-end\n4. Si vous ne dormez pas après 20 min, levez-vous et faites une activité calme dans une autre pièce\n5. Méditez 15 min avec la méditation de la forêt apaisante\n6. Notez votre heure de coucher, de lever et votre qualité de sommeil",
+    sleepTip: "La restriction du sommeil crée une pression de sommeil (adenosine accumulée) qui améliore la qualité et réduit le temps d'endormissement. Dans les études cliniques, 80% des patients voient leur efficacité de sommeil dépasser 90% en 4 semaines. Augmentez votre fenêtre de 15 min par semaine quand votre efficacité dépasse 85%.",
+    journalPrompt: "Quelle est votre fenêtre de sommeil actuelle ? Avez-vous respecté vos horaires aujourd'hui ? Comment vous êtes-vous senti(e) pendant la journée ? Avez-vous eu envie de faire une sieste ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 9,
+    title: "Jour 9 — Contrôle du stimulus",
+    theme: "Semaine 2 : Approfondissement",
+    description: "Votre cerveau associe peut-être votre lit à l'éveil, aux ruminations et à l'anxiété plutôt qu'au sommeil. Le contrôle du stimulus reconditiomme cette association. C'est l'une des techniques les plus puissantes de la TCC-I.",
+    meditationSlug: "pleine-lune",
+    breathingExercise: "box",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Utilisez votre lit UNIQUEMENT pour dormir et les relations intimes (pas de lecture, pas de téléphone, pas de TV)\n2. Si vous n'êtes pas somnolent(e), ne vous allongez pas encore\n3. Si vous êtes éveillé(e) depuis plus de 20 min, levez-vous et lisez dans une autre pièce à faible lumière\n4. Retournez au lit uniquement quand vous ressentez une somnolence réelle (yeux lourds, bâillements)\n5. Méditez 15 min avec la méditation de la pleine lune\n6. Répétez autant de fois que nécessaire cette nuit",
+    sleepTip: "Le conditionnement classique (Pavlov) s'applique au sommeil. Si vous passez des heures éveillé(e) dans votre lit à vous inquiéter, votre cerveau associe 'lit = éveil et anxiété'. Le contrôle du stimulus brise cette association en 2 à 4 semaines. C'est inconfortable au début, mais les résultats sont durables.",
+    journalPrompt: "Avez-vous utilisé votre lit uniquement pour dormir aujourd'hui ? Avez-vous dû vous lever pendant la nuit ? Comment vous êtes-vous senti(e) en retournant au lit ? Avez-vous remarqué une différence dans votre endormissement ?",
+    estimatedMinutes: 25,
+  },
+  {
+    dayNumber: 10,
+    title: "Jour 10 — Restructuration cognitive",
+    theme: "Semaine 2 : Approfondissement",
+    description: "Vos pensées sur le sommeil influencent directement votre capacité à dormir. 'Je ne dormirai jamais', 'J'ai besoin de 8h sinon je suis inutile'... Ces croyances irrationnelles entretiennent l'insomnie. Aujourd'hui, nous les identifions et les restructurons.",
+    meditationSlug: "gratitude-nocturne",
+    breathingExercise: "4-7-8",
+    ambientSound: "rain",
+    eveningRoutine: "1. Identifiez une croyance négative sur votre sommeil (ex : 'Si je dors moins de 7h, ma journée est fichue')\n2. Questionnez-la : Est-ce vraiment vrai ? Ai-je des preuves ? Qu'est-ce qui se passerait vraiment si je dormais 6h ?\n3. Reformulez : 'Même avec 6h de sommeil, j'ai souvent passé de bonnes journées. Mon corps s'adapte.'\n4. Méditez 15 min avec la méditation de gratitude\n5. Notez 3 croyances négatives sur le sommeil et leur reformulation positive\n6. Pratiquez 4 cycles de respiration 4-7-8",
+    sleepTip: "Les personnes souffrant d'insomnie chronique ont souvent des croyances catastrophistes sur le sommeil. La recherche montre que ce n'est pas le manque de sommeil qui cause la fatigue, mais l'ANTICIPATION anxieuse du manque de sommeil. Reformuler ces croyances réduit l'anxiété nocturne de 60% en 4 semaines.",
+    journalPrompt: "Quelle est votre croyance la plus forte sur le sommeil ? D'où vient-elle ? Est-elle vraiment fondée sur des preuves ? Comment vous sentez-vous après l'avoir questionnée ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 11,
+    title: "Jour 11 — Pleine conscience nocturne",
+    theme: "Semaine 2 : Approfondissement",
+    description: "La pleine conscience (mindfulness) transforme votre relation au sommeil. Au lieu de lutter contre l'éveil, vous l'observez avec curiosité et bienveillance. Cette acceptation paradoxale est souvent ce qui déclenche l'endormissement.",
+    meditationSlug: "voyage-nocturne",
+    breathingExercise: "coherence",
+    ambientSound: "forest",
+    eveningRoutine: "1. Allongez-vous et faites un scan corporel de 10 minutes : observez chaque partie de votre corps sans chercher à changer quoi que ce soit\n2. Si des pensées arrivent, dites 'je pense' et revenez à la sensation physique\n3. Observez votre respiration naturelle pendant 5 minutes : sa profondeur, son rythme, les pauses\n4. Méditez 15 min avec la méditation voyage nocturne\n5. Pratiquez la cohérence cardiaque pendant 5 minutes\n6. Si vous êtes éveillé(e), dites-vous : 'Je me repose. Mon corps se régénère même éveillé.'",
+    sleepTip: "La pleine conscience réduit l'hyperactivation cognitive (le mental qui tourne) en déplaçant l'attention vers les sensations physiques présentes. Une méta-analyse de 2019 portant sur 1654 patients a montré que 8 semaines de MBSR (Mindfulness-Based Stress Reduction) améliorent la qualité du sommeil autant que les somnifères, sans effets secondaires.",
+    journalPrompt: "Comment s'est passé le scan corporel ? Avez-vous réussi à observer vos pensées sans vous y perdre ? Qu'avez-vous remarqué dans votre corps ? Comment vous sentez-vous après la méditation ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 12,
+    title: "Jour 12 — Gestion des réveils nocturnes",
+    theme: "Semaine 2 : Approfondissement",
+    description: "Se réveiller la nuit est normal — nous avons tous 4 à 6 micro-réveils par nuit. Le problème, c'est quand ces réveils durent et s'accompagnent d'anxiété. Aujourd'hui, nous apprenons à les gérer avec élégance.",
+    meditationSlug: "relaxation-profonde",
+    breathingExercise: "4-7-8",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Préparez votre 'kit de réveil nocturne' : un carnet et un stylo à portée de main\n2. Si vous vous réveillez : ne regardez PAS l'heure (cela augmente l'anxiété)\n3. Pratiquez immédiatement 4 cycles de respiration 4-7-8\n4. Si des pensées arrivent, notez-les brièvement sur le carnet et dites 'je m'en occupe demain'\n5. Visualisez un endroit sécurisant pendant 3 minutes\n6. Méditez 15 min avec la relaxation profonde avant de vous coucher",
+    sleepTip: "Regarder l'heure lors d'un réveil nocturne est l'une des pires choses que vous puissiez faire. Votre cerveau calcule immédiatement 'il me reste X heures' et active l'anxiété de performance. Retournez votre réveil ou mettez votre téléphone face vers le bas. Votre corps sait quand il est temps de se lever.",
+    journalPrompt: "Vous êtes-vous réveillé(e) cette nuit ? Combien de fois ? Avez-vous regardé l'heure ? Qu'avez-vous fait pour vous rendormir ? Qu'est-ce qui a fonctionné ?",
+    estimatedMinutes: 25,
+  },
+  {
+    dayNumber: 13,
+    title: "Jour 13 — Chronobiologie personnelle",
+    theme: "Semaine 2 : Approfondissement",
+    description: "Êtes-vous un lève-tôt ou un couche-tard ? Votre chronotype est inscrit dans vos gènes et influence votre horloge biologique. Aujourd'hui, nous découvrons votre chronotype et adaptons votre programme en conséquence.",
+    meditationSlug: "foret-apaisante",
+    breathingExercise: "box",
+    ambientSound: "rain",
+    eveningRoutine: "1. Calculez votre chronotype : à quelle heure vous endormiriez-vous naturellement si vous n'aviez aucune contrainte ? Avant minuit = lève-tôt, après minuit = couche-tard\n2. Adaptez vos horaires à votre chronotype autant que possible\n3. Exposez-vous à la lumière naturelle le matin (10 min dehors) pour synchroniser votre horloge\n4. Évitez la lumière vive le soir (lampes tamisées, bougies)\n5. Méditez 15 min avec la méditation de la forêt apaisante\n6. Pratiquez la respiration carrée (4-4-4-4) pendant 5 minutes",
+    sleepTip: "Le chronotype est déterminé à 50% par les gènes. Les 'couche-tard' ont une horloge biologique naturellement décalée de 2 à 3 heures. La luminothérapie matinale (10 000 lux pendant 30 min) peut avancer progressivement l'horloge de 30 min par semaine, permettant de s'adapter aux horaires sociaux sans souffrir.",
+    journalPrompt: "Quel est votre chronotype naturel ? Vos horaires actuels correspondent-ils à votre chronotype ? Quelles contraintes vous empêchent de vivre selon votre rythme naturel ? Comment pourriez-vous les réduire ?",
+    estimatedMinutes: 25,
+  },
+  {
+    dayNumber: 14,
+    title: "Jour 14 — Bilan semaine 2",
+    theme: "Semaine 2 : Approfondissement",
+    description: "Deux semaines de transformation ! Vous avez maintenant des outils puissants de la TCC-I. Aujourd'hui, nous mesurons vos progrès, ajustons votre fenêtre de sommeil et préparons la semaine 3 : les pratiques contemplatives avancées.",
+    meditationSlug: "pleine-lune",
+    breathingExercise: "coherence",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Calculez votre efficacité de sommeil de la semaine 2 : (temps dormi / temps au lit) × 100\n2. Si > 85% : augmentez votre fenêtre de sommeil de 15 minutes\n3. Si < 80% : maintenez la restriction actuelle une semaine de plus\n4. Relisez vos 3 croyances négatives reformulées (Jour 10) : y croyez-vous encore ?\n5. Méditez 20 min avec la méditation de la pleine lune\n6. Écrivez votre intention pour la semaine 3",
+    sleepTip: "À mi-parcours, la plupart des participants remarquent une amélioration de 30 à 40% de leur qualité de sommeil. Si vos progrès sont plus lents, c'est normal — la transformation du sommeil prend du temps. L'important est la direction, pas la vitesse. Chaque nuit est une nouvelle opportunité.",
+    journalPrompt: "Comparez votre sommeil de la semaine 2 à la semaine 1 : efficacité, temps d'endormissement, réveils, qualité ressentie. Qu'est-ce qui a le plus changé ? Qu'est-ce qui reste difficile ?",
+    estimatedMinutes: 35,
+  },
+
+  // ─── SEMAINE 3 : CONSOLIDATION ─────────────────────────────────────────────
+  {
+    dayNumber: 15,
+    title: "Jour 15 — Méditation avancée du sommeil",
+    theme: "Semaine 3 : Consolidation",
+    description: "Vous entrez dans la dernière semaine. Maintenant que vos fondations sont solides, nous explorons des pratiques méditatives avancées spécifiquement conçues pour le sommeil. Aujourd'hui : la méditation de dissolution des frontières.",
+    meditationSlug: "voyage-nocturne",
+    breathingExercise: "4-7-8",
+    ambientSound: "rain",
+    eveningRoutine: "1. Allongez-vous dans votre position de sommeil préférée\n2. Fermez les yeux et imaginez que les frontières de votre corps se dissolvent progressivement\n3. Sentez-vous devenir de plus en plus léger(ère), comme si vous flottiez\n4. Laissez votre conscience se diffuser dans l'espace autour de vous\n5. Méditez 20 min avec la méditation voyage nocturne\n6. Pratiquez 4 cycles de respiration 4-7-8 en fin de méditation",
+    sleepTip: "La méditation de dissolution des frontières (issue du yoga nidra et du bouddhisme tibétain) active les ondes thêta (4-8 Hz) caractéristiques de l'état hypnagogique — la transition entre l'éveil et le sommeil. En pratiquant régulièrement, vous apprenez à 'surfer' sur cet état et à glisser naturellement dans le sommeil.",
+    journalPrompt: "Comment s'est passée la méditation de dissolution des frontières ? Avez-vous réussi à sentir vos frontières corporelles se dissoudre ? Avez-vous eu des images ou des sensations particulières ? Vous êtes-vous endormi(e) pendant la méditation ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 16,
+    title: "Jour 16 — Yoga nidra",
+    theme: "Semaine 3 : Consolidation",
+    description: "Le yoga nidra ('sommeil yogique') est une pratique millénaire qui induit un état de conscience entre l'éveil et le sommeil. 30 minutes de yoga nidra équivalent à 4 heures de sommeil en termes de récupération. Aujourd'hui, nous l'explorons ensemble.",
+    meditationSlug: "relaxation-profonde",
+    breathingExercise: "coherence",
+    ambientSound: "forest",
+    eveningRoutine: "1. Allongez-vous en savasana (sur le dos, bras le long du corps, paumes vers le haut)\n2. Formulez votre sankalpa (intention) : une phrase courte et positive sur votre sommeil\n3. Rotation de conscience : portez votre attention successivement sur chaque partie du corps (main droite, pouce droit, index droit...)\n4. Méditez 20 min avec la relaxation profonde guidée\n5. Pratiquez la cohérence cardiaque pendant 5 minutes\n6. Restez allongé(e) 5 minutes après la méditation avant de vous lever si nécessaire",
+    sleepTip: "Le yoga nidra active les ondes delta (0.5-4 Hz) caractéristiques du sommeil profond, tout en maintenant une conscience légère. Des études d'imagerie cérébrale (IRM fonctionnelle) montrent que le yoga nidra régule l'amygdale (centre de la peur) et le cortex préfrontal, réduisant l'hyperactivation nocturne.",
+    journalPrompt: "Quel sankalpa (intention) avez-vous formulé ? Comment s'est passée la rotation de conscience ? Avez-vous réussi à rester conscient(e) tout au long ? Vous êtes-vous endormi(e) ? Comment vous sentez-vous après ?",
+    estimatedMinutes: 35,
+  },
+  {
+    dayNumber: 17,
+    title: "Jour 17 — Hypnose et auto-suggestion",
+    theme: "Semaine 3 : Consolidation",
+    description: "L'auto-hypnose est une compétence que tout le monde peut apprendre. En état hypnagogique (entre éveil et sommeil), votre subconscient est particulièrement réceptif aux suggestions positives. Aujourd'hui, nous créons votre script d'auto-hypnose personnalisé.",
+    meditationSlug: "foret-apaisante",
+    breathingExercise: "4-7-8",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Créez votre script d'auto-suggestion (3-5 phrases positives au présent) : 'Je m'endors facilement et naturellement', 'Mon sommeil est profond et réparateur', 'Je me réveille reposé(e) et plein(e) d'énergie'\n2. Allongez-vous et induisez un état de relaxation profonde (5 min de respiration lente)\n3. Répétez mentalement votre script 3 fois, lentement, en visualisant chaque affirmation\n4. Méditez 15 min avec la méditation de la forêt apaisante\n5. Répétez votre script une dernière fois avant de vous endormir",
+    sleepTip: "L'état hypnagogique (transition éveil-sommeil) est caractérisé par des ondes thêta et une suggestibilité accrue. Des études montrent que les suggestions positives répétées dans cet état modifient les croyances inconscientes sur le sommeil en 2 à 3 semaines. C'est le principe de l'auto-hypnose d'Émile Coué, validé par les neurosciences modernes.",
+    journalPrompt: "Quelles affirmations avez-vous choisies pour votre script ? Comment vous êtes-vous senti(e) en les répétant ? Avez-vous remarqué une résistance intérieure ? Comment s'est passée votre nuit ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 18,
+    title: "Jour 18 — Gestion des rechutes",
+    theme: "Semaine 3 : Consolidation",
+    description: "Les mauvaises nuits font partie du processus. Même après 18 jours de transformation, vous aurez des nuits difficiles. Aujourd'hui, nous préparons votre 'plan de rechute' pour ne pas perdre vos acquis lors des moments difficiles.",
+    meditationSlug: "pleine-lune",
+    breathingExercise: "box",
+    ambientSound: "rain",
+    eveningRoutine: "1. Écrivez votre 'plan de rechute' : que ferez-vous lors d'une mauvaise nuit ?\n   - Ne pas paniquer : une mauvaise nuit ne détruit pas 18 jours de progrès\n   - Maintenir les horaires le lendemain matin (même si fatigué(e))\n   - Identifier le déclencheur (stress, repas tardif, écrans...)\n   - Reprendre le protocole dès le soir suivant\n2. Méditez 20 min avec la méditation de la pleine lune\n3. Pratiquez la respiration carrée pendant 5 minutes\n4. Relisez vos progrès depuis le Jour 1 pour vous rappeler du chemin parcouru",
+    sleepTip: "La rechute est une étape normale du changement de comportement (modèle de Prochaska). 90% des personnes qui transforment leur sommeil connaissent au moins une semaine difficile dans les 3 premiers mois. La clé est de ne pas catastrophiser : une mauvaise nuit n'efface pas les progrès neurologiques déjà réalisés.",
+    journalPrompt: "Avez-vous déjà eu des mauvaises nuits depuis le début du programme ? Comment avez-vous réagi ? Qu'est-ce qui vous a aidé à vous en remettre ? Quel est votre plan de rechute désormais ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 19,
+    title: "Jour 19 — Ancrage des habitudes",
+    theme: "Semaine 3 : Consolidation",
+    description: "Vous êtes à 2 jours de la fin. Vos nouvelles habitudes sont en train de s'ancrer neurologiquement. Aujourd'hui, nous utilisons les techniques de 'habit stacking' (empilement d'habitudes) pour rendre votre rituel du soir automatique et durable.",
+    meditationSlug: "gratitude-nocturne",
+    breathingExercise: "4-7-8",
+    ambientSound: "forest",
+    eveningRoutine: "1. Identifiez votre 'habitude ancre' du soir (quelque chose que vous faites déjà : brosser les dents, préparer votre tasse de tisane...)\n2. Attachez votre rituel du sommeil à cette habitude ancre\n3. Exemple : 'Après avoir brossé les dents, je fais 5 min de respiration, puis je médite 15 min'\n4. Méditez 20 min avec la méditation de gratitude\n5. Notez 5 choses pour lesquelles vous êtes reconnaissant(e) ce soir\n6. Pratiquez 4 cycles de respiration 4-7-8",
+    sleepTip: "Le 'habit stacking' (James Clear, Atomic Habits) consiste à attacher une nouvelle habitude à une habitude existante. La formule est : 'Après [habitude existante], je ferai [nouvelle habitude]'. Cette technique exploite les circuits neuronaux déjà formés pour créer de nouvelles connexions plus rapidement.",
+    journalPrompt: "Quelle est votre habitude ancre du soir ? Comment avez-vous attaché votre rituel à cette habitude ? Depuis combien de jours votre rituel du soir est-il devenu automatique ? Que ressentez-vous quand vous ne le faites pas ?",
+    estimatedMinutes: 30,
+  },
+  {
+    dayNumber: 20,
+    title: "Jour 20 — Votre programme personnalisé",
+    theme: "Semaine 3 : Consolidation",
+    description: "Avant-dernier jour. Aujourd'hui, vous créez votre programme de sommeil personnalisé pour les prochains mois — adapté à votre chronotype, vos contraintes et vos pratiques préférées. C'est votre guide pour maintenir vos acquis à vie.",
+    meditationSlug: "voyage-nocturne",
+    breathingExercise: "coherence",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Rédigez votre 'Programme de sommeil personnalisé' :\n   - Heure de coucher et de lever fixées\n   - Votre rituel du soir en 20-30 min (listez les étapes)\n   - Votre technique de respiration préférée\n   - Votre méditation préférée\n   - Vos 3 règles d'hygiène du sommeil non négociables\n2. Méditez 20 min avec la méditation voyage nocturne\n3. Pratiquez la cohérence cardiaque pendant 5 minutes\n4. Relisez votre programme et visualisez-vous le suivre dans 6 mois",
+    sleepTip: "La personnalisation est la clé de la durabilité. Un programme de sommeil qui ne correspond pas à votre style de vie sera abandonné en 2 semaines. Votre programme idéal est celui que vous pouvez maintenir 80% du temps, même en voyage, même lors de semaines chargées. Visez la régularité, pas la perfection.",
+    journalPrompt: "Décrivez votre programme de sommeil personnalisé. Quelles sont vos 3 pratiques non négociables ? Comment allez-vous maintenir ces habitudes lors des vacances, des voyages ou des semaines difficiles ?",
+    estimatedMinutes: 35,
+  },
+  {
+    dayNumber: 21,
+    title: "Jour 21 — Célébration et engagement",
+    theme: "Semaine 3 : Consolidation",
+    description: "Vous avez fait 21 jours ! C'est une transformation réelle — votre cerveau a créé de nouvelles connexions neuronales, votre horloge biologique est synchronisée et vous avez des outils pour la vie. Aujourd'hui est un jour de célébration et d'engagement.",
+    meditationSlug: "relaxation-profonde",
+    breathingExercise: "coherence",
+    ambientSound: "ocean",
+    eveningRoutine: "1. Relisez votre journal de sommeil depuis le Jour 1 : mesurez vos progrès\n2. Calculez votre efficacité de sommeil finale et comparez-la au Jour 1\n3. Identifiez les 3 changements les plus importants dans votre vie depuis 21 jours\n4. Écrivez une lettre à votre futur vous dans 6 mois : rappels, encouragements, engagements\n5. Méditez 25 min avec la relaxation profonde guidée\n6. Pratiquez la cohérence cardiaque pendant 10 minutes\n7. Célébrez ! Vous méritez cette fierté.",
+    sleepTip: "21 jours est le temps minimum pour former une habitude (selon la recherche de Phillippa Lally, UCL). Mais les habitudes complexes comme le sommeil prennent 66 jours en moyenne pour devenir automatiques. Continuez votre programme pendant 45 jours supplémentaires pour consolider définitivement vos acquis.",
+    journalPrompt: "Comparez votre sommeil du Jour 21 au Jour 1 : efficacité, temps d'endormissement, réveils, qualité ressentie, énergie dans la journée. Qu'est-ce qui a le plus changé ? Quel est votre engagement pour les 45 prochains jours ?",
+    estimatedMinutes: 40,
+  },
+];
+
+async function seed() {
+  console.log("✨ Seeding programme Transformation du sommeil (21 jours)...\n");
+
+  let success = 0;
+  let errors = 0;
+
+  for (const day of TRANSFORMATION_DAYS) {
+    try {
+      await db.insert(programDays).values({
+        ...day,
+        programSlug: "transformation-sommeil",
+      }).onDuplicateKeyUpdate({
+        set: {
+          title: day.title,
+          theme: day.theme,
+          description: day.description,
+          meditationSlug: day.meditationSlug,
+          breathingExercise: day.breathingExercise,
+          ambientSound: day.ambientSound,
+          eveningRoutine: day.eveningRoutine,
+          sleepTip: day.sleepTip,
+          journalPrompt: day.journalPrompt,
+          estimatedMinutes: day.estimatedMinutes,
+        },
+      });
+      console.log(`✅ Jour ${day.dayNumber} — ${day.title}`);
+      success++;
+    } catch (e) {
+      console.error(`❌ Erreur Jour ${day.dayNumber}:`, e);
+      errors++;
+    }
+  }
+
+  console.log(`\n🎉 Terminé ! ${success} jours insérés, ${errors} erreurs.`);
+  process.exit(0);
+}
+
+seed().catch(console.error);

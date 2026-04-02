@@ -214,3 +214,11 @@
 - [x] Connecter les sessions récentes depuis la DB
 - [x] Ajouter section "Programmes en cours" dans Progress
 - [x] Améliorer les stats avec données DB (minutes, sessions)
+
+## Phase 29 : Enrichissement des programmes longs (21j et 30j)
+
+- [x] Analyser l'état actuel des jours en DB (programmes transformation-21j et maitre-30j)
+- [x] Créer le script de seed pour les jours 1-21 du programme Transformation (21 jours complets)
+- [x] Créer le script de seed pour les jours 1-30 du programme Maître du sommeil (30 jours complets)
+- [x] Exécuter les scripts de seed : 21 jours insérés (0 erreur) + 30 jours insérés (0 erreur)
+- [x] Contenu enrichi : descriptions détaillées, routines du soir, conseils scientifiques, prompts de journal, méditations, exercices de respiration, sons d'ambiance, durée estimée
