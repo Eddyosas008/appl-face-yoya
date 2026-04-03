@@ -326,3 +326,14 @@
 - [x] Corriger explore.tsx pour utiliser limit:200 au lieu de limit:300
 - [x] Vérifier que les 20 catégories et 45 méditations s'affichent correctement
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 39 : Refonte écran Chat IA — SomnioPax v3
+
+- [x] Analyser la structure actuelle de l'écran chat IA
+- [x] Appliquer fond #03020F + étoiles + aurora blobs
+- [x] Refondre les bulles de messages (user : glass or, IA : glassmorphisme lavande)
+- [x] Refondre la zone de saisie (fond glass intégré, bordure or, bouton envoi doré)
+- [x] Ajouter l'en-tête avec avatar IA halo doré et Playfair Display
+- [x] Ajouter animation d'entrée des messages (fade-in + slide-up)
+- [x] Ajouter indicateur de frappe animé (3 points dorés pulsants)
+- [x] Vérifier TypeScript et sauvegarder le checkpoint
