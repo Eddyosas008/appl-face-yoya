@@ -13,6 +13,7 @@ import { trpc } from '@/lib/trpc';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AnimatedScreen } from '@/components/animated-screen';
+import { StarField } from '@/components/star-field';
 
 // Formater la durée en minutes
 function formatDuration(seconds: number): string {
@@ -160,7 +161,8 @@ export default function ExploreScreen() {
   const handleFav = (item: any) => toggleFavorite(String(item.id));
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={320}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* En-tête */}

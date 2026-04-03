@@ -9,6 +9,7 @@ import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import type { MoodState } from '@/shared/wellness-types';
 import { AnimatedScreen } from '@/components/animated-screen';
+import { StarField } from '@/components/star-field';
 
 const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'anxious', 'sad'];
 
@@ -93,7 +94,8 @@ export default function JournalScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       {listLoading && (
         <View style={{ alignItems: 'center', paddingVertical: 16 }}>

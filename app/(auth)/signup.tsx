@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
+import { StarField } from '@/components/star-field';
 import { useUser } from '@/lib/user-context';
 
 // ─── Palette SomnioPax v3 ────────────────────────────────────────────────
@@ -48,6 +49,7 @@ export default function SignUpScreen() {
 
   return (
     <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}

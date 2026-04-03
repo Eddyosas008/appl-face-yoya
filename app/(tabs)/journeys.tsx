@@ -13,6 +13,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import { AnimatedScreen } from "@/components/animated-screen";
+import { StarField } from "@/components/star-field";
 
 const FILTERS = [
   { key: "all", label: "Tous", emoji: "🌙" },
@@ -63,7 +64,8 @@ export default function JourneysScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
+import { StarField } from '@/components/star-field';
 import { useColors } from '@/hooks/use-colors';
 import { MOOD_EMOJIS, MOOD_LABELS, ADAPTIVE_JOURNEYS } from '@/lib/mock-data';
 import type { MoodState } from '@/shared/wellness-types';
@@ -139,7 +140,8 @@ export default function CheckInScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={styles.header}>

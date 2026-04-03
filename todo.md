@@ -337,3 +337,22 @@
 - [x] Ajouter animation d'entrée des messages (fade-in + slide-up)
 - [x] Ajouter indicateur de frappe animé (3 points dorés pulsants)
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 40 : Harmonie visuelle totale — Style Home sur toute l'app [TERMINÉE]
+
+- [x] Extraire les constantes visuelles du Home dans lib/theme-constants.ts
+- [x] Créer composant StarField partagé dans components/star-field.tsx
+- [x] Refondre Explore avec le style Home exact (StarField + fond #03020F)
+- [x] Refondre Journal avec le style Home exact
+- [x] Refondre Journeys avec le style Home exact
+- [x] Refondre Profil avec le style Home exact
+- [x] Refondre sleep-tracker avec le style Home exact
+- [x] Refondre stats avec le style Home exact
+- [x] Refondre program/[slug] avec le style Home exact
+- [x] Refondre program-day avec le style Home exact
+- [x] Refondre program-complete avec le style Home exact
+- [x] Refondre breathing avec le style Home exact
+- [x] Refondre checkin avec le style Home exact
+- [x] Refondre ambient avec le style Home exact
+- [x] Refondre welcome/signin/signup avec le style Home exact
+- [x] Vérifier TypeScript (0 erreur réelle) et sauvegarder le checkpoint

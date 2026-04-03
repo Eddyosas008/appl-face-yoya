@@ -10,6 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
+import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 // ─── Palette SomnioPax v3 ────────────────────────────────────────────────
 const PR_GOLD    = '#C9A84C';
@@ -51,7 +52,8 @@ export default function ProgramsListScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D0B1E]">
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}
         <View style={styles.header}>

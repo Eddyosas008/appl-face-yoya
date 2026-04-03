@@ -11,6 +11,7 @@ import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { AnimatedScreen } from '@/components/animated-screen';
+import { StarField } from '@/components/star-field';
 import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
 
 const PREMIUM_FEATURES = [
@@ -138,7 +139,8 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>

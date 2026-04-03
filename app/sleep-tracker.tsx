@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import Svg, { Path, Circle, Line, Text as SvgText, Rect } from "react-native-svg";
@@ -363,7 +364,8 @@ export default function SleepTrackerScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>

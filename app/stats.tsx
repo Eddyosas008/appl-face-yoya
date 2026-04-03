@@ -10,6 +10,7 @@ import {
 import Svg, { Path, Rect, Circle, Line, G, Text as SvgText } from "react-native-svg";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { StarField } from "@/components/star-field";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 
@@ -403,7 +404,8 @@ export default function StatsScreen() {
   ];
 
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.background }]}>

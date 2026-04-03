@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import { ScreenContainer } from '@/components/screen-container';
+import { StarField } from '@/components/star-field';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
@@ -336,7 +337,8 @@ export default function BreathingScreen() {
 
   // Technique selection screen
   return (
-    <ScreenContainer>
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {/* Header */}
         <View style={styles.listHeader}>

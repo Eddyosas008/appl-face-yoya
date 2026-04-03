@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
+import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 
@@ -92,7 +93,8 @@ export default function ProgramDetailScreen() {
   const level = LEVEL_LABELS[program.level] ?? { label: program.level, emoji: "🌙" };
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D0B1E]">
+    <ScreenContainer containerClassName="bg-[#03020F]">
+      <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Hero */}
         <LinearGradient
