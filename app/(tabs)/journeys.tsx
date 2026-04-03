@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import { AnimatedScreen } from "@/components/animated-screen";
 import { StarField } from "@/components/star-field";
+import { useThemeContext } from "@/lib/theme-provider";
 
 const FILTERS = [
   { key: "all", label: "Tous", emoji: "🌙" },
@@ -39,6 +40,7 @@ const ISSUE_LABELS: Record<string, string> = {
 
 export default function JourneysScreen() {
   const router = useRouter();
+  const { isDark } = useThemeContext();
   const { isAuthenticated } = useUser();
   const [activeFilter, setActiveFilter] = useState("all");
 
@@ -64,7 +66,7 @@ export default function JourneysScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -264,57 +266,57 @@ export default function JourneysScreen() {
 }
 
 // Palette SomnioPax v3
-const NIGHT_BG     = '#03020F';
-const GOLD         = '#C9A84C';
-const GOLD_SOFT    = 'rgba(201,168,76,0.10)';
-const LAVENDER     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
-const LAVENDER_MED = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT   = '#EDE9FF';
-const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,160,255,0.10)';
+// Constantes palette (statiques pour StyleSheet)
+const GOLD_C         = '#C9A84C';
+const GOLD_SOFT_C    = 'rgba(201,168,76,0.10)';
+const LAVENDER_C     = 'rgba(237,233,255,0.55)';
+const LAVENDER_DIM_C = 'rgba(180,160,255,0.10)';
+const LAVENDER_MED_C = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT_C   = '#EDE9FF';
+const GLASS_BG_C     = 'rgba(255,255,255,0.04)';
+const GLASS_BORDER_C = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 100 },
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24 },
-  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 6 },
-  subtitle: { fontSize: 12, color: LAVENDER, lineHeight: 18, letterSpacing: 0.2 },
+  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT_C, marginBottom: 6 },
+  subtitle: { fontSize: 12, color: LAVENDER_C, lineHeight: 18, letterSpacing: 0.2 },
   // Programme actif
   activeSection: { paddingHorizontal: 16, marginBottom: 8 },
-  activeSectionTitle: { fontSize: 11, fontWeight: '600', color: GOLD, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
+  activeSectionTitle: { fontSize: 11, fontWeight: '600', color: GOLD_C, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 },
   activeCard: { borderRadius: 20, padding: 18 },
   activeCardRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   activeEmoji: { fontSize: 32 },
-  activeTitle: { fontSize: 15, fontWeight: '600', color: WHITE_SOFT, marginBottom: 2 },
+  activeTitle: { fontSize: 15, fontWeight: '600', color: WHITE_SOFT_C, marginBottom: 2 },
   activeSub: { fontSize: 11, color: 'rgba(255,255,255,0.65)' },
   activeStreakBox: { alignItems: 'center', backgroundColor: 'rgba(201,168,76,0.15)', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)' },
-  activeStreakNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD },
-  activeStreakLabel: { fontSize: 9, color: GOLD, letterSpacing: 0.3 },
+  activeStreakNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD_C },
+  activeStreakLabel: { fontSize: 9, color: GOLD_C, letterSpacing: 0.3 },
   activeCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   activeProgressText: { fontSize: 11, color: 'rgba(255,255,255,0.65)' },
   resumeBtn: { backgroundColor: 'rgba(212,168,83,0.2)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.4)' },
-  resumeBtnText: { fontSize: 11, fontWeight: '600', color: GOLD, letterSpacing: 0.2 },
+  resumeBtnText: { fontSize: 11, fontWeight: '600', color: GOLD_C, letterSpacing: 0.2 },
   // Filtres
   filtersRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
   filterBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 14, paddingVertical: 7,
-    borderRadius: 20, backgroundColor: GLASS_BG,
-    borderWidth: 0.5, borderColor: GLASS_BORDER,
+    borderRadius: 20, backgroundColor: GLASS_BG_C,
+    borderWidth: 0.5, borderColor: GLASS_BORDER_C,
   },
-  filterBtnActive: { backgroundColor: GOLD_SOFT, borderColor: 'rgba(212,168,83,0.4)' },
+  filterBtnActive: { backgroundColor: GOLD_SOFT_C, borderColor: 'rgba(212,168,83,0.4)' },
   filterEmoji: { fontSize: 12 },
-  filterLabel: { fontSize: 11, color: LAVENDER, fontWeight: '500', letterSpacing: 0.2 },
-  filterLabelActive: { color: GOLD, fontWeight: '600' },
+  filterLabel: { fontSize: 11, color: LAVENDER_C, fontWeight: '500', letterSpacing: 0.2 },
+  filterLabelActive: { color: GOLD_C, fontWeight: '600' },
   statsBanner: {
     flexDirection: 'row', marginHorizontal: 20, marginBottom: 16,
-    backgroundColor: GLASS_BG, borderRadius: 20, padding: 16,
-    borderWidth: 1, borderColor: GLASS_BORDER,
+    backgroundColor: GLASS_BG_C, borderRadius: 20, padding: 16,
+    borderWidth: 1, borderColor: GLASS_BORDER_C,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD },
-  statLabel: { fontSize: 10, color: LAVENDER_MED, marginTop: 2, textAlign: 'center', letterSpacing: 0.2 },
-  statDivider: { width: 1, backgroundColor: LAVENDER_DIM, marginHorizontal: 8 },
+  statNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD_C },
+  statLabel: { fontSize: 10, color: LAVENDER_MED_C, marginTop: 2, textAlign: 'center', letterSpacing: 0.2 },
+  statDivider: { width: 1, backgroundColor: LAVENDER_DIM_C, marginHorizontal: 8 },
   programsList: { paddingHorizontal: 20, gap: 16 },
   programCard: { borderRadius: 24, overflow: 'hidden', elevation: 4 },
   cardGradient: { padding: 24 },
@@ -323,14 +325,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(201,168,76,0.15)', paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 12, borderWidth: 1, borderColor: 'rgba(201,168,76,0.35)',
   },
-  featuredBadgeText: { fontSize: 10, color: GOLD, fontWeight: '600' },
+  featuredBadgeText: { fontSize: 10, color: GOLD_C, fontWeight: '600' },
   premiumBadge: {
     backgroundColor: 'rgba(180,168,220,0.15)', paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 12, borderWidth: 0.5, borderColor: 'rgba(180,168,220,0.3)',
   },
   premiumBadgeText: { fontSize: 10, color: '#C4B5FD', fontWeight: '600' },
   cardEmoji: { fontSize: 40, marginBottom: 8 },
-  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT, marginBottom: 4 },
+  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT_C, marginBottom: 4 },
   cardSubtitle: { fontSize: 12, color: 'rgba(255,255,255,0.65)', marginBottom: 16, lineHeight: 18 },
   cardMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   metaChip: {
@@ -341,19 +343,19 @@ const styles = StyleSheet.create({
   progressSection: {},
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   progressLabel: { fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: '500' },
-  progressPct: { fontSize: 12, color: GOLD, fontWeight: '600' },
+  progressPct: { fontSize: 12, color: GOLD_C, fontWeight: '600' },
   progressBar: {
     height: 4, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden',
   },
-  progressFill: { height: '100%', backgroundColor: GOLD, borderRadius: 2 },
+  progressFill: { height: '100%', backgroundColor: GOLD_C, borderRadius: 2 },
   startSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   enrollCount: { fontSize: 11, color: 'rgba(255,255,255,0.55)' },
   startBtn: {
     backgroundColor: 'rgba(212,168,83,0.2)', paddingHorizontal: 16, paddingVertical: 8,
     borderRadius: 20, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.4)',
   },
-  startBtnText: { fontSize: 12, color: GOLD, fontWeight: '600', letterSpacing: 0.2 },
+  startBtnText: { fontSize: 12, color: GOLD_C, fontWeight: '600', letterSpacing: 0.2 },
   emptyState: { alignItems: 'center', paddingTop: 60 },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: LAVENDER_MED },
+  emptyText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: LAVENDER_MED_C },
 });

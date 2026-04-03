@@ -364,3 +364,19 @@
 - [x] Appliquer dans Home — mini-cartes méditations du soir
 - [x] Appliquer dans le lecteur — méditations similaires
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 35 : Mode clair / sombre
+
+- [x] Définir les deux palettes complètes clair/sombre dans theme.config.js
+- [x] Mettre à jour le ThemeProvider pour persister le choix avec AsyncStorage
+- [x] Exposer toggleTheme dans le contexte ThemeContext
+- [x] Adapter le composant StarField au mode clair/sombre
+- [x] Adapter la barre de navigation (tabs) au mode clair/sombre
+- [x] Adapter l'écran Home (index.tsx) au mode clair/sombre
+- [x] Adapter l'écran Explore au mode clair/sombre
+- [x] Adapter l'écran Journal au mode clair/sombre
+- [x] Adapter l'écran Journeys au mode clair/sombre
+- [x] Adapter l'écran Profile au mode clair/sombre
+- [x] Ajouter le toggle clair/sombre dans les Paramètres du Profil (Switch)
+- [x] Corriger toutes les références GOLD/GLASS_BORDER non définies dans les styles statiques
+- [x] Persister le choix de thème dans AsyncStorage (clé somniopax_color_scheme)

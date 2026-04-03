@@ -1,19 +1,50 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Appearance, View, useColorScheme as useSystemColorScheme } from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
+const THEME_STORAGE_KEY = "somniopax_color_scheme";
+
+type ThemeMode = "light" | "dark" | "system";
+
 type ThemeContextValue = {
   colorScheme: ColorScheme;
+  themeMode: ThemeMode;
+  isDark: boolean;
+  setThemeMode: (mode: ThemeMode) => void;
+  /** @deprecated use setThemeMode instead */
   setColorScheme: (scheme: ColorScheme) => void;
+  /** Bascule entre mode clair et sombre */
+  toggleTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useSystemColorScheme() ?? "light";
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
+  const systemScheme = (useSystemColorScheme() ?? "dark") as ColorScheme;
+  const [themeMode, setThemeModeState] = useState<ThemeMode>("dark");
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("dark");
+
+  // Charger la préférence persistée au démarrage
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_STORAGE_KEY).then((stored) => {
+      if (stored === "light" || stored === "dark" || stored === "system") {
+        setThemeModeState(stored);
+        const resolved: ColorScheme = stored === "system" ? systemScheme : stored;
+        setColorSchemeState(resolved);
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Quand le mode système change et que l'utilisateur est en mode "system"
+  useEffect(() => {
+    if (themeMode === "system") {
+      setColorSchemeState(systemScheme);
+    }
+  }, [systemScheme, themeMode]);
 
   const applyScheme = useCallback((scheme: ColorScheme) => {
     nativewindColorScheme.set(scheme);
@@ -29,10 +60,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const setColorScheme = useCallback((scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    applyScheme(scheme);
-  }, [applyScheme]);
+  const setThemeMode = useCallback(
+    (mode: ThemeMode) => {
+      setThemeModeState(mode);
+      const resolved: ColorScheme = mode === "system" ? systemScheme : mode;
+      setColorSchemeState(resolved);
+      applyScheme(resolved);
+      AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+    },
+    [applyScheme, systemScheme],
+  );
+
+  // Compat: setColorScheme force un mode fixe
+  const setColorScheme = useCallback(
+    (scheme: ColorScheme) => {
+      setThemeMode(scheme);
+    },
+    [setThemeMode],
+  );
 
   useEffect(() => {
     applyScheme(colorScheme);
@@ -54,14 +99,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     [colorScheme],
   );
 
+  const toggleTheme = useCallback(() => {
+    setThemeMode(colorScheme === 'dark' ? 'light' : 'dark');
+  }, [colorScheme, setThemeMode]);
+
   const value = useMemo(
     () => ({
       colorScheme,
+      themeMode,
+      isDark: colorScheme === "dark",
+      setThemeMode,
       setColorScheme,
+      toggleTheme,
     }),
-    [colorScheme, setColorScheme],
+    [colorScheme, themeMode, setThemeMode, setColorScheme, toggleTheme],
   );
-  console.log(value, themeVariables)
 
   return (
     <ThemeContext.Provider value={value}>

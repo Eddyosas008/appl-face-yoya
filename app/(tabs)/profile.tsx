@@ -13,6 +13,8 @@ import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { AnimatedScreen } from '@/components/animated-screen';
 import { StarField } from '@/components/star-field';
 import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
+import { useThemeContext } from '@/lib/theme-provider';
+import { Switch } from 'react-native';
 
 const PREMIUM_FEATURES = [
   { icon: '🧘‍♀️', text: 'Accès illimité aux 50+ méditations' },
@@ -30,6 +32,7 @@ const PLANS = [
 
 export default function ProfileScreen() {
   const colors = useColors();
+  const { isDark, toggleTheme } = useThemeContext();
   const { profile, checkIns, logout, updateProfile } = useUser();
   const { isAuthenticated } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
@@ -139,7 +142,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -311,6 +314,20 @@ export default function ProfileScreen() {
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Paramètres</Text>
         <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
+          {/* Toggle thème clair/sombre */}
+          <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
+            <Text style={styles.settingIcon}>{isDark ? '🌙' : '☀️'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Mode d'affichage</Text>
+              <Text style={[styles.settingSubValue, { color: colors.muted }]}>{isDark ? 'Sombre' : 'Clair'}</Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={isDark ? '#C9A84C' : '#ffffff'}
+            />
+          </View>
           <Pressable
             style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
             onPress={() => router.push('/notifications-settings' as never)}
@@ -457,81 +474,81 @@ export default function ProfileScreen() {
   );
 }
 
-// Palette SomnioPax v3
-const NIGHT_BG     = '#03020F';
-const GOLD         = '#C9A84C';
-const GOLD_SOFT    = 'rgba(201,168,76,0.12)';
-const LAVENDER     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
-const LAVENDER_MED = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT   = '#EDE9FF';
-const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,160,255,0.10)';
+// Constantes palette (statiques pour StyleSheet)
+const GOLD_P         = '#C9A84C';
+const GOLD_SOFT_P    = 'rgba(201,168,76,0.12)';
+const LAVENDER_P     = 'rgba(237,233,255,0.55)';
+const LAVENDER_DIM_P = 'rgba(180,160,255,0.10)';
+const LAVENDER_MED_P = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT_P   = '#EDE9FF';
+const NIGHT_BG_P     = '#03020F';
+const GLASS_BG_P     = 'rgba(255,255,255,0.04)';
+const GLASS_BORDER_P = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingTop: 24, marginBottom: 24 },
-  avatarContainer: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(201,168,76,0.45)', shadowColor: GOLD, shadowRadius: 12, shadowOpacity: 0.3, shadowOffset: { width: 0, height: 0 } },
-  avatarText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: GOLD },
+  avatarContainer: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(201,168,76,0.45)', shadowColor: GOLD_P, shadowRadius: 12, shadowOpacity: 0.3, shadowOffset: { width: 0, height: 0 } },
+  avatarText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: GOLD_P },
   profileInfo: { flex: 1, gap: 4 },
-  profileName: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT },
-  profileEmail: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },
-  upgradeBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', backgroundColor: GOLD_SOFT, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
-  upgradeBadgeText: { fontSize: 11, fontWeight: '600', color: GOLD, letterSpacing: 0.3 },
-  statsCard: { flexDirection: 'row', borderRadius: 20, paddingVertical: 18, marginBottom: 16, backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER },
+  profileName: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT_P },
+  profileEmail: { fontSize: 11, color: LAVENDER_P, letterSpacing: 0.3 },
+  upgradeBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', backgroundColor: GOLD_SOFT_P, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
+  upgradeBadgeText: { fontSize: 11, fontWeight: '600', color: GOLD_P, letterSpacing: 0.3 },
+  statsCard: { flexDirection: 'row', borderRadius: 20, paddingVertical: 18, marginBottom: 16, backgroundColor: GLASS_BG_P, borderWidth: 1, borderColor: GLASS_BORDER_P },
   statItem: { flex: 1, alignItems: 'center' },
-  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: GOLD, marginBottom: 2 },
-  statLabel: { fontSize: 10, color: LAVENDER_MED, letterSpacing: 0.3 },
-  statDivider: { width: 1, height: '80%', alignSelf: 'center', backgroundColor: LAVENDER_DIM },
-  moodRecap: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(201,168,76,0.22)', padding: 14, marginBottom: 24, alignItems: 'center', backgroundColor: GOLD_SOFT },
-  moodRecapLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD, marginBottom: 8 },
+  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: GOLD_P, marginBottom: 2 },
+  statLabel: { fontSize: 10, color: LAVENDER_MED_P, letterSpacing: 0.3 },
+  statDivider: { width: 1, height: '80%', alignSelf: 'center', backgroundColor: LAVENDER_DIM_P },
+  moodRecap: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(201,168,76,0.22)', padding: 14, marginBottom: 24, alignItems: 'center', backgroundColor: GOLD_SOFT_P },
+  moodRecapLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD_P, marginBottom: 8 },
   moodRecapEmoji: { fontSize: 36, marginBottom: 4 },
-  moodRecapText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT },
-  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT, marginBottom: 10, marginTop: 4 },
-  settingsGroup: { borderRadius: 18, marginBottom: 20, overflow: 'hidden', backgroundColor: GLASS_BG, borderWidth: 1, borderColor: GLASS_BORDER },
-  settingRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
+  moodRecapText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT_P },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT_P, marginBottom: 10, marginTop: 4 },
+  settingsGroup: { borderRadius: 18, marginBottom: 20, overflow: 'hidden', backgroundColor: GLASS_BG_P, borderWidth: 1, borderColor: GLASS_BORDER_P },
+  settingRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER_P },
   settingIcon: { fontSize: 18, width: 26 },
-  settingLabel: { fontSize: 14, color: WHITE_SOFT },
+  settingLabel: { fontSize: 14, color: WHITE_SOFT_P },
   settingRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  settingValue: { fontSize: 12, color: LAVENDER },
-  settingSubValue: { fontSize: 11, color: LAVENDER, marginTop: 1 },
+  settingValue: { fontSize: 12, color: LAVENDER_P },
+  settingSubValue: { fontSize: 11, color: LAVENDER_P, marginTop: 1 },
   notifActiveDot: { width: 7, height: 7, borderRadius: 3.5, marginRight: 4 },
-  premiumCta: { borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginBottom: 12, backgroundColor: GOLD },
-  premiumCtaText: { color: NIGHT_BG, fontSize: 14, fontWeight: '700', letterSpacing: 0.3 },
+  premiumCta: { borderRadius: 16, paddingVertical: 15, alignItems: 'center', marginBottom: 12, backgroundColor: GOLD_P },
+  premiumCtaText: { color: NIGHT_BG_P, fontSize: 14, fontWeight: '700', letterSpacing: 0.3 },
   logoutButton: { borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 0.5, borderColor: '#F87171', marginBottom: 16 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
-  modalCard: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, backgroundColor: '#0D0A2A', borderTopWidth: 1, borderColor: GLASS_BORDER },
-  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT, marginBottom: 20, textAlign: 'center' },
-  modalInput: { borderRadius: 14, borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: WHITE_SOFT, marginBottom: 20 },
+  modalCard: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 40, backgroundColor: '#0D0A2A', borderTopWidth: 1, borderColor: GLASS_BORDER_P },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: WHITE_SOFT_P, marginBottom: 20, textAlign: 'center' },
+  modalInput: { borderRadius: 14, borderWidth: 0.5, borderColor: GLASS_BORDER_P, backgroundColor: GLASS_BG_P, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: WHITE_SOFT_P, marginBottom: 20 },
   modalButtons: { flexDirection: 'row', gap: 12 },
-  modalCancelBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 0.5, borderColor: GLASS_BORDER },
-  modalCancelText: { fontSize: 14, color: LAVENDER },
-  modalSaveBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', backgroundColor: GOLD },
-  modalSaveText: { color: NIGHT_BG, fontSize: 14, fontWeight: '700' },
+  modalCancelBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', borderWidth: 0.5, borderColor: GLASS_BORDER_P },
+  modalCancelText: { fontSize: 14, color: LAVENDER_P },
+  modalSaveBtn: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', backgroundColor: GOLD_P },
+  modalSaveText: { color: NIGHT_BG_P, fontSize: 14, fontWeight: '700' },
   logoutText: { fontSize: 14, fontWeight: '600', color: '#F87171' },
-  version: { fontSize: 11, textAlign: 'center', color: LAVENDER, letterSpacing: 0.3 },
+  version: { fontSize: 11, textAlign: 'center', color: LAVENDER_P, letterSpacing: 0.3 },
   premiumScroll: { paddingBottom: 40 },
   closeBtn: { position: 'absolute', top: 16, right: 16, zIndex: 10, padding: 8 },
   premiumHero: { paddingTop: 60, paddingBottom: 40, alignItems: 'center' },
   premiumHeroEmoji: { fontSize: 48, marginBottom: 12 },
-  premiumHeroTitle: { fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT, fontSize: 28, marginBottom: 6 },
+  premiumHeroTitle: { fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT_P, fontSize: 28, marginBottom: 6 },
   premiumHeroSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 14 },
   premiumFeatures: { padding: 20, gap: 12 },
   premiumFeatureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   premiumFeatureIcon: { fontSize: 20, width: 30 },
-  premiumFeatureText: { fontSize: 14, color: WHITE_SOFT, flex: 1 },
+  premiumFeatureText: { fontSize: 14, color: WHITE_SOFT_P, flex: 1 },
   plans: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, marginBottom: 20 },
-  planCard: { flex: 1, borderRadius: 16, borderWidth: 0.5, padding: 16, alignItems: 'center', position: 'relative', paddingTop: 24, backgroundColor: GLASS_BG },
-  popularBadge: { position: 'absolute', top: -10, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, backgroundColor: GOLD },
-  popularBadgeText: { color: NIGHT_BG, fontSize: 10, fontWeight: '700' },
+  planCard: { flex: 1, borderRadius: 16, borderWidth: 0.5, padding: 16, alignItems: 'center', position: 'relative', paddingTop: 24, backgroundColor: GLASS_BG_P },
+  popularBadge: { position: 'absolute', top: -10, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, backgroundColor: GOLD_P },
+  popularBadgeText: { color: NIGHT_BG_P, fontSize: 10, fontWeight: '700' },
   savingBadge: { position: 'absolute', bottom: -10, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, backgroundColor: '#22C55E' },
   savingBadgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
-  planLabel: { fontSize: 13, fontWeight: '500', color: WHITE_SOFT, marginBottom: 4 },
-  planPrice: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD },
-  planPeriod: { fontSize: 11, color: LAVENDER },
-  subscribeButton: { marginHorizontal: 20, borderRadius: 999, paddingVertical: 16, alignItems: 'center', marginBottom: 12, backgroundColor: GOLD },
-  subscribeButtonText: { color: NIGHT_BG, fontSize: 15, fontWeight: '700' },
-  premiumDisclaimer: { fontSize: 10, textAlign: 'center', paddingHorizontal: 20, color: LAVENDER },
+  planLabel: { fontSize: 13, fontWeight: '500', color: WHITE_SOFT_P, marginBottom: 4 },
+  planPrice: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: GOLD_P },
+  planPeriod: { fontSize: 11, color: LAVENDER_P },
+  subscribeButton: { marginHorizontal: 20, borderRadius: 999, paddingVertical: 16, alignItems: 'center', marginBottom: 12, backgroundColor: GOLD_P },
+  subscribeButtonText: { color: NIGHT_BG_P, fontSize: 15, fontWeight: '700' },
+  premiumDisclaimer: { fontSize: 10, textAlign: 'center', paddingHorizontal: 20, color: LAVENDER_P },
   // Barre de progression
   inProgressBarBg: { width: '100%', height: 4, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 2, overflow: 'hidden' },
   inProgressBarFill: { height: 4, backgroundColor: '#4ADE80', borderRadius: 2 },
@@ -542,7 +559,7 @@ const styles = StyleSheet.create({
   completedCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   completedCardEmoji: { fontSize: 32 },
   completedCardInfo: { flex: 1, gap: 4 },
-  completedCardTitle: { color: WHITE_SOFT, fontSize: 14, fontWeight: '600' },
+  completedCardTitle: { color: WHITE_SOFT_P, fontSize: 14, fontWeight: '600' },
   completedCardMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   completedBadge: { backgroundColor: 'rgba(34,197,94,0.2)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   completedBadgeText: { color: '#4ADE80', fontSize: 10, fontWeight: '700' },
@@ -552,9 +569,9 @@ const styles = StyleSheet.create({
   completedTrophy: { fontSize: 20 },
   completedCardChevron: { color: 'rgba(255,255,255,0.45)', fontSize: 22, lineHeight: 24 },
   // Statistiques avancées
-  statsAdvancedBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 16, gap: 12, marginBottom: 20, backgroundColor: GOLD_SOFT, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
+  statsAdvancedBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: 16, gap: 12, marginBottom: 20, backgroundColor: GOLD_SOFT_P, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.3)' },
   statsAdvancedEmoji: { fontSize: 26 },
-  statsAdvancedTitle: { color: WHITE_SOFT, fontSize: 15, fontWeight: '600' },
-  statsAdvancedSub: { color: LAVENDER, fontSize: 11, marginTop: 2 },
-  statsAdvancedArrow: { color: GOLD, fontSize: 26, lineHeight: 28 },
+  statsAdvancedTitle: { color: WHITE_SOFT_P, fontSize: 15, fontWeight: '600' },
+  statsAdvancedSub: { color: LAVENDER_P, fontSize: 11, marginTop: 2 },
+  statsAdvancedArrow: { color: GOLD_P, fontSize: 26, lineHeight: 28 },
 });

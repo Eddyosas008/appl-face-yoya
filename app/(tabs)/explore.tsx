@@ -15,6 +15,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AnimatedScreen } from '@/components/animated-screen';
 import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
+import { useThemeContext } from '@/lib/theme-provider';
 
 // Formater la durée en minutes
 function formatDuration(seconds: number): string {
@@ -102,6 +103,8 @@ function MeditationCardGrid({
 
 export default function ExploreScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const GOLD = isDark ? '#C9A84C' : '#B8922E';
   const { favorites, toggleFavorite, profile } = useUser();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -162,7 +165,7 @@ export default function ExploreScreen() {
   const handleFav = (item: any) => toggleFavorite(String(item.id));
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={320}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -397,11 +400,9 @@ export default function ExploreScreen() {
   );
 }
 
-// Palette SomnioPax v3
-const NIGHT_BG     = '#03020F';
-const GOLD         = '#C9A84C';
+// Palette SomnioPax v3 (constantes statiques pour les styles)
+const GOLD_STATIC  = '#C9A84C';
 const LAVENDER     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM = 'rgba(180,160,255,0.10)';
 const LAVENDER_MED = 'rgba(184,174,255,0.35)';
 const WHITE_SOFT   = '#EDE9FF';
 const GLASS_BG     = 'rgba(255,255,255,0.04)';
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: WHITE_SOFT },
   sectionDesc: { fontSize: 11, color: LAVENDER, marginBottom: 4, letterSpacing: 0.2 },
-  seeAll: { fontSize: 10, color: GOLD, letterSpacing: 0.5 },
+  seeAll: { fontSize: 10, color: GOLD_STATIC, letterSpacing: 0.5 },
 
   // Grille filtrée
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
   },
   favButton: { position: 'absolute', top: 8, right: 8, borderRadius: 999, padding: 6 },
   cardInfo: { padding: 10 },
-  cardCategory: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, color: GOLD, marginBottom: 2 },
+  cardCategory: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, color: GOLD_STATIC, marginBottom: 2 },
   cardTitle: { fontSize: 12, fontWeight: '600', color: WHITE_SOFT, lineHeight: 17, marginBottom: 4 },
   cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   cardDuration: { fontSize: 10, color: LAVENDER },
@@ -476,7 +477,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 5,
   },
   hInfo: { padding: 8 },
-  hCategory: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, color: GOLD, marginBottom: 2 },
+  hCategory: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, color: GOLD_STATIC, marginBottom: 2 },
   hTitle: { fontSize: 12, fontWeight: '500', color: WHITE_SOFT, lineHeight: 16, marginBottom: 3 },
   hDuration: { fontSize: 10, color: LAVENDER },
 

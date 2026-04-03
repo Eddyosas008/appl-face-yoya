@@ -9,43 +9,11 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import Svg, { Circle, Ellipse } from 'react-native-svg';
+import { useThemeContext } from '@/lib/theme-provider';
+import { StarField } from '@/components/star-field';
 
-// ── Palette SomnioPax v3 ────────────────────────────────────────────────────
-const NIGHT_BG    = '#03020F';
-const GOLD        = '#C9A84C';
-const GOLD_SOFT   = 'rgba(201,168,76,0.12)';
-const GOLD_BORDER = 'rgba(201,168,76,0.35)';
-const LAVENDER    = 'rgba(237,233,255,0.55)';
-const LAV_BORDER  = 'rgba(180,168,220,0.30)';
-const GLASS_BG    = 'rgba(255,255,255,0.04)';
-const GLASS_USER  = 'rgba(201,168,76,0.18)';
-const TEXT_MAIN   = '#EDE9FF';
-const TEXT_MUTED  = 'rgba(237,233,255,0.50)';
-const STAR_COLOR  = 'rgba(237,233,255,0.55)';
-
-// ── Étoiles statiques ────────────────────────────────────────────────────────
-const STARS = Array.from({ length: 40 }, (_, i) => ({
-  id: i,
-  cx: (i * 37 + 11) % 390,
-  cy: (i * 53 + 7) % 700,
-  r: i % 3 === 0 ? 1.4 : i % 5 === 0 ? 1.0 : 0.7,
-}));
-
-function StarField() {
-  return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-      <Svg width="100%" height="100%">
-        {STARS.map((s) => (
-          <Circle key={s.id} cx={s.cx} cy={s.cy} r={s.r} fill={STAR_COLOR} />
-        ))}
-        {/* Aurora blobs */}
-        <Ellipse cx="80" cy="120" rx="140" ry="80" fill="rgba(88,28,135,0.12)" />
-        <Ellipse cx="320" cy="250" rx="100" ry="60" fill="rgba(55,48,163,0.10)" />
-        <Ellipse cx="180" cy="500" rx="120" ry="70" fill="rgba(88,28,135,0.08)" />
-      </Svg>
-    </View>
-  );
-}
+// ── Palette statique (pour les styles non dynamiques) ────────────────────────
+const GOLD_BORDER_STATIC = 'rgba(201,168,76,0.35)';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type LocalMessage = {
@@ -146,6 +114,10 @@ const QUICK_PROMPTS = [
 
 export default function ChatScreen() {
   const { isAuthenticated } = useAuth();
+  const { isDark } = useThemeContext();
+  const GOLD = isDark ? '#C9A84C' : '#B8922E';
+  const TEXT_MAIN = isDark ? '#EDE9FF' : '#1A1240';
+  const TEXT_MUTED = isDark ? 'rgba(237,233,255,0.50)' : 'rgba(100,80,140,0.70)';
   const flatListRef = useRef<FlatList>(null);
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<LocalMessage[]>([]);
@@ -239,7 +211,7 @@ export default function ChatScreen() {
   const canSend = input.trim().length > 0 && !isTyping;
 
   return (
-    <ScreenContainer edges={['top', 'left', 'right']} containerClassName="bg-[#03020F]">
+    <ScreenContainer edges={['top', 'left', 'right']} containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
       {/* Fond étoilé */}
       <StarField />
 
@@ -254,7 +226,7 @@ export default function ChatScreen() {
             style={({ pressed }) => [styles.headerBtn, { opacity: pressed ? 0.6 : 1 }]}
             onPress={() => router.back()}
           >
-            <IconSymbol name="chevron.left" size={22} color={TEXT_MAIN} />
+            <IconSymbol name="chevron.left" size={22} color={TEXT_MAIN as string} />
           </Pressable>
 
           <View style={styles.headerCenter}>
@@ -268,7 +240,7 @@ export default function ChatScreen() {
             <View>
               <Text style={styles.headerTitle}>Yoya</Text>
               <View style={styles.statusRow}>
-                <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#4ADE80' : GOLD }]} />
+                <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#4ADE80' : GOLD as string }]} />
                 <Text style={styles.statusText}>
                   {isAuthenticated ? 'IA connectée' : 'Mode hors ligne'}
                 </Text>
@@ -290,7 +262,7 @@ export default function ChatScreen() {
         {/* ── Chargement historique ── */}
         {historyLoading && (
           <View style={styles.loadingRow}>
-            <ActivityIndicator size="small" color={GOLD} />
+            <ActivityIndicator size="small" color={GOLD as string} />
             <Text style={styles.loadingText}>Chargement de l'historique…</Text>
           </View>
         )}
@@ -353,7 +325,7 @@ export default function ChatScreen() {
             >
               {isTyping
                 ? <ActivityIndicator size="small" color="#FFFFFF" />
-                : <IconSymbol name="paperplane.fill" size={17} color={canSend ? NIGHT_BG : TEXT_MUTED} />
+                : <IconSymbol name="paperplane.fill" size={17} color={canSend ? (isDark ? '#03020F' : '#F5F2EC') : TEXT_MUTED as string} />
               }
             </Pressable>
           </View>
@@ -396,9 +368,9 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: GOLD_SOFT,
+    backgroundColor: 'rgba(201,168,76,0.12)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER,
+    borderColor: GOLD_BORDER_STATIC,
   },
   headerAvatar: {
     width: 34,
@@ -408,16 +380,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: GOLD_BORDER,
+    borderColor: GOLD_BORDER_STATIC,
   },
   headerAvatarEmoji: {
     fontSize: 16,
-    color: GOLD,
+    color: '#C9A84C',
   },
   headerTitle: {
     fontSize: 17,
     fontFamily: 'PlayfairDisplay_700Bold',
-    color: TEXT_MAIN,
+    color: '#EDE9FF',
     letterSpacing: 0.3,
   },
   statusRow: {
@@ -433,12 +405,12 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
-    color: TEXT_MUTED,
+    color: 'rgba(237,233,255,0.50)',
     letterSpacing: 0.3,
   },
   headerDivider: {
     height: 0.5,
-    backgroundColor: GOLD_BORDER,
+    backgroundColor: GOLD_BORDER_STATIC,
     marginHorizontal: 16,
   },
 
@@ -452,7 +424,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 13,
-    color: TEXT_MUTED,
+    color: 'rgba(237,233,255,0.50)',
   },
 
   // Messages
@@ -478,13 +450,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'rgba(201,168,76,0.15)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER,
+    borderColor: GOLD_BORDER_STATIC,
     alignItems: 'center',
     justifyContent: 'center',
   },
   aiAvatarEmoji: {
     fontSize: 14,
-    color: GOLD,
+    color: '#C9A84C',
   },
 
   // Bulles
@@ -495,15 +467,15 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   bubbleUser: {
-    backgroundColor: GLASS_USER,
+    backgroundColor: 'rgba(201,168,76,0.18)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER,
+    borderColor: GOLD_BORDER_STATIC,
     borderBottomRightRadius: 4,
   },
   bubbleAI: {
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: LAV_BORDER,
+    borderColor: 'rgba(180,168,220,0.30)',
     borderBottomLeftRadius: 4,
   },
   bubbleText: {
@@ -511,11 +483,11 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   bubbleTextUser: {
-    color: TEXT_MAIN,
+    color: '#EDE9FF',
     fontWeight: '500',
   },
   bubbleTextAI: {
-    color: LAVENDER,
+    color: 'rgba(237,233,255,0.55)',
   },
 
   // Indicateur de frappe
@@ -532,7 +504,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: GOLD,
+    backgroundColor: '#C9A84C',
   },
 
   // Suggestions rapides
@@ -547,13 +519,13 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: LAV_BORDER,
+    borderColor: 'rgba(180,168,220,0.30)',
   },
   quickPromptText: {
     fontSize: 13,
-    color: LAVENDER,
+    color: 'rgba(237,233,255,0.55)',
     fontWeight: '500',
   },
 
@@ -564,15 +536,15 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     backgroundColor: 'rgba(3,2,15,0.95)',
     borderTopWidth: 0.5,
-    borderTopColor: GOLD_BORDER,
+    borderTopColor: GOLD_BORDER_STATIC,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 10,
-    backgroundColor: GLASS_BG,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER,
+    borderColor: GOLD_BORDER_STATIC,
     borderRadius: 24,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -580,7 +552,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: TEXT_MAIN,
+    color: '#EDE9FF',
     maxHeight: 100,
     paddingVertical: 4,
   },
@@ -593,7 +565,7 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   sendButtonActive: {
-    backgroundColor: GOLD,
+    backgroundColor: '#C9A84C',
   },
   sendButtonDisabled: {
     backgroundColor: 'rgba(255,255,255,0.06)',

@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/use-auth';
 import type { MoodState } from '@/shared/wellness-types';
 import { AnimatedScreen } from '@/components/animated-screen';
 import { StarField } from '@/components/star-field';
+import { useThemeContext } from '@/lib/theme-provider';
 
 const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'anxious', 'sad'];
 
@@ -31,6 +32,7 @@ const MOOD_MAP: Partial<Record<MoodState, DbMood>> = {
 
 export default function JournalScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [isWriting, setIsWriting] = useState(false);
@@ -94,7 +96,7 @@ export default function JournalScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       {listLoading && (
@@ -273,29 +275,29 @@ export default function JournalScreen() {
   );
 }
 
-// Palette SomnioPax v3
-const NIGHT_BG     = '#03020F';
-const GOLD         = '#C9A84C';
-const GOLD_SOFT    = 'rgba(201,168,76,0.10)';
-const LAVENDER     = 'rgba(237,233,255,0.55)';
-const LAVENDER_MED = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT   = '#EDE9FF';
-const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,160,255,0.10)';
+// Constantes palette (statiques pour StyleSheet)
+const GOLD_J         = '#C9A84C';
+const GOLD_SOFT_J    = 'rgba(201,168,76,0.10)';
+const LAVENDER_J     = 'rgba(237,233,255,0.55)';
+const LAVENDER_MED_J = 'rgba(184,174,255,0.35)';
+const WHITE_SOFT_J   = '#EDE9FF';
+const NIGHT_BG_J     = '#03020F';
+const GLASS_BG_J     = 'rgba(255,255,255,0.04)';
+const GLASS_BORDER_J = 'rgba(180,160,255,0.10)';
 
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingBottom: 32 },
   header: { paddingTop: 18, marginBottom: 18 },
-  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4 },
-  subtitle: { fontSize: 11, color: LAVENDER_MED, letterSpacing: 0.3 },
+  title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT_J, marginBottom: 4 },
+  subtitle: { fontSize: 11, color: LAVENDER_MED_J, letterSpacing: 0.3 },
   // Recherche
   searchBar: {
     flexDirection: 'row', alignItems: 'center', borderRadius: 14,
-    borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG,
+    borderWidth: 0.5, borderColor: GLASS_BORDER_J, backgroundColor: GLASS_BG_J,
     paddingHorizontal: 14, paddingVertical: 10,
     gap: 8, marginBottom: 12,
   },
-  searchInput: { flex: 1, fontSize: 14, color: WHITE_SOFT },
+  searchInput: { flex: 1, fontSize: 14, color: WHITE_SOFT_J },
   // Filtres humeur
   moodFilter: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -304,35 +306,35 @@ const styles = StyleSheet.create({
   },
   moodFilterEmoji: { fontSize: 13 },
   moodFilterText: { fontSize: 11, fontWeight: '500', letterSpacing: 0.2 },
-  promptCard: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(201,168,76,0.22)', backgroundColor: GOLD_SOFT, padding: 16, marginBottom: 24 },
-  promptLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD, marginBottom: 6 },
-  promptText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT, lineHeight: 24, marginBottom: 14 },
-  writeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, alignSelf: 'flex-start', backgroundColor: GOLD },
-  writeButtonText: { color: NIGHT_BG, fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
+  promptCard: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(201,168,76,0.22)', backgroundColor: GOLD_SOFT_J, padding: 16, marginBottom: 24 },
+  promptLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, color: GOLD_J, marginBottom: 6 },
+  promptText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT_J, lineHeight: 24, marginBottom: 14 },
+  writeButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9, alignSelf: 'flex-start', backgroundColor: GOLD_J },
+  writeButtonText: { color: NIGHT_BG_J, fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
   empty: { alignItems: 'center', paddingTop: 40 },
   emptyEmoji: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: WHITE_SOFT, marginBottom: 8 },
-  emptySubtitle: { fontSize: 13, color: LAVENDER_MED, lineHeight: 20, textAlign: 'center' },
-  entryCard: { borderRadius: 18, borderWidth: 1, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, padding: 14, marginBottom: 12 },
+  emptyTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: WHITE_SOFT_J, marginBottom: 8 },
+  emptySubtitle: { fontSize: 13, color: LAVENDER_MED_J, lineHeight: 20, textAlign: 'center' },
+  entryCard: { borderRadius: 18, borderWidth: 1, borderColor: GLASS_BORDER_J, backgroundColor: GLASS_BG_J, padding: 14, marginBottom: 12 },
   entryHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   entryMoodEmoji: { fontSize: 26 },
   entryMeta: { flex: 1 },
-  entryTitle: { fontSize: 14, fontWeight: '600', color: WHITE_SOFT, marginBottom: 2 },
-  entryDate: { fontSize: 10, color: LAVENDER, letterSpacing: 0.2 },
-  entryContent: { fontSize: 12, color: LAVENDER, lineHeight: 18 },
-  tapHint: { fontSize: 10, color: GOLD, marginTop: 6, textAlign: 'right', opacity: 0.7, letterSpacing: 0.3 },
+  entryTitle: { fontSize: 14, fontWeight: '600', color: WHITE_SOFT_J, marginBottom: 2 },
+  entryDate: { fontSize: 10, color: LAVENDER_J, letterSpacing: 0.2 },
+  entryContent: { fontSize: 12, color: LAVENDER_J, lineHeight: 18 },
+  tapHint: { fontSize: 10, color: GOLD_J, marginTop: 6, textAlign: 'right', opacity: 0.7, letterSpacing: 0.3 },
   deleteBtn: { padding: 6 },
   modal: { flex: 1, backgroundColor: '#03020F' },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER },
-  modalCancel: { fontSize: 14, color: LAVENDER_MED },
-  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER_J },
+  modalCancel: { fontSize: 14, color: LAVENDER_MED_J },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT_J },
   modalSave: { fontSize: 14, fontWeight: '700' },
   modalContent: { flex: 1, paddingHorizontal: 20 },
-  titleInput: { fontSize: 16, fontWeight: '500', color: WHITE_SOFT, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER, marginBottom: 20 },
-  moodLabel: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 17, color: WHITE_SOFT, marginBottom: 12 },
+  titleInput: { fontSize: 16, fontWeight: '500', color: WHITE_SOFT_J, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: GLASS_BORDER_J, marginBottom: 20 },
+  moodLabel: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 17, color: WHITE_SOFT_J, marginBottom: 12 },
   moodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  moodChip: { borderRadius: 12, borderWidth: 0.5, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center', width: '22%', backgroundColor: GLASS_BG },
+  moodChip: { borderRadius: 12, borderWidth: 0.5, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center', width: '22%', backgroundColor: GLASS_BG_J },
   moodChipEmoji: { fontSize: 20, marginBottom: 2 },
-  moodChipLabel: { fontSize: 9, fontWeight: '500', textAlign: 'center', color: LAVENDER },
-  contentInput: { borderRadius: 14, borderWidth: 0.5, borderColor: GLASS_BORDER, backgroundColor: GLASS_BG, padding: 14, fontSize: 14, color: WHITE_SOFT, lineHeight: 22, minHeight: 200 },
+  moodChipLabel: { fontSize: 9, fontWeight: '500', textAlign: 'center', color: LAVENDER_J },
+  contentInput: { borderRadius: 14, borderWidth: 0.5, borderColor: GLASS_BORDER_J, backgroundColor: GLASS_BG_J, padding: 14, fontSize: 14, color: WHITE_SOFT_J, lineHeight: 22, minHeight: 200 },
 });
