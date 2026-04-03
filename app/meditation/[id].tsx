@@ -17,6 +17,7 @@ import { PremiumBadge } from '@/components/ui/premium-badge';
 import { trpc } from '@/lib/trpc';
 import { useUser } from '@/lib/user-context';
 import { useAuth } from '@/hooks/use-auth';
+import { StaggeredItem } from '@/components/staggered-item';
 
 // ─── Palette Sanctuaire du Sommeil ─────────────────────────────────────────
 const NIGHT_BG     = '#07051C';
@@ -492,36 +493,33 @@ export default function MeditationPlayerScreen() {
           {similar.length > 0 && (
             <View style={styles.similarSection}>
               <Text style={styles.similarTitle}>Dans la même catégorie</Text>
-              <FlatList
-                horizontal
-                data={similar}
-                keyExtractor={item => String(item.id)}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12 }}
-                renderItem={({ item: sim }) => {
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+                {similar.map((sim, idx) => {
                   const simCat = categories.find(c => c.slug === sim.categorySlug);
                   const simGrad = CATEGORY_COLORS[sim.categorySlug] ?? ['#1A0A2E', '#302B63'];
                   return (
-                    <Pressable
-                      style={({ pressed }) => [styles.simCard, { opacity: pressed ? 0.85 : 1 }]}
-                      onPress={() => router.replace(`/meditation/${sim.slug}` as never)}
-                    >
-                      <LinearGradient colors={simGrad} style={styles.simCover}>
-                        <Text style={styles.simEmoji}>{simCat?.emoji ?? '🧘'}</Text>
-                      </LinearGradient>
-                      <View style={styles.simInfo}>
-                        <Text style={styles.simCatLabel} numberOfLines={1}>
-                          {simCat?.name ?? sim.categorySlug}
-                        </Text>
-                        <Text style={styles.simCardTitle} numberOfLines={2}>{sim.title}</Text>
-                        <Text style={styles.simDuration}>
-                          {Math.round(sim.audioDurationSeconds / 60)} min
-                        </Text>
-                      </View>
-                    </Pressable>
+                    <StaggeredItem key={sim.id} index={idx} staggerDelay={70} translateY={14}>
+                      <Pressable
+                        style={({ pressed }) => [styles.simCard, { opacity: pressed ? 0.85 : 1 }]}
+                        onPress={() => router.replace(`/meditation/${sim.slug}` as never)}
+                      >
+                        <LinearGradient colors={simGrad} style={styles.simCover}>
+                          <Text style={styles.simEmoji}>{simCat?.emoji ?? '🧘'}</Text>
+                        </LinearGradient>
+                        <View style={styles.simInfo}>
+                          <Text style={styles.simCatLabel} numberOfLines={1}>
+                            {simCat?.name ?? sim.categorySlug}
+                          </Text>
+                          <Text style={styles.simCardTitle} numberOfLines={2}>{sim.title}</Text>
+                          <Text style={styles.simDuration}>
+                            {Math.round(sim.audioDurationSeconds / 60)} min
+                          </Text>
+                        </View>
+                      </Pressable>
+                    </StaggeredItem>
                   );
-                }}
-              />
+                })}
+              </ScrollView>
             </View>
           )}
 

@@ -13,6 +13,7 @@ import { trpc } from '@/lib/trpc';
 import { PremiumBadge } from '@/components/ui/premium-badge';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AnimatedScreen } from '@/components/animated-screen';
+import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
 
 // Formater la durée en minutes
@@ -282,7 +283,7 @@ export default function ExploreScreen() {
                 </Text>
                 <View style={styles.grid}>
                   {filtered.map((item, idx) => (
-                    <View key={item.id} style={styles.gridItem}>
+                    <StaggeredItem key={item.id} index={idx} staggerDelay={55} style={styles.gridItem}>
                       <MeditationCardGrid
                         item={item}
                         categories={dbCategories}
@@ -292,7 +293,7 @@ export default function ExploreScreen() {
                         onFav={() => handleFav(item)}
                         colors={colors}
                       />
-                    </View>
+                    </StaggeredItem>
                   ))}
                 </View>
               </>
@@ -311,17 +312,18 @@ export default function ExploreScreen() {
                   <Text style={[styles.sectionCount, { color: colors.muted }]}>{featured.length}</Text>
                 </View>
                 <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-                  {featured.map(item => (
-                    <MeditationCardHorizontal
-                      key={item.id}
-                      item={item}
-                      categories={dbCategories}
-                      isFav={favorites.includes(String(item.id))}
-                      isLocked={item.isPremium && !profile?.isPremium}
-                      onPress={() => handlePress(item)}
-                      onFav={() => handleFav(item)}
-                      colors={colors}
-                    />
+                  {featured.map((item, idx) => (
+                    <StaggeredItem key={item.id} index={idx} staggerDelay={70} translateY={12}>
+                      <MeditationCardHorizontal
+                        item={item}
+                        categories={dbCategories}
+                        isFav={favorites.includes(String(item.id))}
+                        isLocked={item.isPremium && !profile?.isPremium}
+                        onPress={() => handlePress(item)}
+                        onFav={() => handleFav(item)}
+                        colors={colors}
+                      />
+                    </StaggeredItem>
                   ))}
                 </HScrollView>
               </View>
@@ -345,17 +347,18 @@ export default function ExploreScreen() {
                   {section.description}
                 </Text>
                 <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingTop: 8 }}>
-                  {section.items.map((item: any) => (
-                    <MeditationCardHorizontal
-                      key={item.id}
-                      item={item}
-                      categories={dbCategories}
-                      isFav={favorites.includes(String(item.id))}
-                      isLocked={item.isPremium && !profile?.isPremium}
-                      onPress={() => handlePress(item)}
-                      onFav={() => handleFav(item)}
-                      colors={colors}
-                    />
+                  {section.items.map((item: any, idx: number) => (
+                    <StaggeredItem key={item.id} index={idx} staggerDelay={65} translateY={12}>
+                      <MeditationCardHorizontal
+                        item={item}
+                        categories={dbCategories}
+                        isFav={favorites.includes(String(item.id))}
+                        isLocked={item.isPremium && !profile?.isPremium}
+                        onPress={() => handlePress(item)}
+                        onFav={() => handleFav(item)}
+                        colors={colors}
+                      />
+                    </StaggeredItem>
                   ))}
                 </HScrollView>
               </View>
@@ -368,17 +371,18 @@ export default function ExploreScreen() {
                   <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🆕 Récemment ajoutées</Text>
                 </View>
                 <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-                  {recent.map(item => (
-                    <MeditationCardHorizontal
-                      key={item.id}
-                      item={item}
-                      categories={dbCategories}
-                      isFav={favorites.includes(String(item.id))}
-                      isLocked={item.isPremium && !profile?.isPremium}
-                      onPress={() => handlePress(item)}
-                      onFav={() => handleFav(item)}
-                      colors={colors}
-                    />
+                  {recent.map((item, idx) => (
+                    <StaggeredItem key={item.id} index={idx} staggerDelay={65} translateY={12}>
+                      <MeditationCardHorizontal
+                        item={item}
+                        categories={dbCategories}
+                        isFav={favorites.includes(String(item.id))}
+                        isLocked={item.isPremium && !profile?.isPremium}
+                        onPress={() => handlePress(item)}
+                        onFav={() => handleFav(item)}
+                        colors={colors}
+                      />
+                    </StaggeredItem>
                   ))}
                 </HScrollView>
               </View>

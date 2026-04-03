@@ -356,3 +356,11 @@
 - [x] Refondre ambient avec le style Home exact
 - [x] Refondre welcome/signin/signup avec le style Home exact
 - [x] Vérifier TypeScript (0 erreur réelle) et sauvegarder le checkpoint
+
+## Phase 41 : Animations staggerées sur les cartes de méditation
+
+- [x] Créer composant StaggeredItem réutilisable (fade-in + slide-up décalé par index)
+- [x] Appliquer dans Explore — grille + sections horizontales par catégorie
+- [x] Appliquer dans Home — mini-cartes méditations du soir
+- [x] Appliquer dans le lecteur — méditations similaires
+- [x] Vérifier TypeScript et sauvegarder le checkpoint

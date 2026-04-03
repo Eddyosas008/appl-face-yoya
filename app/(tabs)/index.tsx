@@ -12,6 +12,7 @@ import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AnimatedScreen, AnimatedItem } from '@/components/animated-screen';
+import { StaggeredItem } from '@/components/staggered-item';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -395,20 +396,21 @@ export default function HomeScreen() {
           {/* Autres méditations */}
           {dbMeditations.length > 1 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingTop: 10, paddingRight: 16 }}>
-              {dbMeditations.filter((m: any) => m.id !== todayMed?.id).slice(0, 5).map((med: any) => {
+              {dbMeditations.filter((m: any) => m.id !== todayMed?.id).slice(0, 5).map((med: any, idx: number) => {
                 const cat = allCategories.find((c: any) => c.slug === med.categorySlug);
                 return (
-                  <Pressable
-                    key={med.id}
-                    style={({ pressed }) => [styles.miniMedCard, { opacity: pressed ? 0.85 : 1 }]}
-                    onPress={() => router.push(`/meditation/${med.slug}` as never)}
-                  >
-                    <View style={[styles.miniMedCover, { backgroundColor: med.coverColor ?? INDIGO_MID }]}>
-                      <Text style={styles.miniMedEmoji}>{cat?.emoji ?? '🧘'}</Text>
-                    </View>
-                    <Text style={styles.miniMedTitle} numberOfLines={2}>{med.title}</Text>
-                    <Text style={styles.miniMedDur}>{Math.round(med.audioDurationSeconds / 60)} min</Text>
-                  </Pressable>
+                  <StaggeredItem key={med.id} index={idx} staggerDelay={70} translateY={14}>
+                    <Pressable
+                      style={({ pressed }) => [styles.miniMedCard, { opacity: pressed ? 0.85 : 1 }]}
+                      onPress={() => router.push(`/meditation/${med.slug}` as never)}
+                    >
+                      <View style={[styles.miniMedCover, { backgroundColor: med.coverColor ?? INDIGO_MID }]}>
+                        <Text style={styles.miniMedEmoji}>{cat?.emoji ?? '🧘'}</Text>
+                      </View>
+                      <Text style={styles.miniMedTitle} numberOfLines={2}>{med.title}</Text>
+                      <Text style={styles.miniMedDur}>{Math.round(med.audioDurationSeconds / 60)} min</Text>
+                    </Pressable>
+                  </StaggeredItem>
                 );
               })}
             </ScrollView>
