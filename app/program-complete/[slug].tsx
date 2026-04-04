@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
+import { useThemeContext } from "@/lib/theme-provider";
 
 // ─── Confettis légers (cercles animés) ──────────────────────────────────────
 const CONFETTI_COLORS = ["#A78BFA", "#F9A8D4", "#FCD34D", "#6EE7B7", "#93C5FD", "#FCA5A5"];
@@ -154,6 +155,16 @@ const statStyles = StyleSheet.create({
 export default function ProgramCompleteScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
+  const { isDark } = useThemeContext();
+
+  // Couleurs dynamiques
+  const GOLD    = isDark ? '#C9A84C' : '#A0722A';
+  const FG      = isDark ? '#EDE9FF' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
+  const SURFACE = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const SUCCESS = isDark ? 'rgba(74,222,128,0.8)' : 'rgba(22,163,74,0.9)';
 
   const { data: program } = trpc.programs.get.useQuery(
     { slug: slug ?? "" },
@@ -220,7 +231,7 @@ export default function ProgramCompleteScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       {/* Confettis */}
       <View style={styles.confettiContainer} pointerEvents="none">
@@ -249,9 +260,9 @@ export default function ProgramCompleteScreen() {
               alignItems: "center",
             }}
           >
-            <Text style={styles.congratsLabel}>FÉLICITATIONS !</Text>
+            <Text style={[styles.congratsLabel, { color: '#F9D87A' }]}>FÉLICITATIONS !</Text>
             <Text style={styles.heroTitle}>Programme terminé</Text>
-            <Text style={styles.programName}>{program?.title ?? slug}</Text>
+            <Text style={[styles.programName, { color: 'rgba(255,255,255,0.80)' }]}>{program?.title ?? slug}</Text>
             <View style={styles.completedBadge}>
               <Text style={styles.completedBadgeText}>
                 ✅ {totalDays} jour{totalDays > 1 ? "s" : ""} complété{totalDays > 1 ? "s" : ""}
@@ -261,21 +272,21 @@ export default function ProgramCompleteScreen() {
         </LinearGradient>
 
         {/* ── Message personnalisé ── */}
-        <Animated.View style={[styles.messageCard, { opacity: messageOpacity }]}>
-          <Text style={styles.messageTitle}>Votre transformation</Text>
-          <Text style={styles.messageText}>
+        <Animated.View style={[styles.messageCard, { opacity: messageOpacity, backgroundColor: SURFACE, borderColor: BORDER }]}>
+          <Text style={[styles.messageTitle, { color: FG }]}>Votre transformation</Text>
+          <Text style={[styles.messageText, { color: LAV }]}>
             Vous avez accompli quelque chose d'extraordinaire. En complétant ce programme, vous avez
             posé les fondations d'un sommeil profond et réparateur. Votre cerveau a intégré de
             nouvelles habitudes qui vont continuer à travailler pour vous chaque nuit.
           </Text>
-          <Text style={styles.messageQuote}>
+          <Text style={[styles.messageQuote, { color: GOLD, borderLeftColor: GOLD }]}>
             "Le succès n'est pas final, l'échec n'est pas fatal : c'est le courage de continuer qui compte."
           </Text>
         </Animated.View>
 
         {/* ── Statistiques ── */}
         <Animated.View style={[styles.statsSection, { opacity: messageOpacity }]}>
-          <Text style={styles.statsTitle}>📊 Votre parcours en chiffres</Text>
+          <Text style={[styles.statsTitle, { color: FG }]}>📊 Votre parcours en chiffres</Text>
           <View style={styles.statsGrid}>
             <StatCard
               emoji="📅"
@@ -303,25 +314,25 @@ export default function ProgramCompleteScreen() {
         </Animated.View>
 
         {/* ── Badges obtenus ── */}
-        <Animated.View style={[styles.badgesSection, { opacity: messageOpacity }]}>
-          <Text style={styles.badgesTitle}>🏅 Badges obtenus</Text>
+        <Animated.View style={[styles.badgesSection, { opacity: messageOpacity, backgroundColor: SURFACE, borderColor: BORDER }]}>
+          <Text style={[styles.badgesTitle, { color: FG }]}>🏅 Badges obtenus</Text>
           <View style={styles.badgesRow}>
             <View style={styles.badgeItem}>
               <Text style={styles.badgeEmoji}>🌙</Text>
-              <Text style={styles.badgeLabel}>Dormeur{"\n"}conscient</Text>
+              <Text style={[styles.badgeLabel, { color: LAV_DIM }]}>Dormeur{"\n"}conscient</Text>
             </View>
             <View style={styles.badgeItem}>
               <Text style={styles.badgeEmoji}>🧘</Text>
-              <Text style={styles.badgeLabel}>Méditant{"\n"}régulier</Text>
+              <Text style={[styles.badgeLabel, { color: LAV_DIM }]}>Méditant{"\n"}régulier</Text>
             </View>
             <View style={styles.badgeItem}>
               <Text style={styles.badgeEmoji}>💪</Text>
-              <Text style={styles.badgeLabel}>Persévérant{"\n"}exemplaire</Text>
+              <Text style={[styles.badgeLabel, { color: LAV_DIM }]}>Persévérant{"\n"}exemplaire</Text>
             </View>
             {totalDays >= 21 && (
               <View style={styles.badgeItem}>
                 <Text style={styles.badgeEmoji}>⭐</Text>
-                <Text style={styles.badgeLabel}>Maître du{"\n"}sommeil</Text>
+                <Text style={[styles.badgeLabel, { color: LAV_DIM }]}>Maître du{"\n"}sommeil</Text>
               </View>
             )}
           </View>
@@ -330,7 +341,7 @@ export default function ProgramCompleteScreen() {
         {/* ── Programme suivant ── */}
         {nextProgram && (
           <Animated.View style={[styles.nextSection, { opacity: buttonsOpacity }]}>
-            <Text style={styles.nextTitle}>🚀 Continuez votre progression</Text>
+            <Text style={[styles.nextTitle, { color: FG }]}>🚀 Continuez votre progression</Text>
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={() => router.replace(`/program/${nextProgram.slug}` as never)}
@@ -356,11 +367,11 @@ export default function ProgramCompleteScreen() {
         {/* ── Boutons d'action ── */}
         <Animated.View style={[styles.actions, { opacity: buttonsOpacity }]}>
           <TouchableOpacity
-            style={styles.shareBtn}
+            style={[styles.shareBtn, { backgroundColor: SURFACE, borderColor: BORDER }]}
             onPress={handleShare}
             activeOpacity={0.85}
           >
-            <Text style={styles.shareBtnText}>🔗 Partager ma réussite</Text>
+            <Text style={[styles.shareBtnText, { color: LAV }]}>🔗 Partager ma réussite</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -383,24 +394,13 @@ export default function ProgramCompleteScreen() {
             onPress={() => router.replace("/programs" as never)}
             activeOpacity={0.85}
           >
-            <Text style={styles.programsBtnText}>Voir tous les programmes →</Text>
+            <Text style={[styles.programsBtnText, { color: LAV_DIM }]}>Voir tous les programmes →</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
     </ScreenContainer>
   );
 }
-
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const PC_BG      = '#03020F';
-const PC_SURFACE = 'rgba(255,255,255,0.04)';
-const PC_BORDER  = 'rgba(180,160,255,0.12)';
-const PC_GOLD    = '#C9A84C';
-const PC_GOLD_BG = 'rgba(201,168,76,0.14)';
-const PC_WHITE   = '#EDE9FF';
-const PC_LAV     = 'rgba(184,174,255,0.55)';
-const PC_LAV_DIM = 'rgba(184,174,255,0.35)';
-const PC_SUCCESS = 'rgba(74,222,128,0.8)';
 
 const styles = StyleSheet.create({
   confettiContainer: {
@@ -424,34 +424,32 @@ const styles = StyleSheet.create({
   congratsLabel: {
     fontSize: 13,
     fontWeight: '800',
-    color: PC_GOLD,
     letterSpacing: 3,
     marginBottom: 8,
   },
   heroTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 28,
-    color: PC_WHITE,
+    color: '#FFFFFF',
     marginBottom: 4,
     textAlign: 'center',
   },
   programName: {
     fontFamily: 'PlayfairDisplay-Italic',
     fontSize: 18,
-    color: PC_LAV,
     marginBottom: 16,
     textAlign: 'center',
   },
   completedBadge: {
-    backgroundColor: 'rgba(74,222,128,0.08)',
+    backgroundColor: 'rgba(74,222,128,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(74,222,128,0.3)',
+    borderColor: 'rgba(74,222,128,0.35)',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
   },
   completedBadgeText: {
-    color: PC_SUCCESS,
+    color: 'rgba(74,222,128,0.90)',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -460,94 +458,80 @@ const styles = StyleSheet.create({
   messageCard: {
     marginHorizontal: 20,
     marginTop: 24,
-    backgroundColor: PC_SURFACE,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: PC_BORDER,
   },
   messageTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 18,
-    color: PC_WHITE,
     marginBottom: 10,
   },
   messageText: {
     fontSize: 14,
-    color: PC_LAV,
     lineHeight: 22,
     marginBottom: 14,
   },
   messageQuote: {
     fontSize: 13,
-    color: PC_GOLD,
     fontStyle: 'italic',
     lineHeight: 20,
     borderLeftWidth: 2,
-    borderLeftColor: PC_GOLD,
     paddingLeft: 12,
   },
 
   // Stats
   statsSection: { marginHorizontal: 20, marginTop: 24 },
-  statsTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 12 },
+  statsTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, marginBottom: 12 },
   statsGrid: { flexDirection: 'row', gap: 10 },
 
   // Badges
   badgesSection: {
     marginHorizontal: 20,
     marginTop: 24,
-    backgroundColor: PC_SURFACE,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: PC_BORDER,
   },
-  badgesTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 16 },
+  badgesTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, marginBottom: 16 },
   badgesRow: { flexDirection: 'row', justifyContent: 'space-around' },
   badgeItem: { alignItems: 'center', gap: 6 },
   badgeEmoji: { fontSize: 36 },
   badgeLabel: {
     fontSize: 11,
-    color: PC_LAV_DIM,
     textAlign: 'center',
     lineHeight: 16,
   },
 
   // Programme suivant
   nextSection: { marginHorizontal: 20, marginTop: 24 },
-  nextTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 12 },
+  nextTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, marginBottom: 12 },
   nextCard: {
     borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: PC_SURFACE,
-    borderWidth: 1,
-    borderColor: PC_BORDER,
   },
   nextEmoji: { fontSize: 36 },
   nextInfo: { flex: 1 },
-  nextLabel: { fontSize: 11, color: PC_LAV_DIM, marginBottom: 2 },
-  nextName: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PC_WHITE, marginBottom: 4 },
-  nextDays: { fontSize: 12, color: PC_LAV_DIM },
-  nextArrow: { fontSize: 20, color: PC_GOLD },
+  nextLabel: { fontSize: 11, marginBottom: 2 },
+  nextName: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, marginBottom: 4 },
+  nextDays: { fontSize: 12 },
+  nextArrow: { fontSize: 20 },
 
   // Actions
   actions: { marginHorizontal: 20, marginTop: 28, gap: 12 },
   shareBtn: {
     borderWidth: 1,
-    borderColor: PC_BORDER,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: PC_SURFACE,
   },
-  shareBtnText: { color: PC_LAV, fontSize: 15, fontWeight: '700' },
+  shareBtnText: { fontSize: 15, fontWeight: '700' },
   homeBtn: { borderRadius: 14, overflow: 'hidden' },
   homeBtnGradient: { paddingVertical: 16, alignItems: 'center' },
-  homeBtnText: { color: PC_BG, fontSize: 16, fontWeight: '800' },
+  homeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
   programsBtn: { alignItems: 'center', paddingVertical: 8 },
-  programsBtnText: { color: PC_LAV_DIM, fontSize: 14 },
+  programsBtnText: { fontSize: 14 },
 });

@@ -17,6 +17,7 @@ import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from "expo-audio";
+import { useThemeContext } from "@/lib/theme-provider";
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 
@@ -419,7 +420,16 @@ export default function ProgramDayScreen() {
   const { slug, day } = useLocalSearchParams<{ slug: string; day: string }>();
   const router = useRouter();
   const { isAuthenticated } = useUser();
+  const { isDark } = useThemeContext();
   const [isCompleting, setIsCompleting] = useState(false);
+
+  // Couleurs dynamiques
+  const GOLD    = isDark ? '#C9A84C' : '#A0722A';
+  const FG      = isDark ? '#EDE9FF' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
+  const SURFACE = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
   const [routineChecked, setRoutineChecked] = useState<Record<number, boolean>>({});
   const [showBreathing, setShowBreathing] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
@@ -476,9 +486,9 @@ export default function ProgramDayScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#A78BFA" size="large" />
+          <ActivityIndicator color={isDark ? '#A78BFA' : '#6B46C1'} size="large" />
         </View>
       </ScreenContainer>
     );
@@ -486,7 +496,7 @@ export default function ProgramDayScreen() {
 
   if (!programDay) {
     return (
-      <ScreenContainer>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>Jour introuvable</Text>
         </View>
@@ -519,7 +529,7 @@ export default function ProgramDayScreen() {
   ].filter(Boolean).length;
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Hero */}
@@ -530,7 +540,7 @@ export default function ProgramDayScreen() {
           style={styles.hero}
         >
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backBtnText}>← {program?.title ?? "Programme"}</Text>
+            <Text style={[styles.backBtnText, { color: 'rgba(255,255,255,0.80)' }]}>← {program?.title ?? "Programme"}</Text>
           </TouchableOpacity>
 
           <View style={styles.heroBadgeRow}>
@@ -546,7 +556,7 @@ export default function ProgramDayScreen() {
 
           <Text style={styles.heroTitle}>{programDay.title}</Text>
           {programDay.theme && (
-            <Text style={styles.heroTheme}>✦ {programDay.theme}</Text>
+            <Text style={[styles.heroTheme, { color: 'rgba(255,255,255,0.75)' }]}>✦ {programDay.theme}</Text>
           )}
 
           <View style={styles.heroMeta}>
@@ -564,13 +574,13 @@ export default function ProgramDayScreen() {
         {/* Description */}
         {programDay.description && (
           <View style={styles.section}>
-            <Text style={styles.description}>{programDay.description}</Text>
+            <Text style={[styles.description, { color: LAV }]}>{programDay.description}</Text>
           </View>
         )}
 
          {/* ── Activités ── */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🌙 Activités du soir</Text>
+          <Text style={[styles.sectionTitle, { color: FG }]}>🌙 Activités du soir</Text>
           {/* Audio du jour */}
           {programDay.audioUrl && (
             <View style={styles.activityCard}>
@@ -709,16 +719,16 @@ export default function ProgramDayScreen() {
           </View>
         </View>
 
-        {/* ── Routine du soir ── */}
+             {/* Routine du soir */}
         {routineSteps.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>📋 Routine du soir</Text>
-              <Text style={styles.routineProgress}>
+              <Text style={[styles.sectionTitle, { color: FG }]}>📋 Routine du soir</Text>
+              <Text style={[styles.routineProgress, { color: GOLD }]}>
                 {routineCompleted}/{routineSteps.length}
               </Text>
             </View>
-            <View style={styles.routineCard}>
+            <View style={[styles.routineCard, { backgroundColor: SURFACE, borderColor: BORDER }]}>
               {routineSteps.map((step, i) => (
                 <TouchableOpacity
                   key={i}
@@ -731,17 +741,19 @@ export default function ProgramDayScreen() {
                   <View
                     style={[
                       styles.routineCheckbox,
-                      routineChecked[i] && styles.routineCheckboxDone,
+                      { borderColor: BORDER },
+                      routineChecked[i] && { backgroundColor: GOLD, borderColor: GOLD },
                     ]}
                   >
                     {routineChecked[i] && (
-                      <Text style={styles.routineCheckmark}>✓</Text>
+                      <Text style={[styles.routineCheckmark, { color: isDark ? '#03020F' : '#FFFFFF' }]}>✓</Text>
                     )}
                   </View>
                   <Text
                     style={[
                       styles.routineStepText,
-                      routineChecked[i] && styles.routineStepDone,
+                      { color: LAV },
+                      routineChecked[i] && { color: LAV_DIM, textDecorationLine: 'line-through' },
                     ]}
                   >
                     {step.replace(/^[-•\d.]\s*/, "")}
@@ -749,8 +761,8 @@ export default function ProgramDayScreen() {
                 </TouchableOpacity>
               ))}
               {routineCompleted === routineSteps.length && routineSteps.length > 0 && (
-                <View style={styles.routineDoneBanner}>
-                  <Text style={styles.routineDoneText}>
+                <View style={[styles.routineDoneBanner, { backgroundColor: isDark ? 'rgba(201,168,76,0.08)' : 'rgba(160,114,42,0.08)', borderColor: isDark ? 'rgba(201,168,76,0.2)' : 'rgba(160,114,42,0.2)' }]}>
+                  <Text style={[styles.routineDoneText, { color: GOLD }]}>
                     🎉 Routine complète ! Excellent travail.
                   </Text>
                 </View>
@@ -762,10 +774,10 @@ export default function ProgramDayScreen() {
         {/* ── Conseil scientifique ── */}
         {programDay.sleepTip && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>💡 Conseil scientifique</Text>
-            <View style={styles.tipCard}>
-              <Text style={styles.tipQuote}>"</Text>
-              <Text style={styles.tipText}>{programDay.sleepTip}</Text>
+            <Text style={[styles.sectionTitle, { color: FG }]}>💡 Conseil scientifique</Text>
+            <View style={[styles.tipCard, { backgroundColor: isDark ? 'rgba(201,168,76,0.04)' : 'rgba(160,114,42,0.06)', borderColor: isDark ? 'rgba(201,168,76,0.15)' : 'rgba(160,114,42,0.20)' }]}>
+              <Text style={[styles.tipQuote, { color: GOLD }]}>"</Text>
+              <Text style={[styles.tipText, { color: LAV }]}>{programDay.sleepTip}</Text>
             </View>
           </View>
         )}
@@ -773,15 +785,15 @@ export default function ProgramDayScreen() {
         {/* ── Journal ── */}
         {programDay.journalPrompt && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📓 Réflexion du soir</Text>
-            <View style={styles.journalCard}>
-              <Text style={styles.journalPrompt}>
+            <Text style={[styles.sectionTitle, { color: FG }]}>📓 Réflexion du soir</Text>
+            <View style={[styles.journalCard, { backgroundColor: SURFACE, borderColor: BORDER }]}>
+              <Text style={[styles.journalPrompt, { color: LAV }]}>
                 "{programDay.journalPrompt}"
               </Text>
               <TextInput
-                style={styles.journalInput}
+                style={[styles.journalInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)', color: FG, borderColor: BORDER }]}
                 placeholder="Écrivez vos pensées ici..."
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={LAV_DIM}
                 multiline
                 numberOfLines={4}
                 value={journalNote}
@@ -789,7 +801,7 @@ export default function ProgramDayScreen() {
                 textAlignVertical="top"
               />
               <TouchableOpacity
-                style={styles.journalBtn}
+                style={[styles.journalBtn, { backgroundColor: isDark ? 'rgba(201,168,76,0.12)' : 'rgba(160,114,42,0.10)', borderColor: isDark ? 'rgba(201,168,76,0.2)' : 'rgba(160,114,42,0.2)' }]}
                 onPress={() =>
                   router.push({
                     pathname: "/(tabs)/journal" as never,
@@ -797,7 +809,7 @@ export default function ProgramDayScreen() {
                   })
                 }
               >
-                <Text style={styles.journalBtnText}>Ouvrir le journal complet →</Text>
+                <Text style={[styles.journalBtnText, { color: GOLD }]}>Ouvrir le journal complet →</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -806,10 +818,10 @@ export default function ProgramDayScreen() {
         {/* ── Bouton de validation ── */}
         <View style={styles.completeSection}>
           {isDone ? (
-            <View style={styles.completedBanner}>
+            <View style={[styles.completedBanner, { backgroundColor: isDark ? 'rgba(201,168,76,0.06)' : 'rgba(160,114,42,0.06)', borderColor: isDark ? 'rgba(201,168,76,0.25)' : 'rgba(160,114,42,0.25)' }]}>
               <Text style={styles.completedBannerEmoji}>✅</Text>
-              <Text style={styles.completedBannerTitle}>Jour complété !</Text>
-              <Text style={styles.completedBannerSub}>
+              <Text style={[styles.completedBannerTitle, { color: GOLD }]}>Jour complété !</Text>
+              <Text style={[styles.completedBannerSub, { color: LAV_DIM }]}>
                 Vous avez terminé ce jour du programme. Continuez ainsi !
               </Text>
             </View>
@@ -835,7 +847,7 @@ export default function ProgramDayScreen() {
                   )}
                 </LinearGradient>
               </TouchableOpacity>
-              <Text style={styles.completeNote}>
+              <Text style={[styles.completeNote, { color: LAV_DIM }]}>
                 Validez une fois toutes les activités réalisées
               </Text>
             </>
@@ -846,14 +858,6 @@ export default function ProgramDayScreen() {
   );
 }
 
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const PD_GOLD    = '#C9A84C';
-const PD_WHITE   = '#EDE9FF';
-const PD_LAV     = 'rgba(184,174,255,0.55)';
-const PD_LAV_DIM = 'rgba(184,174,255,0.35)';
-const PD_BORDER  = 'rgba(180,160,255,0.12)';
-const PD_GLASS   = 'rgba(255,255,255,0.04)';
-
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 120 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -862,44 +866,44 @@ const styles = StyleSheet.create({
   // Hero
   hero: { padding: 24, paddingTop: 16 },
   backBtn: { marginBottom: 16 },
-  backBtnText: { color: PD_LAV, fontSize: 15, fontWeight: '600' },
+  backBtnText: { fontSize: 15, fontWeight: '600' },
   heroBadgeRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   dayBadge: {
-    backgroundColor: 'rgba(201,168,76,0.12)',
+    backgroundColor: 'rgba(201,168,76,0.18)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.25)',
+    borderColor: 'rgba(201,168,76,0.35)',
   },
-  dayBadgeText: { color: PD_GOLD, fontSize: 12, fontWeight: '700' },
+  dayBadgeText: { color: '#C9A84C', fontSize: 12, fontWeight: '700' },
   doneBadge: {
-    backgroundColor: 'rgba(34,197,94,0.12)',
+    backgroundColor: 'rgba(34,197,94,0.18)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(34,197,94,0.25)',
+    borderColor: 'rgba(34,197,94,0.35)',
   },
   doneBadgeText: { color: '#86EFAC', fontSize: 12, fontWeight: '700' },
   heroTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 24,
-    color: PD_WHITE,
+    color: '#FFFFFF',
     marginBottom: 6,
     lineHeight: 30,
   },
-  heroTheme: { fontSize: 14, color: PD_LAV, marginBottom: 14 },
+  heroTheme: { fontSize: 14, marginBottom: 14 },
   heroMeta: { flexDirection: 'row', gap: 8 },
   heroBadge: {
-    backgroundColor: PD_GLASS,
+    backgroundColor: 'rgba(0,0,0,0.20)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: PD_BORDER,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
-  heroBadgeText: { color: PD_WHITE, fontSize: 12, fontWeight: '600' },
+  heroBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
 
   // Sections
   section: { paddingHorizontal: 20, paddingTop: 20 },
@@ -909,17 +913,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14,
   },
-  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: PD_WHITE },
-  description: { fontSize: 14, color: PD_LAV, lineHeight: 22 },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16 },
+  description: { fontSize: 14, lineHeight: 22 },
 
   // Activités
   activityCard: {
     borderRadius: 16,
     overflow: 'hidden',
     marginBottom: 10,
-    backgroundColor: PD_GLASS,
-    borderWidth: 1,
-    borderColor: PD_BORDER,
   },
   activityGradient: { padding: 16 },
   activityRow: { flexDirection: 'row', alignItems: 'center' },
@@ -927,25 +928,23 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(201,168,76,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   activityIconText: { fontSize: 22 },
   activityContent: { flex: 1 },
-  activityTitle: { color: PD_WHITE, fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  activitySub: { color: PD_LAV_DIM, fontSize: 12 },
-  activityArrow: { color: PD_GOLD, fontSize: 18, fontWeight: '700' },
+  activityTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', marginBottom: 2 },
+  activitySub: { color: 'rgba(255,255,255,0.60)', fontSize: 12 },
+  activityArrow: { color: '#C9A84C', fontSize: 18, fontWeight: '700' },
 
   // Routine
-  routineProgress: { fontSize: 14, fontWeight: '700', color: PD_GOLD },
+  routineProgress: { fontSize: 14, fontWeight: '700' },
   routineCard: {
-    backgroundColor: PD_GLASS,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: PD_BORDER,
     gap: 10,
   },
   routineStep: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
@@ -954,95 +953,79 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: PD_BORDER,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
     marginTop: 1,
   },
-  routineCheckboxDone: { backgroundColor: PD_GOLD, borderColor: PD_GOLD },
-  routineCheckmark: { color: '#03020F', fontSize: 12, fontWeight: '800' },
-  routineStepText: { flex: 1, color: PD_LAV, fontSize: 13, lineHeight: 20 },
-  routineStepDone: { color: PD_LAV_DIM, textDecorationLine: 'line-through' },
+  routineCheckboxDone: {},
+  routineCheckmark: { fontSize: 12, fontWeight: '800' },
+  routineStepText: { flex: 1, fontSize: 13, lineHeight: 20 },
+  routineStepDone: {},
   routineDoneBanner: {
-    backgroundColor: 'rgba(201,168,76,0.08)',
     borderRadius: 10,
     padding: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.2)',
   },
-  routineDoneText: { color: PD_GOLD, fontSize: 13, fontWeight: '600' },
+  routineDoneText: { fontSize: 13, fontWeight: '600' },
 
   // Conseil
   tipCard: {
-    backgroundColor: 'rgba(201,168,76,0.04)',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.15)',
   },
   tipQuote: {
     fontSize: 36,
-    color: PD_GOLD,
     fontWeight: '800',
     lineHeight: 30,
     marginBottom: -4,
   },
-  tipText: { color: PD_LAV, fontSize: 13, lineHeight: 22 },
+  tipText: { fontSize: 13, lineHeight: 22 },
 
   // Journal
   journalCard: {
-    backgroundColor: PD_GLASS,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: PD_BORDER,
   },
   journalPrompt: {
-    color: PD_LAV,
     fontSize: 14,
     lineHeight: 22,
     fontStyle: 'italic',
     marginBottom: 12,
   },
   journalInput: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: 12,
     padding: 12,
-    color: PD_WHITE,
     fontSize: 13,
     lineHeight: 20,
     minHeight: 80,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: PD_BORDER,
   },
   journalBtn: {
-    backgroundColor: 'rgba(201,168,76,0.12)',
     paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.2)',
   },
-  journalBtnText: { color: PD_GOLD, fontSize: 13, fontWeight: '700' },
+  journalBtnText: { fontSize: 13, fontWeight: '700' },
 
   // Validation
   completeSection: { paddingHorizontal: 20, paddingTop: 24 },
   completeBtn: { borderRadius: 16, overflow: 'hidden', marginBottom: 8 },
   completeBtnGradient: { paddingVertical: 16, alignItems: 'center' },
-  completeBtnText: { color: '#03020F', fontSize: 16, fontWeight: '800' },
-  completeNote: { textAlign: 'center', color: PD_LAV_DIM, fontSize: 12 },
+  completeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  completeNote: { textAlign: 'center', fontSize: 12 },
   completedBanner: {
-    backgroundColor: 'rgba(201,168,76,0.06)',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.25)',
   },
   completedBannerEmoji: { fontSize: 40, marginBottom: 8 },
-  completedBannerTitle: { fontFamily: 'PlayfairDisplay-Medium', color: PD_GOLD, fontSize: 18, marginBottom: 4 },
-  completedBannerSub: { color: PD_LAV_DIM, fontSize: 13, textAlign: 'center' },
+  completedBannerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, marginBottom: 4 },
+  completedBannerSub: { fontSize: 13, textAlign: 'center' },
 });

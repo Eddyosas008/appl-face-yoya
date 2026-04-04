@@ -14,6 +14,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
+import { useThemeContext } from "@/lib/theme-provider";
 
 const LEVEL_LABELS: Record<string, { label: string; emoji: string }> = {
   beginner: { label: "Débutant", emoji: "🌱" },
@@ -26,7 +27,19 @@ export default function ProgramDetailScreen() {
   const router = useRouter();
   const { isAuthenticated } = useUser();
   const utils = trpc.useUtils();
+  const { isDark } = useThemeContext();
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
+
+  // Couleurs dynamiques
+  const GOLD    = isDark ? '#C9A84C' : '#A0722A';
+  const GOLD_BG = isDark ? 'rgba(201,168,76,0.14)' : 'rgba(160,114,42,0.10)';
+  const FG      = isDark ? '#EDE9FF' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
+  const SURFACE = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const SUCCESS = isDark ? 'rgba(74,222,128,0.85)' : 'rgba(22,163,74,0.90)';
+  const BG_TEXT = isDark ? '#03020F' : '#FFFFFF';
 
   const { data: program, isLoading } = trpc.programs.get.useQuery(
     { slug: slug ?? "" },
@@ -71,10 +84,10 @@ export default function ProgramDetailScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#A78BFA" size="large" />
-          <Text style={styles.loadingText}>Chargement du programme...</Text>
+          <ActivityIndicator color={isDark ? '#A78BFA' : '#6B46C1'} size="large" />
+          <Text style={[styles.loadingText, { color: LAV_DIM }]}>Chargement du programme...</Text>
         </View>
       </ScreenContainer>
     );
@@ -82,7 +95,7 @@ export default function ProgramDetailScreen() {
 
   if (!program) {
     return (
-      <ScreenContainer>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>Programme introuvable</Text>
         </View>
@@ -93,7 +106,7 @@ export default function ProgramDetailScreen() {
   const level = LEVEL_LABELS[program.level] ?? { label: program.level, emoji: "🌙" };
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Hero */}
@@ -104,7 +117,7 @@ export default function ProgramDetailScreen() {
           style={styles.hero}
         >
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backBtnText}>← Retour</Text>
+            <Text style={[styles.backBtnText, { color: 'rgba(255,255,255,0.75)' }]}>← Retour</Text>
           </TouchableOpacity>
 
           <Text style={styles.heroEmoji}>{program.emoji}</Text>
@@ -161,36 +174,23 @@ export default function ProgramDetailScreen() {
 
         {/* Stats rapides */}
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNum}>{program.durationDays}</Text>
-            <Text style={styles.statLabel}>Jours</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNum}>{program.days?.length ?? 0}</Text>
-            <Text style={styles.statLabel}>Séances</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNum}>
-              {program.days
-                ? Math.round(
-                    program.days.reduce((acc, d) => acc + (d.estimatedMinutes ?? 0), 0) /
-                      (program.days.length || 1)
-                  )
-                : 0}
-              min
-            </Text>
-            <Text style={styles.statLabel}>/ séance</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNum}>{program.totalEnrollments ?? 0}</Text>
-            <Text style={styles.statLabel}>Participants</Text>
-          </View>
+          {[
+            { num: String(program.durationDays), label: 'Jours' },
+            { num: String(program.days?.length ?? 0), label: 'Séances' },
+            { num: `${program.days ? Math.round(program.days.reduce((acc, d) => acc + (d.estimatedMinutes ?? 0), 0) / (program.days.length || 1)) : 0}min`, label: '/ séance' },
+            { num: String(program.totalEnrollments ?? 0), label: 'Participants' },
+          ].map((s) => (
+            <View key={s.label} style={[styles.statCard, { backgroundColor: SURFACE, borderColor: BORDER }]}>
+              <Text style={[styles.statNum, { color: GOLD }]}>{s.num}</Text>
+              <Text style={[styles.statLabel, { color: LAV_DIM }]}>{s.label}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>À propos</Text>
-          <Text style={styles.description}>{program.description}</Text>
+          <Text style={[styles.sectionTitle, { color: FG }]}>À propos</Text>
+          <Text style={[styles.description, { color: LAV }]}>{program.description}</Text>
         </View>
 
         {/* Bouton démarrer / reprendre */}
@@ -214,7 +214,7 @@ export default function ProgramDetailScreen() {
                 )}
               </LinearGradient>
             </TouchableOpacity>
-            <Text style={styles.startNote}>
+            <Text style={[styles.startNote, { color: LAV_DIM }]}>
               👥 {program.totalEnrollments ?? 0} personnes ont déjà commencé
             </Text>
           </View>
@@ -247,7 +247,7 @@ export default function ProgramDetailScreen() {
 
         {/* Timeline des jours */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <Text style={[styles.sectionTitle, { color: FG }]}>
             {progress ? "Votre progression" : "Programme jour par jour"}
           </Text>
 
@@ -274,8 +274,9 @@ export default function ProgramDetailScreen() {
                 <TouchableOpacity
                   style={[
                     styles.dayCard,
-                    isDone && styles.dayCardDone,
-                    isCurrent && styles.dayCardCurrent,
+                    { backgroundColor: SURFACE, borderColor: BORDER },
+                    isDone && { backgroundColor: isDark ? 'rgba(74,222,128,0.05)' : 'rgba(22,163,74,0.06)', borderColor: isDark ? 'rgba(74,222,128,0.20)' : 'rgba(22,163,74,0.25)' },
+                    isCurrent && { backgroundColor: GOLD_BG, borderColor: isDark ? 'rgba(201,168,76,0.4)' : 'rgba(160,114,42,0.4)', borderWidth: 1.5 },
                     isLocked && styles.dayCardLocked,
                   ]}
                   onPress={() => {
@@ -293,17 +294,19 @@ export default function ProgramDetailScreen() {
                   <View
                     style={[
                       styles.dayCircle,
-                      isDone && styles.dayCircleDone,
-                      isCurrent && styles.dayCircleCurrent,
+                      { backgroundColor: BORDER },
+                      isDone && { backgroundColor: isDark ? 'rgba(74,222,128,0.15)' : 'rgba(22,163,74,0.15)' },
+                      isCurrent && { backgroundColor: GOLD },
                     ]}
                   >
                     {isDone ? (
-                      <Text style={styles.dayCircleCheck}>✓</Text>
+                      <Text style={[styles.dayCircleCheck, { color: SUCCESS }]}>✓</Text>
                     ) : (
                       <Text
                         style={[
                           styles.dayCircleNum,
-                          isCurrent && styles.dayCircleNumCurrent,
+                          { color: LAV },
+                          isCurrent && { color: BG_TEXT },
                         ]}
                       >
                         {day.dayNumber}
@@ -317,45 +320,46 @@ export default function ProgramDetailScreen() {
                       <Text
                         style={[
                           styles.dayTitle,
-                          isDone && styles.dayTitleDone,
-                          isLocked && styles.dayTitleLocked,
+                          { color: FG },
+                          isDone && { color: SUCCESS },
+                          isLocked && { color: LAV_DIM },
                         ]}
                         numberOfLines={1}
                       >
                         {day.title}
                       </Text>
                       {isCurrent && (
-                        <View style={styles.todayBadge}>
-                          <Text style={styles.todayBadgeText}>Aujourd'hui</Text>
+                        <View style={[styles.todayBadge, { backgroundColor: GOLD }]}>
+                          <Text style={[styles.todayBadgeText, { color: BG_TEXT }]}>Aujourd'hui</Text>
                         </View>
                       )}
                       {isLocked && <Text style={styles.lockIcon}>🔒</Text>}
                     </View>
 
                     {day.theme && (
-                      <Text style={styles.dayTheme} numberOfLines={1}>
+                      <Text style={[styles.dayTheme, { color: LAV_DIM }]} numberOfLines={1}>
                         {day.theme}
                       </Text>
                     )}
 
                     <View style={styles.dayMeta}>
                       {day.meditationSlug && (
-                        <View style={styles.metaTag}>
-                          <Text style={styles.metaTagText}>🧘 Méditation</Text>
+                        <View style={[styles.metaTag, { backgroundColor: SURFACE, borderColor: BORDER }]}>
+                          <Text style={[styles.metaTagText, { color: LAV }]}>🧘 Méditation</Text>
                         </View>
                       )}
                       {day.breathingExercise && (
-                        <View style={styles.metaTag}>
-                          <Text style={styles.metaTagText}>💨 Respiration</Text>
+                        <View style={[styles.metaTag, { backgroundColor: SURFACE, borderColor: BORDER }]}>
+                          <Text style={[styles.metaTagText, { color: LAV }]}>💨 Respiration</Text>
                         </View>
                       )}
                       {day.ambientSound && (
-                        <View style={styles.metaTag}>
-                          <Text style={styles.metaTagText}>🎵 Ambiance</Text>
+                        <View style={[styles.metaTag, { backgroundColor: SURFACE, borderColor: BORDER }]}>
+                          <Text style={[styles.metaTagText, { color: LAV }]}>🎵 Ambiance</Text>
                         </View>
                       )}
-                      <View style={styles.metaTag}>
-                        <Text style={styles.metaTagText}>⏱ {day.estimatedMinutes}min</Text>
+                      <View style={[styles.metaTag, { backgroundColor: SURFACE, borderColor: BORDER }]}>
+                        <Text style={[styles.metaTagText, { color: LAV }]}>⏱ {day.estimatedMinutes}min</Text>
                       </View>
                     </View>
                   </View>
@@ -363,21 +367,21 @@ export default function ProgramDetailScreen() {
 
                 {/* Détails expandables */}
                 {isExpanded && (
-                  <View style={styles.dayExpanded}>
+                  <View style={[styles.dayExpanded, { backgroundColor: SURFACE, borderColor: BORDER }]}>
                     {day.description && (
-                      <Text style={styles.dayExpandedDesc}>{day.description}</Text>
+                      <Text style={[styles.dayExpandedDesc, { color: LAV }]}>{day.description}</Text>
                     )}
                     {day.sleepTip && (
                       <View style={styles.dayExpandedTip}>
-                        <Text style={styles.dayExpandedTipLabel}>💡 Conseil du jour</Text>
-                        <Text style={styles.dayExpandedTipText}>{day.sleepTip}</Text>
+                        <Text style={[styles.dayExpandedTipLabel, { color: GOLD }]}>💡 Conseil du jour</Text>
+                        <Text style={[styles.dayExpandedTipText, { color: LAV }]}>{day.sleepTip}</Text>
                       </View>
                     )}
                     <TouchableOpacity
-                      style={styles.dayExpandedBtn}
+                      style={[styles.dayExpandedBtn, { backgroundColor: GOLD }]}
                       onPress={() => handleDayPress(day.dayNumber)}
                     >
-                      <Text style={styles.dayExpandedBtnText}>
+                      <Text style={[styles.dayExpandedBtnText, { color: BG_TEXT }]}>
                         {isDone ? "Revoir ce jour →" : "Commencer ce jour →"}
                       </Text>
                     </TouchableOpacity>
@@ -391,12 +395,12 @@ export default function ProgramDetailScreen() {
         {/* Bloc bénéfices */}
         {(program as any).benefits && (
           <View style={styles.benefitsSection}>
-            <Text style={styles.sectionTitle}>🌟 Ce que vous allez obtenir</Text>
-            <View style={styles.benefitsCard}>
+            <Text style={[styles.sectionTitle, { color: FG }]}>🌟 Ce que vous allez obtenir</Text>
+            <View style={[styles.benefitsCard, { backgroundColor: SURFACE, borderColor: BORDER }]}>
               {((program as any).benefits as string).split("\n").map((benefit: string, i: number) => (
                 <View key={i} style={styles.benefitRow}>
-                  <Text style={styles.benefitCheck}>✓</Text>
-                  <Text style={styles.benefitText}>{benefit.replace(/^[-•]\s*/, "")}</Text>
+                  <Text style={[styles.benefitCheck, { color: GOLD }]}>✓</Text>
+                  <Text style={[styles.benefitText, { color: LAV }]}>{benefit.replace(/^[-•]\s*/, "")}</Text>
                 </View>
               ))}
             </View>
@@ -407,55 +411,44 @@ export default function ProgramDetailScreen() {
   );
 }
 
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const P_BG      = '#03020F';
-const P_SURFACE = 'rgba(255,255,255,0.04)';
-const P_BORDER  = 'rgba(180,160,255,0.12)';
-const P_GOLD    = '#C9A84C';
-const P_GOLD_BG = 'rgba(201,168,76,0.14)';
-const P_WHITE   = '#EDE9FF';
-const P_LAV     = 'rgba(184,174,255,0.55)';
-const P_LAV_DIM = 'rgba(184,174,255,0.35)';
-const P_SUCCESS = 'rgba(74,222,128,0.8)';
-
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 120 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: P_BG },
-  loadingText: { color: P_LAV_DIM, marginTop: 12, fontSize: 14 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 12, fontSize: 14 },
   errorText: { color: '#F87171', fontSize: 16 },
 
   // Hero
   hero: { padding: 24, paddingTop: 16 },
   backBtn: { marginBottom: 16 },
-  backBtnText: { color: P_LAV, fontSize: 15, fontWeight: '600' },
+  backBtnText: { fontSize: 15, fontWeight: '600' },
   heroEmoji: { fontSize: 52, marginBottom: 10 },
-  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: P_WHITE, marginBottom: 4 },
-  heroSubtitle: { fontSize: 14, color: P_LAV, marginBottom: 16, lineHeight: 20 },
+  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: '#FFFFFF', marginBottom: 4 },
+  heroSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 16, lineHeight: 20 },
   heroBadges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   heroBadge: {
-    backgroundColor: P_SURFACE,
+    backgroundColor: 'rgba(0,0,0,0.20)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: P_BORDER,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
-  premiumBadge: { backgroundColor: P_GOLD_BG, borderColor: 'rgba(201,168,76,0.3)' },
-  featuredBadge: { backgroundColor: 'rgba(184,174,255,0.10)', borderColor: P_BORDER },
-  heroBadgeText: { color: P_WHITE, fontSize: 12, fontWeight: '700' },
+  premiumBadge: { backgroundColor: 'rgba(201,168,76,0.20)', borderColor: 'rgba(201,168,76,0.35)' },
+  featuredBadge: { backgroundColor: 'rgba(184,174,255,0.18)', borderColor: 'rgba(255,255,255,0.20)' },
+  heroBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   heroProgress: { marginTop: 4 },
   heroProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  heroProgressLabel: { color: P_LAV, fontSize: 13, fontWeight: '600' },
-  heroProgressPct: { color: P_GOLD, fontSize: 13, fontWeight: '700' },
+  heroProgressLabel: { color: 'rgba(255,255,255,0.80)', fontSize: 13, fontWeight: '600' },
+  heroProgressPct: { color: '#C9A84C', fontSize: 13, fontWeight: '700' },
   heroProgressBar: {
     height: 6,
-    backgroundColor: P_BORDER,
+    backgroundColor: 'rgba(255,255,255,0.20)',
     borderRadius: 3,
     overflow: 'hidden',
     marginBottom: 6,
   },
-  heroProgressFill: { height: '100%', backgroundColor: P_GOLD, borderRadius: 3 },
-  heroProgressSub: { color: P_LAV_DIM, fontSize: 11 },
+  heroProgressFill: { height: '100%', backgroundColor: '#C9A84C', borderRadius: 3 },
+  heroProgressSub: { color: 'rgba(255,255,255,0.60)', fontSize: 11 },
 
   // Stats
   statsRow: {
@@ -466,28 +459,26 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: P_SURFACE,
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: P_BORDER,
   },
-  statNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: P_GOLD },
-  statLabel: { fontSize: 10, color: P_LAV_DIM, marginTop: 2, textAlign: 'center' },
+  statNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18 },
+  statLabel: { fontSize: 10, marginTop: 2, textAlign: 'center' },
 
   // Sections
   section: { paddingHorizontal: 20, paddingTop: 20 },
-  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: P_WHITE, marginBottom: 14 },
-  description: { fontSize: 14, color: P_LAV, lineHeight: 22 },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, marginBottom: 14 },
+  description: { fontSize: 14, lineHeight: 22 },
 
   // CTA
   ctaSection: { paddingHorizontal: 20, paddingTop: 20 },
   startBtn: { borderRadius: 16, overflow: 'hidden', marginBottom: 10 },
   resumeBtn: { borderRadius: 16, overflow: 'hidden', marginBottom: 10 },
   startBtnGradient: { paddingVertical: 16, alignItems: 'center' },
-  startBtnText: { color: P_BG, fontSize: 16, fontWeight: '800' },
-  startNote: { textAlign: 'center', color: P_LAV_DIM, fontSize: 12 },
+  startBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  startNote: { textAlign: 'center', fontSize: 12 },
   completedBanner: {
     backgroundColor: 'rgba(74,222,128,0.08)',
     borderRadius: 16,
@@ -496,7 +487,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(74,222,128,0.25)',
   },
-  completedBannerText: { color: P_SUCCESS, fontSize: 15, fontWeight: '700' },
+  completedBannerText: { color: 'rgba(74,222,128,0.90)', fontSize: 15, fontWeight: '700' },
 
   // Timeline
   timelineItem: { position: 'relative', paddingLeft: 20 },
@@ -506,99 +497,83 @@ const styles = StyleSheet.create({
     top: 52,
     bottom: -10,
     width: 2,
-    backgroundColor: P_BORDER,
   },
   timelineLineDone: { backgroundColor: 'rgba(74,222,128,0.4)' },
   dayCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: P_SURFACE,
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: P_BORDER,
   },
-  dayCardDone: { backgroundColor: 'rgba(74,222,128,0.05)', borderColor: 'rgba(74,222,128,0.2)' },
-  dayCardCurrent: {
-    backgroundColor: P_GOLD_BG,
-    borderColor: 'rgba(201,168,76,0.4)',
-    borderWidth: 1.5,
-  },
+  dayCardDone: {},
+  dayCardCurrent: {},
   dayCardLocked: { opacity: 0.4 },
   dayCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: P_BORDER,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     flexShrink: 0,
   },
-  dayCircleDone: { backgroundColor: 'rgba(74,222,128,0.15)' },
-  dayCircleCurrent: { backgroundColor: P_GOLD },
-  dayCircleNum: { color: P_LAV, fontSize: 14, fontWeight: '800' },
-  dayCircleNumCurrent: { color: P_BG },
-  dayCircleCheck: { color: P_SUCCESS, fontSize: 16, fontWeight: '800' },
+  dayCircleDone: {},
+  dayCircleCurrent: {},
+  dayCircleNum: { fontSize: 14, fontWeight: '800' },
+  dayCircleNumCurrent: {},
+  dayCircleCheck: { fontSize: 16, fontWeight: '800' },
   dayContent: { flex: 1 },
   dayHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 3 },
-  dayTitle: { flex: 1, color: P_WHITE, fontSize: 14, fontWeight: '700' },
-  dayTitleDone: { color: P_SUCCESS },
-  dayTitleLocked: { color: P_LAV_DIM },
+  dayTitle: { flex: 1, fontSize: 14, fontWeight: '700' },
+  dayTitleDone: {},
+  dayTitleLocked: {},
   todayBadge: {
-    backgroundColor: P_GOLD,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
   },
-  todayBadgeText: { color: P_BG, fontSize: 9, fontWeight: '800' },
+  todayBadgeText: { fontSize: 9, fontWeight: '800' },
   lockIcon: { fontSize: 14 },
-  dayTheme: { color: P_LAV_DIM, fontSize: 11, marginBottom: 6 },
+  dayTheme: { fontSize: 11, marginBottom: 6 },
   dayMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
   metaTag: {
-    backgroundColor: P_SURFACE,
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: P_BORDER,
   },
-  metaTagText: { color: P_LAV, fontSize: 10, fontWeight: '600' },
+  metaTagText: { fontSize: 10, fontWeight: '600' },
 
   // Expanded day
   dayExpanded: {
     marginLeft: 20,
     marginBottom: 10,
-    backgroundColor: P_SURFACE,
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: P_BORDER,
   },
-  dayExpandedDesc: { color: P_LAV, fontSize: 13, lineHeight: 20, marginBottom: 10 },
+  dayExpandedDesc: { fontSize: 13, lineHeight: 20, marginBottom: 10 },
   dayExpandedTip: { marginBottom: 12 },
-  dayExpandedTipLabel: { color: P_GOLD, fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  dayExpandedTipText: { color: P_LAV, fontSize: 12, lineHeight: 18 },
+  dayExpandedTipLabel: { fontSize: 12, fontWeight: '700', marginBottom: 4 },
+  dayExpandedTipText: { fontSize: 12, lineHeight: 18 },
   dayExpandedBtn: {
-    backgroundColor: P_GOLD,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
-  dayExpandedBtnText: { color: P_BG, fontSize: 13, fontWeight: '800' },
+  dayExpandedBtnText: { fontSize: 13, fontWeight: '800' },
 
   // Bénéfices
   benefitsSection: { paddingHorizontal: 20, paddingTop: 20 },
   benefitsCard: {
-    backgroundColor: P_SURFACE,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: P_BORDER,
     gap: 10,
   },
   benefitRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  benefitCheck: { color: P_GOLD, fontSize: 14, fontWeight: '800', marginTop: 1 },
-  benefitText: { flex: 1, color: P_LAV, fontSize: 13, lineHeight: 20 },
+  benefitCheck: { fontSize: 14, fontWeight: '800', marginTop: 1 },
+  benefitText: { flex: 1, fontSize: 13, lineHeight: 20 },
 });

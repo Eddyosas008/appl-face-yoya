@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const PR_GOLD    = '#C9A84C';
-const PR_WHITE   = '#EDE9FF';
-const PR_LAV     = 'rgba(184,174,255,0.55)';
-const PR_LAV_DIM = 'rgba(184,174,255,0.35)';
-const PR_BORDER  = 'rgba(180,160,255,0.12)';
-const PR_GLASS   = 'rgba(255,255,255,0.04)';
+import { useThemeContext } from "@/lib/theme-provider";
+import { useColors } from "@/hooks/use-colors";
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: "Débutant",
@@ -35,7 +30,17 @@ const FILTERS = [
 
 export default function ProgramsListScreen() {
   const router = useRouter();
+  const { isDark } = useThemeContext();
+  const colors = useColors();
   const [activeFilter, setActiveFilter] = useState("all");
+
+  // Couleurs dynamiques
+  const GOLD    = isDark ? '#C9A84C' : '#A0722A';
+  const FG      = isDark ? '#EDE9FF' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
+  const GLASS   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
 
   const { data: programs, isLoading } = trpc.programs.list.useQuery();
   const { data: myPrograms } = trpc.programs.myPrograms.useQuery();
@@ -52,16 +57,16 @@ export default function ProgramsListScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backBtnText}>← Retour</Text>
+            <Text style={[styles.backBtnText, { color: LAV }]}>← Retour</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>📅 Programmes</Text>
-          <Text style={styles.headerSub}>
+          <Text style={[styles.headerTitle, { color: FG }]}>📅 Programmes</Text>
+          <Text style={[styles.headerSub, { color: LAV }]}>
             Des parcours structurés pour transformer votre sommeil
           </Text>
         </View>
@@ -77,14 +82,18 @@ export default function ProgramsListScreen() {
               key={f.key}
               style={[
                 styles.filterChip,
-                activeFilter === f.key && styles.filterChipActive,
+                { backgroundColor: GLASS, borderColor: BORDER },
+                activeFilter === f.key && {
+                  backgroundColor: isDark ? 'rgba(201,168,76,0.14)' : 'rgba(160,114,42,0.12)',
+                  borderColor: isDark ? 'rgba(201,168,76,0.35)' : 'rgba(160,114,42,0.35)',
+                },
               ]}
               onPress={() => setActiveFilter(f.key)}
             >
               <Text
                 style={[
                   styles.filterChipText,
-                  activeFilter === f.key ? styles.filterChipTextActive : styles.filterChipText,
+                  { color: activeFilter === f.key ? GOLD : LAV },
                 ]}
               >
                 {f.label}
@@ -96,7 +105,7 @@ export default function ProgramsListScreen() {
         {/* Liste */}
         {isLoading ? (
           <View style={styles.loadingBox}>
-            <ActivityIndicator color="#A78BFA" size="large" />
+            <ActivityIndicator color={colors.primary} size="large" />
           </View>
         ) : (
           <View style={styles.list}>
@@ -105,6 +114,15 @@ export default function ProgramsListScreen() {
               const pct = progress && progress.total > 0
                 ? Math.round((progress.completed / progress.total) * 100)
                 : 0;
+
+              // En mode clair, on atténue le gradient pour qu'il reste lisible
+              const gradStart = isDark
+                ? (prog.coverColor ?? "#1E1B4B")
+                : lightenColor(prog.coverColor ?? "#1E1B4B");
+              const gradEnd = isDark
+                ? (prog.coverColor2 ?? "#312E81")
+                : lightenColor(prog.coverColor2 ?? "#312E81");
+
               return (
                 <TouchableOpacity
                   key={prog.slug}
@@ -112,17 +130,17 @@ export default function ProgramsListScreen() {
                   onPress={() => router.push(`/program/${prog.slug}` as never)}
                 >
                   <LinearGradient
-                    colors={[prog.coverColor ?? "#1E1B4B", prog.coverColor2 ?? "#312E81"]}
+                    colors={[gradStart, gradEnd]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.card}
+                    style={[styles.card, { borderColor: BORDER }]}
                   >
                     {/* Badges */}
                     <View style={styles.cardBadgeRow}>
-                      <View style={styles.badge}>
+                      <View style={[styles.badge, { backgroundColor: 'rgba(0,0,0,0.18)', borderColor: 'rgba(255,255,255,0.15)' }]}>
                         <Text style={styles.badgeText}>📅 {prog.durationDays} jours</Text>
                       </View>
-                      <View style={styles.badge}>
+                      <View style={[styles.badge, { backgroundColor: 'rgba(0,0,0,0.18)', borderColor: 'rgba(255,255,255,0.15)' }]}>
                         <Text style={styles.badgeText}>
                           🌱 {LEVEL_LABELS[prog.level] ?? prog.level}
                         </Text>
@@ -156,8 +174,8 @@ export default function ProgramsListScreen() {
                     {/* Progression */}
                     {progress ? (
                       <View style={styles.progressBox}>
-                        <View style={styles.progressBarBg}>
-                          <View style={[styles.progressBarFill, { width: `${pct}%` }]} />
+                        <View style={[styles.progressBarBg, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                          <View style={[styles.progressBarFill, { width: `${pct}%` as `${number}%`, backgroundColor: '#C9A84C' }]} />
                         </View>
                         <Text style={styles.progressText}>
                           {progress.completed}/{progress.total} jours — {pct}%
@@ -179,67 +197,66 @@ export default function ProgramsListScreen() {
   );
 }
 
+/** Éclaircit une couleur hex pour le mode clair (mélange avec blanc) */
+function lightenColor(hex: string, amount = 0.45): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.min(255, Math.round(((num >> 16) & 0xff) + (255 - ((num >> 16) & 0xff)) * amount));
+  const g = Math.min(255, Math.round(((num >> 8) & 0xff) + (255 - ((num >> 8) & 0xff)) * amount));
+  const b = Math.min(255, Math.round((num & 0xff) + (255 - (num & 0xff)) * amount));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 40 },
   header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
   backBtn: { marginBottom: 12 },
-  backBtnText: { fontSize: 15, fontWeight: '600', color: PR_LAV },
-  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 26, color: PR_WHITE, marginBottom: 4 },
-  headerSub: { fontSize: 14, color: PR_LAV },
+  backBtnText: { fontSize: 15, fontWeight: '600' },
+  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 26, marginBottom: 4 },
+  headerSub: { fontSize: 14 },
   filtersRow: { paddingHorizontal: 20, paddingVertical: 12, gap: 8 },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: PR_GLASS,
     borderWidth: 1,
-    borderColor: PR_BORDER,
   },
-  filterChipActive: { backgroundColor: 'rgba(201,168,76,0.14)', borderColor: 'rgba(201,168,76,0.35)' },
-  filterChipText: { fontSize: 13, fontWeight: '600', color: PR_LAV },
-  filterChipTextActive: { color: PR_GOLD },
+  filterChipText: { fontSize: 13, fontWeight: '600' },
   loadingBox: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
   list: { paddingHorizontal: 16, gap: 16 },
   card: {
     borderRadius: 20,
     padding: 20,
     overflow: 'hidden',
-    backgroundColor: PR_GLASS,
     borderWidth: 1,
-    borderColor: PR_BORDER,
   },
   cardBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   badge: {
-    backgroundColor: PR_GLASS,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: PR_BORDER,
   },
-  badgeFeatured: { backgroundColor: 'rgba(201,168,76,0.12)', borderColor: 'rgba(201,168,76,0.25)' },
-  badgePremium: { backgroundColor: 'rgba(184,174,255,0.10)', borderColor: PR_BORDER },
-  badgeText: { color: PR_WHITE, fontSize: 11, fontWeight: '600' },
+  badgeFeatured: { backgroundColor: 'rgba(201,168,76,0.20)', borderColor: 'rgba(201,168,76,0.35)' },
+  badgePremium: { backgroundColor: 'rgba(184,174,255,0.18)', borderColor: 'rgba(184,174,255,0.30)' },
+  badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
   cardEmoji: { fontSize: 36, marginBottom: 8 },
-  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: PR_WHITE, marginBottom: 4 },
-  cardSub: { fontSize: 14, color: PR_LAV, marginBottom: 8 },
-  cardDesc: { fontSize: 13, color: PR_LAV_DIM, lineHeight: 19, marginBottom: 12 },
+  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: '#FFFFFF', marginBottom: 4 },
+  cardSub: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 8 },
+  cardDesc: { fontSize: 13, color: 'rgba(255,255,255,0.60)', lineHeight: 19, marginBottom: 12 },
   progressBox: { marginTop: 8 },
   progressBarBg: {
     height: 6,
-    backgroundColor: PR_BORDER,
     borderRadius: 3,
     marginBottom: 6,
   },
   progressBarFill: {
     height: 6,
-    backgroundColor: PR_GOLD,
     borderRadius: 3,
   },
-  progressText: { fontSize: 12, color: PR_LAV_DIM },
+  progressText: { fontSize: 12, color: 'rgba(255,255,255,0.60)' },
   startRow: { marginTop: 12 },
   startBtn: {
-    color: PR_GOLD,
+    color: '#C9A84C',
     fontWeight: '700',
     fontSize: 15,
   },

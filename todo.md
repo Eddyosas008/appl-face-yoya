@@ -390,3 +390,11 @@
 - [x] Adapter les écrans auth (welcome, signin, signup) au mode clair/sombre
 - [x] Adapter l'écran stats (stats.tsx) au mode clair/sombre
 - [x] Vérifier l'absence d'erreurs Metro après toutes les adaptations
+
+## Phase 37 : Mode clair sur les écrans de programmes
+
+- [x] Adapter programs/index.tsx au mode clair/sombre
+- [x] Adapter program/[slug].tsx au mode clair/sombre
+- [x] Adapter program-day/[slug]/[day].tsx au mode clair/sombre
+- [x] Adapter program-complete/[slug].tsx au mode clair/sombre
+- [x] Vérifier l'absence d'erreurs Metro après toutes les adaptations
