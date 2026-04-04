@@ -424,12 +424,12 @@ export default function ProgramDayScreen() {
   const [isCompleting, setIsCompleting] = useState(false);
 
   // Couleurs dynamiques
-  const GOLD    = isDark ? '#C9A84C' : '#A0722A';
-  const FG      = isDark ? '#EDE9FF' : '#1E1A3C';
+  const GOLD    = isDark ? '#C9963E' : '#A0722A';
+  const FG      = isDark ? '#EDE8FF' : '#1E1A3C';
   const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
   const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
-  const SURFACE = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const SURFACE = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const [routineChecked, setRoutineChecked] = useState<Record<number, boolean>>({});
   const [showBreathing, setShowBreathing] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
@@ -486,7 +486,7 @@ export default function ProgramDayScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator color={isDark ? '#A78BFA' : '#6B46C1'} size="large" />
         </View>
@@ -496,7 +496,7 @@ export default function ProgramDayScreen() {
 
   if (!programDay) {
     return (
-      <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>Jour introuvable</Text>
         </View>
@@ -529,7 +529,7 @@ export default function ProgramDayScreen() {
   ].filter(Boolean).length;
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Hero */}
@@ -746,7 +746,7 @@ export default function ProgramDayScreen() {
                     ]}
                   >
                     {routineChecked[i] && (
-                      <Text style={[styles.routineCheckmark, { color: isDark ? '#03020F' : '#FFFFFF' }]}>✓</Text>
+                      <Text style={[styles.routineCheckmark, { color: isDark ? '#120E2E' : '#FFFFFF' }]}>✓</Text>
                     )}
                   </View>
                   <Text
@@ -876,7 +876,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(201,168,76,0.35)',
   },
-  dayBadgeText: { color: '#C9A84C', fontSize: 12, fontWeight: '700' },
+  dayBadgeText: { color: '#C9963E', fontSize: 12, fontWeight: '700' },
   doneBadge: {
     backgroundColor: 'rgba(34,197,94,0.18)',
     paddingHorizontal: 12,
@@ -937,7 +937,7 @@ const styles = StyleSheet.create({
   activityContent: { flex: 1 },
   activityTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', marginBottom: 2 },
   activitySub: { color: 'rgba(255,255,255,0.60)', fontSize: 12 },
-  activityArrow: { color: '#C9A84C', fontSize: 18, fontWeight: '700' },
+  activityArrow: { color: '#C9963E', fontSize: 18, fontWeight: '700' },
 
   // Routine
   routineProgress: { fontSize: 14, fontWeight: '700' },

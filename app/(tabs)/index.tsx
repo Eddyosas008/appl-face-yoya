@@ -156,7 +156,7 @@ function _LocalStarField_UNUSED() {
             width: star.size,
             height: star.size,
             borderRadius: star.size / 2,
-            backgroundColor: '#EDE9FF',
+            backgroundColor: '#EDE8FF',
             opacity: star.anim,
           }}
         />
@@ -172,10 +172,16 @@ export default function HomeScreen() {
   const T = getThemeColors(isDark);
   const { profile } = useUser();
   const { isAuthenticated } = useAuth();
-  const GOLD = isDark ? '#C9A84C' : '#B8922E';
-  const GLASS_BORDER = isDark ? 'rgba(180,160,255,0.10)' : 'rgba(100,80,160,0.15)';
-  const NIGHT_BG = isDark ? '#03020F' : '#F5F2EC';
-  const WHITE_SOFT = isDark ? '#EDE9FF' : '#1A1240';
+  // Palette selon modèle de référence
+  const GOLD        = isDark ? '#C9963E' : '#A8762C';
+  const GLASS_BORDER = isDark ? 'rgba(139,108,200,0.18)' : 'rgba(139,108,200,0.20)';
+  const NIGHT_BG    = isDark ? '#120E2E' : '#F7F3FD';   // sombre : bleu nuit | clair : lavande
+  const WHITE_SOFT  = isDark ? '#EDE8FF' : '#1A1230';   // sombre : lavande | clair : violet foncé
+  const TEXT_MID    = isDark ? '#B8AEDD' : '#4A3870';
+  const TEXT_SOFT   = isDark ? '#8878AA' : '#7A6A9A';
+  const CARD_BG     = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.98)';
+  const CARD_BORDER = isDark ? 'rgba(139,108,200,0.18)' : 'rgba(139,108,200,0.16)';
+  const HERO_BG     = isDark ? '#1A1040' : '#EDE6FF';
   const { greeting, isNight } = getTimeGreeting();
   const moonPhase = getMoonPhaseLabel();
   const moonEmoji = getMoonEmoji();
@@ -233,13 +239,13 @@ export default function HomeScreen() {
   const currentTime   = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
         {/* ── HERO NOCTURNE ──────────────────────────────────────────────── */}
         <View style={styles.heroWrapper}>
           <LinearGradient
-            colors={isDark ? [INDIGO_DEEP, '#0C0828', '#03020F'] : ['#EDE8FF', '#F0EAFF', '#F5F2EC']}
+            colors={isDark ? ['#1A1040', '#120E2E', '#0E0A22'] : ['#EDE6FF', '#EDE6FF', '#F7F3FD']}
             style={styles.hero}
           >
             <StarField />
@@ -635,90 +641,90 @@ const styles = StyleSheet.create({
   moonContainer: { alignItems: 'center', marginBottom: 18 },
   moonRing: {
     width: 68, height: 68, borderRadius: 34,
-    backgroundColor: 'rgba(201,168,76,0.06)',
-    borderWidth: 1, borderColor: 'rgba(201,168,76,0.28)',
+    backgroundColor: 'rgba(201,150,62,0.08)',
+    borderWidth: 1, borderColor: 'rgba(201,150,62,0.30)',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#C9A84C', shadowRadius: 16, shadowOpacity: 0.35, shadowOffset: { width: 0, height: 0 },
+    shadowColor: '#C9963E', shadowRadius: 16, shadowOpacity: 0.35, shadowOffset: { width: 0, height: 0 },
   },
   moonEmoji: { fontSize: 38 },
   heroContent: { alignItems: 'center' },
-  heroGreeting: { fontSize: 10.5, letterSpacing: 1.8, textTransform: 'uppercase', color: '#C9A84C', marginBottom: 12, fontWeight: '500' },
-  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 32, color: '#EDE9FF', textAlign: 'center', lineHeight: 38, marginBottom: 12, letterSpacing: -0.3 },
-  heroSubtitle: { fontFamily: 'PlayfairDisplay-Regular', fontSize: 13, color: 'rgba(237,233,255,0.55)', textAlign: 'center', lineHeight: 21, paddingHorizontal: 16, marginBottom: 20 },
-  moonPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(201,168,76,0.20)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
-  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#C9A84C', shadowColor: '#C9A84C', shadowRadius: 8, shadowOpacity: 1 },
-  moonPillText: { color: 'rgba(237,233,255,0.70)', fontSize: 10.5, letterSpacing: 0.5 },
+  heroGreeting: { fontSize: 10.5, letterSpacing: 1.8, textTransform: 'uppercase', color: '#C9963E', marginBottom: 12, fontWeight: '500' },
+  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 32, color: '#EDE8FF', textAlign: 'center', lineHeight: 38, marginBottom: 12, letterSpacing: -0.3 },
+  heroSubtitle: { fontFamily: 'PlayfairDisplay-Regular', fontSize: 13, color: 'rgba(237,232,255,0.55)', textAlign: 'center', lineHeight: 21, paddingHorizontal: 16, marginBottom: 20 },
+  moonPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(28,23,64,0.90)', borderWidth: 1, borderColor: 'rgba(201,150,62,0.22)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
+  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#C9963E', shadowColor: '#C9963E', shadowRadius: 8, shadowOpacity: 1 },
+  moonPillText: { color: 'rgba(237,232,255,0.70)', fontSize: 10.5, letterSpacing: 0.5 },
 
   // Stats SomnioPax v3 — anneaux SVG style
   statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 18, marginBottom: 4 },
-  statCard: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(180,160,255,0.10)', borderRadius: 20, paddingVertical: 16, paddingHorizontal: 6, alignItems: 'center', position: 'relative', overflow: 'hidden' },
+  statCard: { flex: 1, backgroundColor: 'rgba(139,108,200,0.10)', borderWidth: 1, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 20, paddingVertical: 16, paddingHorizontal: 6, alignItems: 'center', position: 'relative', overflow: 'hidden' },
   statIcon: { fontSize: 18, marginBottom: 4 },
-  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE9FF', lineHeight: 26, marginBottom: 4 },
-  statLabel: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(184,174,255,0.35)' },
+  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE8FF', lineHeight: 26, marginBottom: 4 },
+  statLabel: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(184,174,255,0.45)' },
 
   // Divider
-  divider: { height: 0.5, backgroundColor: 'rgba(180,160,255,0.10)', marginHorizontal: 24, marginVertical: 8 },
+  divider: { height: 0.5, backgroundColor: 'rgba(139,108,200,0.15)', marginHorizontal: 24, marginVertical: 8 },
 
   // Sections SomnioPax v3
   section: { marginTop: 24, paddingHorizontal: 18 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: '#EDE9FF', marginBottom: 3 },
-  sectionSub: { fontSize: 10.5, color: 'rgba(184,174,255,0.35)', letterSpacing: 0.2 },
-  seeAll: { fontSize: 10, color: '#C9A84C', letterSpacing: 0.6, marginTop: 4, opacity: 0.8 },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: '#EDE8FF', marginBottom: 3 },
+  sectionSub: { fontSize: 10.5, color: 'rgba(184,174,255,0.45)', letterSpacing: 0.2 },
+  seeAll: { fontSize: 10, color: '#C9963E', letterSpacing: 0.6, marginTop: 4, opacity: 0.8 },
 
   // Carte sommeil
-  sleepCard: { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  sleepCard: { backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   sleepCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1A144A', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)', alignItems: 'center', justifyContent: 'center' },
-  sleepCardTitle: { fontSize: 13, fontWeight: '500', color: '#EDE9FF', marginBottom: 2 },
-  sleepCardSub: { fontSize: 10.5, color: 'rgba(237,233,255,0.55)', letterSpacing: 0.3 },
-  arrowBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(201,168,76,0.15)', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.25)', alignItems: 'center', justifyContent: 'center' },
-  arrowBtnText: { color: '#C9A84C', fontSize: 18, lineHeight: 20 },
+  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1C1740', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', alignItems: 'center', justifyContent: 'center' },
+  sleepCardTitle: { fontSize: 13, fontWeight: '500', color: '#EDE8FF', marginBottom: 2 },
+  sleepCardSub: { fontSize: 10.5, color: 'rgba(237,232,255,0.55)', letterSpacing: 0.3 },
+  arrowBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(201,150,62,0.15)', borderWidth: 0.5, borderColor: 'rgba(201,150,62,0.28)', alignItems: 'center', justifyContent: 'center' },
+  arrowBtnText: { color: '#C9963E', fontSize: 18, lineHeight: 20 },
 
   // Mini graphique sommeil
-  sleepMiniChart: { marginTop: 10, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)', borderRadius: 16, padding: 14 },
-  sleepMiniChartTitle: { fontSize: 11, color: 'rgba(237,233,255,0.55)', marginBottom: 10, letterSpacing: 0.3 },
+  sleepMiniChart: { marginTop: 10, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 16, padding: 14 },
+  sleepMiniChartTitle: { fontSize: 11, color: 'rgba(237,232,255,0.55)', marginBottom: 10, letterSpacing: 0.3 },
   sleepBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 52 },
   sleepBarCol: { alignItems: 'center', flex: 1, gap: 4 },
   sleepBar: { width: 12, borderRadius: 6, minHeight: 3 },
-  sleepBarLabel: { fontSize: 9, color: 'rgba(237,233,255,0.55)' },
+  sleepBarLabel: { fontSize: 9, color: 'rgba(237,232,255,0.55)' },
 
   // Méditation featured SomnioPax v3
-  featuredCard: { borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(201,168,76,0.20)' },
-  featuredHalo: { position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(201,168,76,0.18)' },
+  featuredCard: { borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(201,150,62,0.22)' },
+  featuredHalo: { position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(201,150,62,0.15)' },
   featuredLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1, zIndex: 1 },
-  featuredMoon: { fontSize: 32, textShadowColor: 'rgba(201,168,76,0.5)', textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } },
-  featuredTag: { fontSize: 8.5, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(201,168,76,0.80)', marginBottom: 4 },
-  featuredTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: '#EDE9FF', lineHeight: 23, marginBottom: 3 },
-  featuredMeta: { fontSize: 10.5, color: 'rgba(184,174,255,0.60)', letterSpacing: 0.3 },
-  playBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#C9A84C', alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: '#C9A84C', shadowRadius: 16, shadowOpacity: 0.45, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
-  playBtnIcon: { color: '#0F0930', fontSize: 14, fontWeight: '700', paddingLeft: 2 },
+  featuredMoon: { fontSize: 32, textShadowColor: 'rgba(201,150,62,0.5)', textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } },
+  featuredTag: { fontSize: 8.5, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(201,150,62,0.85)', marginBottom: 4 },
+  featuredTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: '#EDE8FF', lineHeight: 23, marginBottom: 3 },
+  featuredMeta: { fontSize: 10.5, color: 'rgba(184,174,255,0.65)', letterSpacing: 0.3 },
+  playBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#C9963E', alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: '#C9963E', shadowRadius: 16, shadowOpacity: 0.45, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  playBtnIcon: { color: '#120E2E', fontSize: 14, fontWeight: '700', paddingLeft: 2 },
 
   // Mini méditations
-  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)' },
+  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)' },
   miniMedCover: { height: 70, justifyContent: 'center', alignItems: 'center' },
   miniMedEmoji: { fontSize: 26 },
-  miniMedTitle: { fontSize: 11, fontWeight: '600', color: '#EDE9FF', lineHeight: 15, margin: 8, marginBottom: 2 },
-  miniMedDur: { fontSize: 10, color: 'rgba(237,233,255,0.55)', marginHorizontal: 8, marginBottom: 8 },
+  miniMedTitle: { fontSize: 11, fontWeight: '600', color: '#EDE8FF', lineHeight: 15, margin: 8, marginBottom: 2 },
+  miniMedDur: { fontSize: 10, color: 'rgba(237,232,255,0.55)', marginHorizontal: 8, marginBottom: 8 },
 
   // Mini cards accès rapide
   miniCardsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 18, marginTop: 22 },
-  miniCard: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)', borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  miniCard: { flex: 1, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
   miniCardIcon: { fontSize: 22 },
-  miniCardLabel: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(237,233,255,0.55)', textAlign: 'center' },
+  miniCardLabel: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(237,232,255,0.55)', textAlign: 'center' },
 
   // Programme en cours
   inProgressCard: { borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   inProgressLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   inProgressEmoji: { fontSize: 36 },
-  inProgressLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
-  inProgressTitle: { color: '#EDE9FF', fontSize: 15, fontWeight: '700', marginBottom: 2 },
-  inProgressDay: { color: 'rgba(255,255,255,0.7)', fontSize: 11 },
+  inProgressLabel: { color: 'rgba(237,232,255,0.65)', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
+  inProgressTitle: { color: '#EDE8FF', fontSize: 15, fontWeight: '700', marginBottom: 2 },
+  inProgressDay: { color: 'rgba(237,232,255,0.70)', fontSize: 11 },
   inProgressRight: { alignItems: 'flex-end', gap: 6, minWidth: 80 },
-  inProgressPct: { color: '#EDE9FF', fontSize: 20, fontWeight: '800' },
-  inProgressBarBg: { width: 80, height: 5, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' },
+  inProgressPct: { color: '#EDE8FF', fontSize: 20, fontWeight: '800' },
+  inProgressBarBg: { width: 80, height: 5, backgroundColor: 'rgba(139,108,200,0.20)', borderRadius: 3, overflow: 'hidden' },
   inProgressBarFill: { height: 5, backgroundColor: '#4ADE80', borderRadius: 3 },
-  inProgressCta: { color: '#C9A84C', fontSize: 11, fontWeight: '600' },
+  inProgressCta: { color: '#C9963E', fontSize: 11, fontWeight: '600' },
 
   // Programmes SomnioPax v3
   programCard: { width: 160 },
@@ -726,61 +732,61 @@ const styles = StyleSheet.create({
   programEmoji: { fontSize: 30 },
   programDaysBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
   programDaysText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
-  programTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE9FF', fontSize: 17, lineHeight: 21 },
-  programDesc: { color: 'rgba(237,233,255,0.55)', fontSize: 11 },
-  programStartBtn: { backgroundColor: 'rgba(201,168,76,0.15)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(201,168,76,0.30)' },
-  programStartText: { color: '#C9A84C', fontSize: 11, fontWeight: '600' },
+  programTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8FF', fontSize: 17, lineHeight: 21 },
+  programDesc: { color: 'rgba(237,232,255,0.55)', fontSize: 11 },
+  programStartBtn: { backgroundColor: 'rgba(201,150,62,0.15)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(201,150,62,0.30)' },
+  programStartText: { color: '#C9963E', fontSize: 11, fontWeight: '600' },
 
   // Problématiques
   issuesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  issueCard: { width: (SCREEN_WIDTH - 36 - 10) / 2, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)' },
+  issueCard: { width: (SCREEN_WIDTH - 36 - 10) / 2, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)' },
   issueGradient: { padding: 16 },
   issueEmoji: { fontSize: 26, marginBottom: 8 },
-  issueLabel: { fontSize: 13, fontWeight: '600', color: '#EDE9FF', marginBottom: 3 },
-  issueDesc: { fontSize: 11, color: 'rgba(237,233,255,0.55)', lineHeight: 16 },
+  issueLabel: { fontSize: 13, fontWeight: '600', color: '#EDE8FF', marginBottom: 3 },
+  issueDesc: { fontSize: 11, color: 'rgba(237,232,255,0.55)', lineHeight: 16 },
 
   // Conseil du soir
   tipCard: { borderRadius: 18, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.2)' },
   tipGradient: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18 },
   tipEmoji: { fontSize: 34 },
   tipContent: { flex: 1 },
-  tipTitle: { fontSize: 14, fontWeight: '600', color: '#EDE9FF', marginBottom: 4 },
-  tipDesc: { fontSize: 12, color: 'rgba(237,233,255,0.55)', lineHeight: 18 },
+  tipTitle: { fontSize: 14, fontWeight: '600', color: '#EDE8FF', marginBottom: 4 },
+  tipDesc: { fontSize: 12, color: 'rgba(237,232,255,0.55)', lineHeight: 18 },
   tipDots: { flexDirection: 'row', justifyContent: 'center', gap: 6, paddingBottom: 12 },
   tipDot: { width: 5, height: 5, borderRadius: 2.5 },
 
   // Science SomnioPax v3
-  scienceCard: { width: 200, borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(180,160,255,0.10)' },
+  scienceCard: { width: 200, borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(139,108,200,0.18)' },
   scienceEmoji: { fontSize: 30, marginBottom: 10 },
-  scienceTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE9FF', fontSize: 16, marginBottom: 6 },
-  scienceDesc: { color: 'rgba(237,233,255,0.55)', fontSize: 12, lineHeight: 18 },
+  scienceTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8FF', fontSize: 16, marginBottom: 6 },
+  scienceDesc: { color: 'rgba(237,232,255,0.55)', fontSize: 12, lineHeight: 18 },
 
   // Citation SomnioPax v3
   quoteCard: { borderRadius: 22, padding: 30, alignItems: 'center' },
   quoteStars: { color: 'rgba(201,168,76,0.5)', fontSize: 13, letterSpacing: 10, marginBottom: 18 },
-  quoteText: { fontFamily: 'PlayfairDisplay-Italic', color: '#EDE9FF', fontSize: 19, lineHeight: 28, textAlign: 'center', marginBottom: 14 },
-  quoteAuthor: { color: 'rgba(184,174,255,0.35)', fontSize: 12, letterSpacing: 0.5 },
+  quoteText: { fontFamily: 'PlayfairDisplay-Italic', color: '#EDE8FF', fontSize: 19, lineHeight: 28, textAlign: 'center', marginBottom: 14 },
+  quoteAuthor: { color: 'rgba(184,174,255,0.50)', fontSize: 12, letterSpacing: 0.5 },
 
   // CTA SomnioPax v3
   ctaCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
   ctaEmoji: { fontSize: 34 },
   ctaContent: { flex: 1 },
-  ctaTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE9FF', fontSize: 18, marginBottom: 4, lineHeight: 23 },
-  ctaSub: { color: 'rgba(237,233,255,0.55)', fontSize: 12 },
+  ctaTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8FF', fontSize: 18, marginBottom: 4, lineHeight: 23 },
+  ctaSub: { color: 'rgba(237,232,255,0.55)', fontSize: 12 },
 
   // Modal sommeil SomnioPax v3
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.80)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#0D0A2A', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: 'rgba(180,160,255,0.10)' },
-  modalHandle: { width: 40, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.12)', alignSelf: 'center', marginBottom: 22 },
-  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE9FF', marginBottom: 6 },
-  modalSub: { fontSize: 13, color: 'rgba(237,233,255,0.55)', marginBottom: 24 },
-  modalLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.75)', marginBottom: 8, letterSpacing: 0.3 },
-  modalInput: { backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 0.5, borderColor: 'rgba(180,160,255,0.10)', borderRadius: 12, padding: 14, fontSize: 16, color: '#EDE9FF', marginBottom: 16 },
+  modalSheet: { backgroundColor: '#1C1740', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: 'rgba(139,108,200,0.18)' },
+  modalHandle: { width: 40, height: 3, borderRadius: 2, backgroundColor: 'rgba(139,108,200,0.25)', alignSelf: 'center', marginBottom: 22 },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE8FF', marginBottom: 6 },
+  modalSub: { fontSize: 13, color: 'rgba(237,232,255,0.55)', marginBottom: 24 },
+  modalLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(237,232,255,0.75)', marginBottom: 8, letterSpacing: 0.3 },
+  modalInput: { backgroundColor: 'rgba(139,108,200,0.10)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.22)', borderRadius: 12, padding: 14, fontSize: 16, color: '#EDE8FF', marginBottom: 16 },
   modalInputNotes: { minHeight: 80, paddingTop: 12 },
   qualityRow: { flexDirection: 'row', gap: 8, marginBottom: 24 },
   qualityBtn: { flex: 1, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5 },
   qualityBtnEmoji: { fontSize: 18, marginBottom: 3 },
   qualityBtnNum: { fontSize: 12, fontWeight: '700' },
-  modalSaveBtn: { backgroundColor: '#C9A84C', borderRadius: 16, padding: 18, alignItems: 'center' },
-  modalSaveBtnText: { color: '#03020F', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
+  modalSaveBtn: { backgroundColor: '#C9963E', borderRadius: 16, padding: 18, alignItems: 'center' },
+  modalSaveBtnText: { color: '#120E2E', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
 });

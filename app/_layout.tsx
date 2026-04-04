@@ -136,7 +136,7 @@ export default function RootLayout() {
               animationDuration: 280,
               gestureEnabled: true,
               gestureDirection: "horizontal",
-              contentStyle: { backgroundColor: '#03020F' },
+              contentStyle: { backgroundColor: '#120E2E' },
             }}
           >
             <Stack.Screen name="index" options={{ animation: "fade" }} />

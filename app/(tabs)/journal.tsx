@@ -96,7 +96,7 @@ export default function JournalScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       {listLoading && (
@@ -276,14 +276,14 @@ export default function JournalScreen() {
 }
 
 // Constantes palette (statiques pour StyleSheet)
-const GOLD_J         = '#C9A84C';
+const GOLD_J         = '#C9963E';
 const GOLD_SOFT_J    = 'rgba(201,168,76,0.10)';
 const LAVENDER_J     = 'rgba(237,233,255,0.55)';
 const LAVENDER_MED_J = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT_J   = '#EDE9FF';
-const NIGHT_BG_J     = '#03020F';
-const GLASS_BG_J     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER_J = 'rgba(180,160,255,0.10)';
+const WHITE_SOFT_J   = '#EDE8FF';
+const NIGHT_BG_J     = '#120E2E';
+const GLASS_BG_J     = 'rgba(28,23,64,0.80)';
+const GLASS_BORDER_J = 'rgba(139,108,200,0.18)';
 
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingBottom: 32 },
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   entryContent: { fontSize: 12, color: LAVENDER_J, lineHeight: 18 },
   tapHint: { fontSize: 10, color: GOLD_J, marginTop: 6, textAlign: 'right', opacity: 0.7, letterSpacing: 0.3 },
   deleteBtn: { padding: 6 },
-  modal: { flex: 1, backgroundColor: '#03020F' },
+  modal: { flex: 1, backgroundColor: '#120E2E' },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: GLASS_BORDER_J },
   modalCancel: { fontSize: 14, color: LAVENDER_MED_J },
   modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: WHITE_SOFT_J },

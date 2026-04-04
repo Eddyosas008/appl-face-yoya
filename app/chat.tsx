@@ -33,12 +33,12 @@ function ChatBubble({
   const slideAnim = useRef(new Animated.Value(12)).current;
 
   // Couleurs dynamiques
-  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD        = isDark ? '#C9963E' : '#A8762C';
   const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
-  const TEXT_USER   = isDark ? '#EDE9FF' : '#1A1240';
+  const TEXT_USER   = isDark ? '#EDE8FF' : '#1A1230';
   const TEXT_AI     = isDark ? 'rgba(237,233,255,0.70)' : 'rgba(60,40,120,0.80)';
   const BUBBLE_USER_BG     = isDark ? 'rgba(201,168,76,0.18)' : 'rgba(184,146,46,0.14)';
-  const BUBBLE_AI_BG       = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const BUBBLE_AI_BG       = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const BUBBLE_AI_BORDER   = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
   const AVATAR_BG          = isDark ? 'rgba(201,168,76,0.15)' : 'rgba(184,146,46,0.12)';
 
@@ -95,10 +95,10 @@ function ChatBubble({
 
 // ── Indicateur de frappe ─────────────────────────────────────────────────────
 function TypingIndicator({ isDark }: { isDark: boolean }) {
-  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD        = isDark ? '#C9963E' : '#A8762C';
   const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
   const AVATAR_BG   = isDark ? 'rgba(201,168,76,0.15)' : 'rgba(184,146,46,0.12)';
-  const BUBBLE_AI_BG     = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const BUBBLE_AI_BG     = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const BUBBLE_AI_BORDER = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
 
   const dot1 = useRef(new Animated.Value(0.3)).current;
@@ -149,19 +149,19 @@ export default function ChatScreen() {
   const { isDark } = useThemeContext();
 
   // ── Palette dynamique ──────────────────────────────────────────────────────
-  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD        = isDark ? '#C9963E' : '#A8762C';
   const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
-  const TEXT_MAIN   = isDark ? '#EDE9FF' : '#1A1240';
+  const TEXT_MAIN   = isDark ? '#EDE8FF' : '#1A1230';
   const TEXT_MUTED  = isDark ? 'rgba(237,233,255,0.50)' : 'rgba(100,80,140,0.60)';
   const AVATAR_BG   = isDark ? 'rgba(201,168,76,0.20)' : 'rgba(184,146,46,0.15)';
   const AVATAR_HALO = isDark ? 'rgba(201,168,76,0.12)' : 'rgba(184,146,46,0.10)';
-  const INPUT_BG    = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.80)';
+  const INPUT_BG    = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.80)';
   const WRAP_BG     = isDark ? 'rgba(3,2,15,0.95)' : 'rgba(240,237,248,0.97)';
-  const PROMPT_BG   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.65)';
+  const PROMPT_BG   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.65)';
   const PROMPT_BORDER = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
-  const SEND_ACTIVE = isDark ? '#C9A84C' : '#B8922E';
-  const SEND_ICON_COLOR = isDark ? '#03020F' : '#F5F2EC';
-  const SEND_DISABLED_BG = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const SEND_ACTIVE = isDark ? '#C9963E' : '#A8762C';
+  const SEND_ICON_COLOR = isDark ? '#120E2E' : '#F7F3FD';
+  const SEND_DISABLED_BG = isDark ? 'rgba(28,23,64,0.90)' : 'rgba(0,0,0,0.06)';
 
   const flatListRef = useRef<FlatList>(null);
   const [input, setInput] = useState('');
@@ -190,7 +190,7 @@ export default function ChatScreen() {
       setLocalMessages([{
         id: 'welcome',
         role: 'assistant',
-        content: "Bonsoir ✦ Je suis Yoya, votre guide bien-être. Je suis là pour vous écouter et vous accompagner. Comment vous sentez-vous en ce moment ?\n\n⚠️ Je suis un outil de soutien, pas un professionnel de santé. En cas de détresse sévère, consultez un spécialiste.",
+        content: "Bonsoir ✦ Je suis Luna, votre guide SomnioPax. Je suis là pour vous écouter et vous accompagner. Comment vous sentez-vous en ce moment ?\n\n⚠️ Je suis un outil de soutien, pas un professionnel de santé. En cas de détresse sévère, consultez un spécialiste.",
       }]);
     }
   }, [historyData, historyLoading]);
@@ -258,7 +258,7 @@ export default function ChatScreen() {
   return (
     <ScreenContainer
       edges={['top', 'left', 'right']}
-      containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}
+      containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}
     >
       {/* Fond étoilé */}
       <StarField />
@@ -286,7 +286,7 @@ export default function ChatScreen() {
               </View>
             </View>
             <View>
-              <Text style={[styles.headerTitle, { color: TEXT_MAIN }]}>Yoya</Text>
+              <Text style={[styles.headerTitle, { color: TEXT_MAIN }]}>SomnioPax</Text>
               <View style={styles.statusRow}>
                 <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#4ADE80' : GOLD }]} />
                 <Text style={[styles.statusText, { color: TEXT_MUTED }]}>

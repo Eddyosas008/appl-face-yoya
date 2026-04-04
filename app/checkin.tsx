@@ -70,11 +70,11 @@ export default function CheckInScreen() {
   const { isAuthenticated } = useAuth();
 
   // Palette dynamique
-  const CI_GOLD    = isDark ? '#C9A84C' : '#B8922E';
-  const CI_WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const CI_GOLD    = isDark ? '#C9963E' : '#A8762C';
+  const CI_WHITE   = isDark ? '#EDE8FF' : '#1A1230';
   const CI_LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
-  const CI_BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
-  const CI_GLASS   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const CI_BORDER  = isDark ? 'rgba(139,108,200,0.20)' : 'rgba(120,100,180,0.18)';
+  const CI_GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const [mood, setMood] = useState<MoodState | null>(null);
   const [stress, setStress] = useState(3);
   const [energy, setEnergy] = useState(3);
@@ -155,7 +155,7 @@ export default function CheckInScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Header */}
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   submitButtonText: {
-    color: '#03020F',
+    color: '#120E2E',
     fontSize: 16,
     fontWeight: '800',
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recommendButtonText: {
-    color: '#03020F',
+    color: '#120E2E',
     fontSize: 14,
     fontWeight: '800',
   },

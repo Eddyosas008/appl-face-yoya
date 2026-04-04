@@ -1,60 +1,46 @@
+/**
+ * SomnioPax — Palette de thème
+ * Deux modes très distincts :
+ *   CLAIR  : fond #F7F3FD (lavande pâle), texte #1A1230 (violet foncé), or #A8762C
+ *   SOMBRE : fond #120E2E (bleu nuit profond), texte #EDE8FF (lavande clair), or #C9963E
+ */
+
 /** @type {const} */
 const themeColors = {
-  // ── Fond principal ─────────────────────────────────────────────────────────
-  // Sombre : noir quasi-absolu | Clair : blanc ivoire doux
-  background: { dark: '#03020F', light: '#F5F2EC' },
-
-  // ── Surfaces / cartes ──────────────────────────────────────────────────────
-  // Sombre : glass blanc 4% | Clair : blanc légèrement chaud
-  surface: { dark: 'rgba(255,255,255,0.06)', light: '#FFFFFF' },
-
-  // ── Texte principal ────────────────────────────────────────────────────────
-  // Sombre : lavande douce | Clair : brun nuit profond
-  foreground: { dark: '#EDE9FF', light: '#1A1240' },
-
-  // ── Texte secondaire ──────────────────────────────────────────────────────
-  // Sombre : lavande atténuée | Clair : gris chaud
-  muted: { dark: 'rgba(237,233,255,0.55)', light: '#7A6E8A' },
-
-  // ── Accent principal : or SomnioPax ───────────────────────────────────────
-  primary: { dark: '#C9A84C', light: '#B8922E' },
-
-  // ── Bordures ──────────────────────────────────────────────────────────────
-  // Sombre : lavande subtile | Clair : beige doux
-  border: { dark: 'rgba(180,160,255,0.14)', light: 'rgba(180,160,200,0.25)' },
-
-  // ── États sémantiques ─────────────────────────────────────────────────────
-  success: { dark: '#4ADE80', light: '#22C55E' },
-  warning: { dark: '#FBBF24', light: '#D97706' },
-  error:   { dark: '#F87171', light: '#DC2626' },
-
-  // ── Alias utiles ──────────────────────────────────────────────────────────
-  tint:      { dark: '#C9A84C', light: '#B8922E' },
-  goldLight: { dark: '#E8C97A', light: '#D4A84C' },
-
-  // ── Tokens spécifiques SomnioPax ─────────────────────────────────────────
-  // Fond hero / sections (sombre : indigo profond | clair : lavande très pâle)
-  heroBackground: { dark: '#1A1240', light: '#EDE8FF' },
-
-  // Fond de carte glass (sombre : blanc 4% | clair : blanc pur)
-  cardBackground: { dark: 'rgba(255,255,255,0.05)', light: 'rgba(255,255,255,0.92)' },
-
-  // Bordure de carte (sombre : lavande 10% | clair : lavande 20%)
-  cardBorder: { dark: 'rgba(180,160,255,0.12)', light: 'rgba(140,110,200,0.22)' },
-
-  // Texte atténué (sombre : lavande 35% | clair : gris violet 50%)
-  textDim: { dark: 'rgba(237,233,255,0.55)', light: '#7A6E8A' },
-  textMuted: { dark: 'rgba(184,174,255,0.35)', light: 'rgba(120,100,160,0.55)' },
-
-  // Fond or très doux (sombre : or 8% | clair : or 10%)
-  goldSoft: { dark: 'rgba(201,168,76,0.10)', light: 'rgba(184,146,46,0.10)' },
-
-  // Fond tab bar (sombre : indigo sombre | clair : blanc ivoire)
-  tabBar: { dark: '#0D0B22', light: '#FAFAF8' },
-
-  // Alias legacy (utilisés dans certains écrans)
-  indigoCard: { dark: 'rgba(255,255,255,0.04)', light: 'rgba(255,255,255,0.92)' },
-  indigoCardBorder: { dark: 'rgba(180,160,255,0.10)', light: 'rgba(140,110,200,0.20)' },
+  // Couleur d'accent principale
+  primary: {
+    light: '#5A3BA0',   // violet moyen — boutons, liens
+    dark:  '#8B6CC8',   // violet clair — boutons, liens
+  },
+  // Fond de l'application
+  background: {
+    light: '#F7F3FD',   // lavande très pâle
+    dark:  '#120E2E',   // bleu nuit profond
+  },
+  // Surface des cartes
+  surface: {
+    light: '#FFFFFF',   // blanc pur
+    dark:  '#1C1740',   // bleu nuit légèrement plus clair
+  },
+  // Texte principal
+  foreground: {
+    light: '#1A1230',   // violet très foncé
+    dark:  '#EDE8FF',   // lavande clair
+  },
+  // Texte secondaire
+  muted: {
+    light: '#7A6A9A',   // violet moyen-clair
+    dark:  '#8878AA',   // violet grisé
+  },
+  // Bordures
+  border: {
+    light: 'rgba(139,108,200,0.20)',
+    dark:  'rgba(139,108,200,0.18)',
+  },
+  // États
+  success: { light: '#1A7A6E', dark: '#4ADE80' },
+  warning: { light: '#8A5A10', dark: '#FBBF24' },
+  error:   { light: '#9B3060', dark: '#F87171' },
 };
 
 module.exports = { themeColors };

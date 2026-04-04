@@ -11,12 +11,14 @@ export default function TabLayout() {
   const { isDark } = useThemeContext();
 
   // ── Palette dynamique ─────────────────────────────────────────────────────
-  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
-  const GOLD_GLOW   = isDark ? 'rgba(201,168,76,0.22)' : 'rgba(184,146,46,0.20)';
-  const PILL_BG     = isDark ? '#0D0B22' : '#FAFAF8';
-  const PILL_BORDER = isDark ? 'rgba(201,168,76,0.28)' : 'rgba(184,146,46,0.30)';
-  const INACTIVE    = isDark ? 'rgba(220,215,255,0.45)' : 'rgba(120,100,160,0.55)';
-  const SHADOW_CLR  = isDark ? '#000' : '#8B7BAB';
+  // Palette selon le modèle de référence
+  const GOLD        = isDark ? '#C9963E' : '#A8762C';
+  const GOLD_GLOW   = isDark ? 'rgba(201,150,62,0.22)' : 'rgba(168,118,44,0.18)';
+  // Sombre : fond bleu nuit #0E0A22 | Clair : fond lavande #F7F3FD
+  const PILL_BG     = isDark ? 'rgba(14,10,34,0.98)' : 'rgba(247,243,253,0.98)';
+  const PILL_BORDER = isDark ? 'rgba(139,108,200,0.22)' : 'rgba(139,108,200,0.16)';
+  const INACTIVE    = isDark ? '#554A7A' : '#B0A4CC';
+  const SHADOW_CLR  = isDark ? '#000' : '#3D2678';
 
   return (
     <Tabs

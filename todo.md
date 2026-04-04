@@ -398,3 +398,23 @@
 - [x] Adapter program-day/[slug]/[day].tsx au mode clair/sombre
 - [x] Adapter program-complete/[slug].tsx au mode clair/sombre
 - [x] Vérifier l'absence d'erreurs Metro après toutes les adaptations
+
+## Phase 38 : Renommage SomnioPax + Refonte thème clair/sombre
+
+- [ ] Renommer l'app en SomnioPax dans app.config.ts
+- [ ] Refondre theme.config.js avec palettes très distinctes (clair : #F7F3FD/violet, sombre : #120E2E/or)
+- [ ] Mettre à jour ThemeProvider avec transitions fluides et tokens CSS variables
+- [ ] Adapter tous les écrans principaux (tabs) aux nouvelles palettes
+- [ ] Adapter tous les écrans secondaires aux nouvelles palettes
+- [ ] Adapter tous les écrans de programmes aux nouvelles palettes
+- [ ] Générer un nouveau logo SomnioPax
+- [ ] Vérifier l'absence d'erreurs Metro et sauvegarder le checkpoint
+
+## Phase 38 : Renommage SomnioPax + Refonte thème
+
+- [x] Renommer l'app en SomnioPax dans app.config.ts
+- [x] Refondre les palettes clair/sombre dans theme.config.js et theme-constants.ts (fonds très distincts : #120E2E vs #F7F3FD)
+- [x] Mettre à jour tous les écrans (tabs + secondaires + programmes) avec les nouvelles palettes
+- [x] Générer et intégrer le nouveau logo SomnioPax (lune + lotus + fond indigo)
+- [x] Remplacer toutes les occurrences de Yoya par SomnioPax dans les fichiers tsx
+- [x] Corriger les fonds clair dans les écrans auth (#F0EDF8 → #F7F3FD)

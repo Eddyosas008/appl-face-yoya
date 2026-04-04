@@ -406,7 +406,7 @@ export default function StatsScreen() {
   ];
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}

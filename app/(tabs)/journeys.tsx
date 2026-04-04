@@ -66,7 +66,7 @@ export default function JourneysScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -267,14 +267,14 @@ export default function JourneysScreen() {
 
 // Palette SomnioPax v3
 // Constantes palette (statiques pour StyleSheet)
-const GOLD_C         = '#C9A84C';
+const GOLD_C         = '#C9963E';
 const GOLD_SOFT_C    = 'rgba(201,168,76,0.10)';
 const LAVENDER_C     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM_C = 'rgba(180,160,255,0.10)';
+const LAVENDER_DIM_C = 'rgba(139,108,200,0.18)';
 const LAVENDER_MED_C = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT_C   = '#EDE9FF';
-const GLASS_BG_C     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER_C = 'rgba(180,160,255,0.10)';
+const WHITE_SOFT_C   = '#EDE8FF';
+const GLASS_BG_C     = 'rgba(28,23,64,0.80)';
+const GLASS_BORDER_C = 'rgba(139,108,200,0.18)';
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 100 },

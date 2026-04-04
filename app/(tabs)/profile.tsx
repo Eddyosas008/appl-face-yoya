@@ -96,7 +96,7 @@ export default function ProfileScreen() {
           </Pressable>
           <LinearGradient colors={['#1A0A2E', '#7C3AED']} style={styles.premiumHero}>
             <Text style={styles.premiumHeroEmoji}>✨</Text>
-            <Text style={styles.premiumHeroTitle}>Yoya Premium</Text>
+            <Text style={styles.premiumHeroTitle}>SomnioPax Premium</Text>
             <Text style={styles.premiumHeroSubtitle}>Votre bien-être, sans limites</Text>
           </LinearGradient>
           <View style={styles.premiumFeatures}>
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -325,7 +325,7 @@ export default function ProfileScreen() {
               value={isDark}
               onValueChange={toggleTheme}
               trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={isDark ? '#C9A84C' : '#ffffff'}
+              thumbColor={isDark ? '#C9963E' : '#ffffff'}
             />
           </View>
           <Pressable
@@ -419,7 +419,7 @@ export default function ProfileScreen() {
           <Text style={[styles.logoutText, { color: colors.error }]}>Se déconnecter</Text>
         </Pressable>
 
-        <Text style={[styles.version, { color: colors.muted }]}>Yoya Wellness v1.0.0</Text>
+        <Text style={[styles.version, { color: colors.muted }]}>SomnioPax v1.0.0</Text>
       </ScrollView>
 
       {/* Modal d'édition du prénom */}
@@ -475,15 +475,15 @@ export default function ProfileScreen() {
 }
 
 // Constantes palette (statiques pour StyleSheet)
-const GOLD_P         = '#C9A84C';
+const GOLD_P         = '#C9963E';
 const GOLD_SOFT_P    = 'rgba(201,168,76,0.12)';
 const LAVENDER_P     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM_P = 'rgba(180,160,255,0.10)';
+const LAVENDER_DIM_P = 'rgba(139,108,200,0.18)';
 const LAVENDER_MED_P = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT_P   = '#EDE9FF';
-const NIGHT_BG_P     = '#03020F';
-const GLASS_BG_P     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER_P = 'rgba(180,160,255,0.10)';
+const WHITE_SOFT_P   = '#EDE8FF';
+const NIGHT_BG_P     = '#120E2E';
+const GLASS_BG_P     = 'rgba(28,23,64,0.80)';
+const GLASS_BORDER_P = 'rgba(139,108,200,0.18)';
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },

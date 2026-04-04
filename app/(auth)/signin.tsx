@@ -15,13 +15,13 @@ export default function SignInScreen() {
   const [error, setError] = useState('');
 
   // Palette dynamique
-  const BG      = isDark ? '#03020F' : '#F0EDF8';
-  const GOLD    = isDark ? '#C9A84C' : '#B8922E';
-  const WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const BG      = isDark ? '#120E2E' : '#F0EDF8';
+  const GOLD    = isDark ? '#C9963E' : '#A8762C';
+  const WHITE   = isDark ? '#EDE8FF' : '#1A1230';
   const LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
   const LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
-  const BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
-  const GLASS   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.75)';
+  const BORDER  = isDark ? 'rgba(139,108,200,0.20)' : 'rgba(120,100,180,0.18)';
+  const GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.75)';
 
   async function handleSignIn() {
     setError('');
@@ -45,7 +45,7 @@ export default function SignInScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

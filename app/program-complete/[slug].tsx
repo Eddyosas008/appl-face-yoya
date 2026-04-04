@@ -158,12 +158,12 @@ export default function ProgramCompleteScreen() {
   const { isDark } = useThemeContext();
 
   // Couleurs dynamiques
-  const GOLD    = isDark ? '#C9A84C' : '#A0722A';
-  const FG      = isDark ? '#EDE9FF' : '#1E1A3C';
+  const GOLD    = isDark ? '#C9963E' : '#A0722A';
+  const FG      = isDark ? '#EDE8FF' : '#1E1A3C';
   const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
   const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
-  const SURFACE = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const SURFACE = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const SUCCESS = isDark ? 'rgba(74,222,128,0.8)' : 'rgba(22,163,74,0.9)';
 
   const { data: program } = trpc.programs.get.useQuery(
@@ -225,13 +225,13 @@ export default function ProgramCompleteScreen() {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `🌙 J'ai terminé le programme "${program?.title ?? slug}" sur Yoya Wellness ! ${totalDays} jours de transformation du sommeil. #YoyaWellness #Sommeil`,
+        message: `🌙 J'ai terminé le programme "${program?.title ?? slug}" sur SomnioPax ! ${totalDays} jours de transformation du sommeil. #SomnioPax #Sommeil`,
       });
     } catch (_) {}
   };
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
       <StarField />
       {/* Confettis */}
       <View style={styles.confettiContainer} pointerEvents="none">

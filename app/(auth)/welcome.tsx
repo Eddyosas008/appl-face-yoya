@@ -44,12 +44,12 @@ export default function WelcomeScreen() {
   const { isDark } = useThemeContext();
 
   // Palette dynamique
-  const BG      = isDark ? '#03020F' : '#F0EDF8';
-  const GOLD    = isDark ? '#C9A84C' : '#B8922E';
-  const WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const BG      = isDark ? '#120E2E' : '#F7F3FD';
+  const GOLD    = isDark ? '#C9963E' : '#A8762C';
+  const WHITE   = isDark ? '#EDE8FF' : '#1A1230';
   const LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
   const LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
-  const BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
+  const BORDER  = isDark ? 'rgba(139,108,200,0.20)' : 'rgba(120,100,180,0.18)';
   const SEC_BTN = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.60)';
 
   return (
@@ -74,7 +74,7 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Titre Playfair Display */}
-        <Text style={[styles.appName, { color: WHITE }]}>Yoya</Text>
+        <Text style={[styles.appName, { color: WHITE }]}>SomnioPax</Text>
         <Text style={[styles.tagline, { color: LAV }]}>Votre sanctuaire du bien-être intérieur</Text>
       </View>
 

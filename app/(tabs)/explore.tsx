@@ -104,7 +104,7 @@ function MeditationCardGrid({
 export default function ExploreScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
-  const GOLD = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD = isDark ? '#C9963E' : '#A8762C';
   const { favorites, toggleFavorite, profile } = useUser();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -165,7 +165,7 @@ export default function ExploreScreen() {
   const handleFav = (item: any) => toggleFavorite(String(item.id));
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={320}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -245,7 +245,7 @@ export default function ExploreScreen() {
               style={({ pressed }) => [
                 styles.categoryChip,
                 {
-                  backgroundColor: activeCategory === item.slug ? GOLD : 'rgba(255,255,255,0.04)',
+                  backgroundColor: activeCategory === item.slug ? GOLD : 'rgba(28,23,64,0.80)',
                   borderColor: activeCategory === item.slug ? GOLD : 'rgba(180,168,220,0.12)',
                   opacity: pressed ? 0.7 : 1,
                 },
@@ -401,12 +401,12 @@ export default function ExploreScreen() {
 }
 
 // Palette SomnioPax v3 (constantes statiques pour les styles)
-const GOLD_STATIC  = '#C9A84C';
+const GOLD_STATIC  = '#C9963E';
 const LAVENDER     = 'rgba(237,233,255,0.55)';
 const LAVENDER_MED = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT   = '#EDE9FF';
-const GLASS_BG     = 'rgba(255,255,255,0.04)';
-const GLASS_BORDER = 'rgba(180,160,255,0.10)';
+const WHITE_SOFT   = '#EDE8FF';
+const GLASS_BG     = 'rgba(28,23,64,0.80)';
+const GLASS_BORDER = 'rgba(139,108,200,0.18)';
 
 const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 18, paddingTop: 0 },
