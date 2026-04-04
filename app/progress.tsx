@@ -9,6 +9,7 @@ import { useUser } from '@/lib/user-context';
 import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
+import { MoodChart30Days } from '@/components/mood-chart-30days';
 import { useAuth } from '@/hooks/use-auth';
 
 // Styles statiques pour les sous-composants (avant le composant principal)
@@ -156,6 +157,12 @@ export default function ProgressScreen() {
   const { isAuthenticated } = useAuth();
   const { profile, checkIns, sessionHistory, journalEntries } = useUser();
 
+  // Données humeur 30 jours depuis la DB
+  const { data: mood30Data = [] } = trpc.stats.mood30.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
   // Sessions depuis la DB (si connecté)
   const { data: dbSessions = [] } = trpc.sessions.list.useQuery(
     { limit: 10 },
@@ -274,13 +281,23 @@ export default function ProgressScreen() {
           </View>
         )}
 
-        {/* Mood chart */}
+        {/* Mood chart 30 jours */}
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.cardTitle, { color: colors.foreground }]}>Humeur cette semaine</Text>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>Humeur (30 jours)</Text>
           <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
-            {checkIns.length === 0 ? 'Commencez à faire des check-ins pour voir votre courbe' : 'Évolution de votre état émotionnel'}
+            {checkIns.length === 0 && mood30Data.length === 0
+              ? 'Faites un check-in pour voir votre courbe d\'humeur'
+              : 'Votre évolution émotionnelle ce mois'}
           </Text>
-          <MoodChart checkIns={checkIns} colors={colors} />
+          <MoodChart30Days
+            data={mood30Data}
+            localData={checkIns.map((ci: any) => ({
+              date: typeof ci.createdAt === 'string'
+                ? ci.createdAt.split('T')[0]
+                : new Date(ci.createdAt).toISOString().split('T')[0],
+              mood: ci.mood,
+            }))}
+          />
         </View>
 
         {/* Weekly minutes bar chart */}

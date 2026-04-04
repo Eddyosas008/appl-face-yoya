@@ -541,3 +541,13 @@
 - [x] Bouton partage de la méditation
 - [x] Méditations similaires redessinées en bas de page
 - [x] Corriger erreurs TS server/routers.ts (fonctions ambient + getTodayMinutes dans namespace db)
+
+## Phase 51 : Graphique humeur 30 jours dans Progress
+
+- [x] Analyser progress.tsx et la route tRPC mood30Days
+- [x] Créer composant MoodChart30Days (SVG, courbe colorée par émotion)
+- [x] Afficher les 30 derniers jours avec couleur par humeur dominante
+- [x] Légende des humeurs avec couleurs et barres de fréquence
+- [x] Stats résumées : humeur dominante, tendance, jours trackés, score moyen
+- [x] Vue heatmap calendrier 30 jours
+- [x] Intégrer dans progress.tsx (remplace l'ancien graphique 7 jours)
