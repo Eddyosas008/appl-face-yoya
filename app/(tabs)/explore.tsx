@@ -419,7 +419,7 @@ function makeStyles(isDark: boolean) {
   const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
   const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
   return StyleSheet.create({
-  scrollContent: { paddingHorizontal: 18, paddingTop: 0 },
+  scrollContent: { paddingHorizontal: 18, paddingTop: 0, paddingBottom: 120 },
   header: { paddingTop: 18, marginBottom: 18 },
   title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4, letterSpacing: -0.3 },
   subtitle: { fontSize: 11, color: LAVENDER, letterSpacing: 0.3 },

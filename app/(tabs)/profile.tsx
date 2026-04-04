@@ -521,7 +521,7 @@ function makeStyles(isDark: boolean) {
   const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
   const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
   return StyleSheet.create({
-  scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+  scroll: { paddingHorizontal: 20, paddingBottom: 120 },
   profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingTop: 24, marginBottom: 24 },
   avatarContainer: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(201,168,76,0.45)', shadowColor: GOLD_P, shadowRadius: 12, shadowOpacity: 0.3, shadowOffset: { width: 0, height: 0 } },
   avatarText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: GOLD_P },
@@ -562,7 +562,7 @@ function makeStyles(isDark: boolean) {
   modalSaveText: { color: NIGHT_BG_P, fontSize: 14, fontWeight: '700' },
   logoutText: { fontSize: 14, fontWeight: '600', color: '#F87171' },
   version: { fontSize: 11, textAlign: 'center', color: LAVENDER_P, letterSpacing: 0.3 },
-  premiumScroll: { paddingBottom: 40 },
+  premiumScroll: { paddingBottom: 120 },
   closeBtn: { position: 'absolute', top: 16, right: 16, zIndex: 10, padding: 8 },
   premiumHero: { paddingTop: 60, paddingBottom: 40, alignItems: 'center' },
   premiumHeroEmoji: { fontSize: 48, marginBottom: 12 },

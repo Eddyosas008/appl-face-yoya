@@ -457,3 +457,10 @@
 - [x] Implémenter animation fondu 300ms dans ThemeProvider (overlay Animated.View)
 - [x] Tests vitest 10/10 passés
 - [x] Vérifier et sauvegarder le checkpoint
+
+## Phase 44 : Correction contenu masqué par tab bar
+
+- [ ] Corriger le padding bas du ScrollView dans index.tsx (Home)
+- [ ] Vérifier et corriger les autres écrans tabs (Explore, Journal, Journeys, Profile)
+- [ ] Vérifier et corriger les écrans secondaires avec ScrollView
+- [ ] Sauvegarder le checkpoint

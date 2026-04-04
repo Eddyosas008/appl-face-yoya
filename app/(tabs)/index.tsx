@@ -241,7 +241,7 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
         {/* ── HERO NOCTURNE ──────────────────────────────────────────────── */}
         <View style={styles.heroWrapper}>
