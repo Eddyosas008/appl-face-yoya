@@ -551,3 +551,14 @@
 - [x] Stats résumées : humeur dominante, tendance, jours trackés, score moyen
 - [x] Vue heatmap calendrier 30 jours
 - [x] Intégrer dans progress.tsx (remplace l'ancien graphique 7 jours)
+
+## Phase 52 : Refonte page Profil
+
+- [x] Header enrichi : avatar avec initiales colorées, badge niveau, streak visuel
+- [x] Statistiques animées avec icônes colorées et progression
+- [x] Carte "Bien-être global" avec score circulaire
+- [x] Section Paramètres réorganisée et plus compacte
+- [x] Supprimer la duplication "Objectif quotidien" (apparaît 2 fois)
+- [x] Section Abonnement Premium redessinée
+- [x] Bouton déconnexion stylisé en bas
+- [x] Animations d'entrée sur les sections
