@@ -371,7 +371,16 @@ export default function ProgressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
   title: { fontSize: 22, fontWeight: '800' },
@@ -409,4 +418,5 @@ const styles = StyleSheet.create({
   emptySub: { fontSize: 14, lineHeight: 20, textAlign: 'center', marginBottom: 20 },
   startBtn: { borderRadius: 999, paddingVertical: 13, paddingHorizontal: 24 },
   startBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-});
+  });
+}

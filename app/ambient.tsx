@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
@@ -41,6 +41,7 @@ const SOUND_GRADIENTS: Record<string, string[]> = {
 export default function AmbientScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
 
   // Palette dynamique
   const AM_GOLD    = isDark ? '#C8A96E' : '#8B6914';
@@ -327,7 +328,16 @@ export default function AmbientScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
   title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22 },
@@ -363,4 +373,5 @@ const styles = StyleSheet.create({
   tipsCard: { borderRadius: 14, padding: 14, borderWidth: 1 },
   tipsTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 14, marginBottom: 6 },
   tipText: { fontSize: 13, lineHeight: 19 },
-});
+  });
+}

@@ -104,6 +104,7 @@ function MeditationCardGrid({
 export default function ExploreScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const GOLD = isDark ? '#C8A96E' : '#8B6914';
   const { favorites, toggleFavorite, profile } = useUser();
   const [search, setSearch] = useState('');
@@ -408,7 +409,16 @@ const WHITE_SOFT   = '#EDE8DC';
 const GLASS_BG     = '#2A2540';
 const GLASS_BORDER = 'rgba(200,169,110,0.40)';
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scrollContent: { paddingHorizontal: 18, paddingTop: 0 },
   header: { paddingTop: 18, marginBottom: 18 },
   title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT, marginBottom: 4, letterSpacing: -0.3 },
@@ -486,4 +496,5 @@ const styles = StyleSheet.create({
   featureEmoji: { fontSize: 22, marginBottom: 4 },
   featureName: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
   featureSub: { color: 'rgba(255,255,255,0.6)', fontSize: 10, marginTop: 2 },
-});
+  });
+}

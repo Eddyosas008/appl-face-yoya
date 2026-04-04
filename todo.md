@@ -432,3 +432,13 @@
 - [x] Corriger les tokens de thème (surfaces très distinctes du fond, bordures visibles)
 - [x] Corriger l'écran Home (cartes stats, sections, méditation du soir)
 - [x] Corriger les autres écrans tabs et secondaires
+
+## Phase 41 : Visibilité mode clair + option Automatique
+
+- [x] Refondre les tokens clair (surfaces blanches, textes très sombres, bordures visibles)
+- [x] Corriger les styles hardcodés sombres dans tous les écrans via makeStyles(isDark)
+- [x] Convertir 26 fichiers en styles dynamiques (StyleSheet.create → makeStyles)
+- [x] Ajouter l'option "Automatique" dans ThemeProvider (suit le mode système) — déjà présent
+- [x] Ajouter le sélecteur 3 boutons dans Profil (Clair / Sombre / Auto)
+- [x] Corriger les imports dupliqués (React, useMemo)
+- [x] Vérifier la cohérence et sauvegarder le checkpoint

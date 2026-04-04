@@ -331,7 +331,16 @@ export default function NotificationsSettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
@@ -376,4 +385,5 @@ const styles = StyleSheet.create({
   infoCard: { borderRadius: 14, borderWidth: 1, padding: 14, marginTop: 4 },
   infoTitle: { fontSize: 14, fontWeight: '700', marginBottom: 8 },
   infoText: { fontSize: 13, lineHeight: 19 },
-});
+  });
+}

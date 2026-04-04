@@ -28,6 +28,7 @@ export default function ProgramDetailScreen() {
   const { isAuthenticated } = useUser();
   const utils = trpc.useUtils();
   const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
   // Couleurs dynamiques
@@ -411,7 +412,16 @@ export default function ProgramDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scroll: { paddingBottom: 120 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, fontSize: 14 },
@@ -439,7 +449,7 @@ const styles = StyleSheet.create({
   heroProgress: { marginTop: 4 },
   heroProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   heroProgressLabel: { color: 'rgba(255,255,255,0.80)', fontSize: 13, fontWeight: '600' },
-  heroProgressPct: { color: '#C8A96E', fontSize: 13, fontWeight: '700' },
+  heroProgressPct: { color: GOLD_C, fontSize: 13, fontWeight: '700' },
   heroProgressBar: {
     height: 6,
     backgroundColor: 'rgba(255,255,255,0.20)',
@@ -447,7 +457,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 6,
   },
-  heroProgressFill: { height: '100%', backgroundColor: '#C8A96E', borderRadius: 3 },
+  heroProgressFill: { height: '100%', backgroundColor: GOLD_C, borderRadius: 3 },
   heroProgressSub: { color: 'rgba(255,255,255,0.60)', fontSize: 11 },
 
   // Stats
@@ -576,4 +586,5 @@ const styles = StyleSheet.create({
   benefitRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   benefitCheck: { fontSize: 14, fontWeight: '800', marginTop: 1 },
   benefitText: { flex: 1, fontSize: 13, lineHeight: 20 },
-});
+  });
+}

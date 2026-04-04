@@ -421,6 +421,7 @@ export default function ProgramDayScreen() {
   const router = useRouter();
   const { isAuthenticated } = useUser();
   const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const [isCompleting, setIsCompleting] = useState(false);
 
   // Couleurs dynamiques
@@ -858,7 +859,16 @@ export default function ProgramDayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scroll: { paddingBottom: 120 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { color: '#F87171', fontSize: 16 },
@@ -876,7 +886,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(201,168,76,0.35)',
   },
-  dayBadgeText: { color: '#C8A96E', fontSize: 12, fontWeight: '700' },
+  dayBadgeText: { color: GOLD_C, fontSize: 12, fontWeight: '700' },
   doneBadge: {
     backgroundColor: 'rgba(34,197,94,0.18)',
     paddingHorizontal: 12,
@@ -937,7 +947,7 @@ const styles = StyleSheet.create({
   activityContent: { flex: 1 },
   activityTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', marginBottom: 2 },
   activitySub: { color: 'rgba(255,255,255,0.60)', fontSize: 12 },
-  activityArrow: { color: '#C8A96E', fontSize: 18, fontWeight: '700' },
+  activityArrow: { color: GOLD_C, fontSize: 18, fontWeight: '700' },
 
   // Routine
   routineProgress: { fontSize: 14, fontWeight: '700' },
@@ -1028,4 +1038,5 @@ const styles = StyleSheet.create({
   completedBannerEmoji: { fontSize: 40, marginBottom: 8 },
   completedBannerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, marginBottom: 4 },
   completedBannerSub: { fontSize: 13, textAlign: 'center' },
-});
+  });
+}

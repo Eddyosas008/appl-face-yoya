@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -14,9 +14,10 @@ import { AnimatedScreen } from '@/components/animated-screen';
 import { StarField } from '@/components/star-field';
 import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
 import { useThemeContext } from '@/lib/theme-provider';
-import { Switch } from 'react-native';
 
-const PREMIUM_FEATURES = [
+type ThemeMode = 'light' | 'dark' | 'system';
+
+const PREMIUM_FEATURESS = [
   { icon: '🧘‍♀️', text: 'Accès illimité aux 50+ méditations' },
   { icon: '🌿', text: 'Tous les parcours adaptatifs' },
   { icon: '💜', text: 'Chat IA sans limite' },
@@ -32,7 +33,8 @@ const PLANS = [
 
 export default function ProfileScreen() {
   const colors = useColors();
-  const { isDark, toggleTheme } = useThemeContext();
+  const { isDark, themeMode, setThemeMode } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const { profile, checkIns, logout, updateProfile } = useUser();
   const { isAuthenticated } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
@@ -314,19 +316,43 @@ export default function ProfileScreen() {
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Paramètres</Text>
         <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
-          {/* Toggle thème clair/sombre */}
-          <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
-            <Text style={styles.settingIcon}>{isDark ? '🌙' : '☀️'}</Text>
-            <View style={{ flex: 1 }}>
+          {/* Sélecteur de thème : Clair / Sombre / Automatique */}
+          <View style={[styles.settingRow, { borderBottomColor: colors.border, flexDirection: 'column', alignItems: 'flex-start', gap: 10 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={styles.settingIcon}>{isDark ? '🌙' : '☀️'}</Text>
               <Text style={[styles.settingLabel, { color: colors.foreground }]}>Mode d'affichage</Text>
-              <Text style={[styles.settingSubValue, { color: colors.muted }]}>{isDark ? 'Sombre' : 'Clair'}</Text>
             </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={isDark ? '#C8A96E' : '#ffffff'}
-            />
+            <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
+              {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => {
+                const labels: Record<ThemeMode, string> = { light: '☀️ Clair', dark: '🌙 Sombre', system: '📱 Auto' };
+                const active = themeMode === mode;
+                const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+                const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+                const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+                const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+                return (
+                  <Pressable
+                    key={mode}
+                    onPress={() => setThemeMode(mode)}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      paddingVertical: 8,
+                      paddingHorizontal: 4,
+                      borderRadius: 10,
+                      borderWidth: active ? 1.5 : 1,
+                      borderColor: active ? GOLD_C : BORD,
+                      backgroundColor: active ? (isDark ? 'rgba(200,169,110,0.18)' : 'rgba(139,105,20,0.10)') : CARD,
+                      alignItems: 'center',
+                      opacity: pressed ? 0.75 : 1,
+                    })}
+                  >
+                    <Text style={{ fontSize: 12, color: active ? GOLD_C : TEXT1, fontWeight: active ? '700' : '400', textAlign: 'center' }}>
+                      {labels[mode]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
           <Pressable
             style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
@@ -485,7 +511,16 @@ const NIGHT_BG_P     = '#0D0B1A';
 const GLASS_BG_P     = '#2A2540';
 const GLASS_BORDER_P = 'rgba(200,169,110,0.40)';
 
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   profileHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingTop: 24, marginBottom: 24 },
   avatarContainer: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: 'rgba(201,168,76,0.45)', shadowColor: GOLD_P, shadowRadius: 12, shadowOpacity: 0.3, shadowOffset: { width: 0, height: 0 } },
@@ -574,4 +609,5 @@ const styles = StyleSheet.create({
   statsAdvancedTitle: { color: WHITE_SOFT_P, fontSize: 15, fontWeight: '600' },
   statsAdvancedSub: { color: LAVENDER_P, fontSize: 11, marginTop: 2 },
   statsAdvancedArrow: { color: GOLD_P, fontSize: 26, lineHeight: 28 },
-});
+  });
+}

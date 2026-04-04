@@ -62,6 +62,7 @@ export default function MeditationPlayerScreen() {
   const { profile } = useUser();
   const { isAuthenticated } = useAuth();
   const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const colors = useColors();
 
   // ── Palette dynamique ──────────────────────────────────────────────────────
@@ -521,7 +522,16 @@ export default function MeditationPlayerScreen() {
 }
 
 // ─── Styles (layout uniquement, les couleurs sont injectées dynamiquement) ───
-const styles = StyleSheet.create({
+function makeStyles(isDark: boolean) {
+  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
+  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
+  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
+  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
+  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
+  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
+  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
+  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  return StyleSheet.create({
   root: { flex: 1 },
   scroll: { paddingBottom: 0 },
 
@@ -686,4 +696,5 @@ const styles = StyleSheet.create({
   simCatLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 },
   simCardTitle: { fontSize: 12, fontWeight: '500', lineHeight: 16, marginBottom: 4 },
   simDuration: { fontSize: 10 },
-});
+  });
+}
