@@ -25,6 +25,9 @@ import {
   type InsertSleepLog,
   type InsertSleepProgram,
   type InsertProgramDay,
+  ambientSounds,
+  type AmbientSound,
+  type InsertAmbientSound,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -765,4 +768,37 @@ export async function getWellnessScore(userId: number): Promise<{
   const label = score >= 80 ? "Excellent" : score >= 60 ? "Bon" : score >= 40 ? "Moyen" : "À améliorer";
 
   return { score, moodScore, sleepScore, consistencyScore, label };
+}
+
+// ─── Ambient Sounds ───────────────────────────────────────────────────────────
+export async function getAmbientSounds(opts?: { category?: string; includeInactive?: boolean }) {
+  const db = await getDb();
+  if (!db) return [];
+  let query = db.select().from(ambientSounds).$dynamic();
+  if (!opts?.includeInactive) {
+    query = query.where(eq(ambientSounds.isActive, true));
+  }
+  if (opts?.category) {
+    query = query.where(eq(ambientSounds.category, opts.category));
+  }
+  return query.orderBy(asc(ambientSounds.sortOrder), asc(ambientSounds.name));
+}
+
+export async function getAmbientSoundBySlug(slug: string): Promise<AmbientSound | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(ambientSounds).where(eq(ambientSounds.slug, slug)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function upsertAmbientSound(data: InsertAmbientSound) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const existing = await db.select({ id: ambientSounds.id }).from(ambientSounds)
+    .where(eq(ambientSounds.slug, data.slug)).limit(1);
+  if (existing.length > 0) {
+    await db.update(ambientSounds).set(data).where(eq(ambientSounds.slug, data.slug));
+  } else {
+    await db.insert(ambientSounds).values(data);
+  }
 }

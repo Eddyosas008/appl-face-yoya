@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo} from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView, Switch,
   Platform, Alert, ActivityIndicator,
@@ -11,6 +11,10 @@ import * as Haptics from 'expo-haptics';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 import {
   loadNotificationSettings,
   enableDailyReminder,

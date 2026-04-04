@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,10 @@ import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useThemeContext } from "@/lib/theme-provider";
 import { useColors } from "@/hooks/use-colors";
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 const LEVEL_LABELS: Record<string, string> = {
   beginner: "Débutant",

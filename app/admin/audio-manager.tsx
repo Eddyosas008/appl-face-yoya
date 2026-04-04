@@ -5,7 +5,7 @@
  * Permet de visualiser et modifier les URLs audio de chaque jour de programme.
  * Réservé aux utilisateurs avec role = "admin".
  */
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -21,7 +21,12 @@ import {
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useThemeContext } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc";
+
+// Styles statiques pour les sous-composants (avant le composant principal)
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +51,8 @@ function DayAudioRow({
   onSaved: () => void;
 }) {
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const [audioUrl, setAudioUrl] = useState(day.audioUrl ?? "");
   const [duration, setDuration] = useState(
     day.audioDurationSeconds ? String(day.audioDurationSeconds) : ""
@@ -261,6 +268,8 @@ function ProgramSection({
 
 export default function AudioManagerScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
 

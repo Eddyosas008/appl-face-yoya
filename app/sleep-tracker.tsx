@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo} from "react";
 import {
   View,
   Text,
@@ -16,6 +16,10 @@ import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import Svg, { Path, Circle, Line, Text as SvgText, Rect } from "react-native-svg";
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

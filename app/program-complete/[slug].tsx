@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,10 @@ import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useThemeContext } from "@/lib/theme-provider";
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 // ─── Confettis légers (cercles animés) ──────────────────────────────────────
 const CONFETTI_COLORS = ["#A78BFA", "#F9A8D4", "#FCD34D", "#6EE7B7", "#93C5FD", "#FCA5A5"];

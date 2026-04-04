@@ -51,6 +51,9 @@ import {
   getSleep30Days,
   getSessions30Days,
   getWellnessScore,
+  getAmbientSounds,
+  getAmbientSoundBySlug,
+  upsertAmbientSound,
 } from "./db";
 // Namespace alias pour compatibilité avec le code existant utilisant db.xxx
 const db = {
@@ -672,9 +675,45 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
           })),
         };
       }),
+  }),  // ─── Sons ambiants ───────────────────────────────────────────────────────────────
+  ambient: router({
+    // Public: liste tous les sons actifs
+    list: publicProcedure
+      .input(z.object({
+        category: z.string().optional(),
+      }).optional())
+      .query(async ({ input }) => {
+        return getAmbientSounds({ category: input?.category });
+      }),
+
+    // Public: récupère un son par slug
+    get: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        return getAmbientSoundBySlug(input.slug);
+      }),
+
+    // Admin: créer ou mettre à jour un son ambiant
+    upsert: protectedProcedure
+      .input(z.object({
+        slug: z.string().max(100),
+        name: z.string().max(150),
+        emoji: z.string().max(10).default('🎵'),
+        category: z.string().max(50).default('nature'),
+        audioUrl: z.string().url().optional().nullable(),
+        durationSeconds: z.number().default(0),
+        isPremium: z.boolean().default(false),
+        isActive: z.boolean().default(true),
+        sortOrder: z.number().default(0),
+        description: z.string().optional().nullable(),
+      }))
+      .mutation(async ({ input }) => {
+        await upsertAmbientSound(input);
+        return { success: true };
+      }),
   }),
 
-  // ─── Statistiques avancées ─────────────────────────────────────────────────
+  // ─── Statistiques avancées ─────────────────────────────────────────────────────
   stats: router({
     mood30: protectedProcedure.query(async ({ ctx }) => {
       return getMood30Days(ctx.user.id);

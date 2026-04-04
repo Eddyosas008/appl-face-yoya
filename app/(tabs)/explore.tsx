@@ -23,6 +23,35 @@ function formatDuration(seconds: number): string {
   return m < 1 ? '< 1 min' : `${m} min`;
 }
 
+// Styles statiques partagés par les sous-composants (définis avant le composant principal)
+const styles = StyleSheet.create({
+  hCard: { borderRadius: 16, overflow: 'hidden', width: 150, backgroundColor: '#2A2540', borderWidth: 1, borderColor: 'rgba(200,169,110,0.40)' },
+  hCover: { height: 90, justifyContent: 'center', alignItems: 'center', position: 'relative' as const },
+  hCoverEmoji: { fontSize: 30 },
+  hFavBtn: { position: 'absolute' as const, top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 5 },
+  hInfo: { padding: 8 },
+  hCategory: { fontSize: 9, fontWeight: '600' as const, textTransform: 'uppercase' as const, letterSpacing: 0.8, color: '#C8A96E', marginBottom: 2 },
+  hTitle: { fontSize: 12, fontWeight: '500' as const, color: '#EDE8DC', lineHeight: 16, marginBottom: 3 },
+  hDuration: { fontSize: 10, color: 'rgba(237,233,255,0.55)' },
+  card: { borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(200,169,110,0.40)' },
+  coverBlock: { height: 110, justifyContent: 'center', alignItems: 'center', position: 'relative' as const },
+  coverEmoji: { fontSize: 36 },
+  featuredBadge: { position: 'absolute' as const, top: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 999, padding: 5 },
+  featuredText: { fontSize: 10 },
+  lockBadge: { position: 'absolute' as const, top: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 999, padding: 5 },
+  favButton: { position: 'absolute' as const, top: 8, right: 8, borderRadius: 999, padding: 6 },
+  cardInfo: { padding: 10 },
+  cardCategory: { fontSize: 9, fontWeight: '600' as const, textTransform: 'uppercase' as const, letterSpacing: 0.8, color: '#C8A96E', marginBottom: 2 },
+  cardTitle: { fontSize: 12, fontWeight: '600' as const, color: '#EDE8DC', lineHeight: 17, marginBottom: 4 },
+  cardMeta: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6 },
+  cardDuration: { fontSize: 10, color: 'rgba(237,233,255,0.55)' },
+  // Placeholders pour éviter les erreurs TS (les vraies valeurs sont dans makeStyles)
+  scrollContent: {}, header: {}, title: {}, subtitle: {}, searchBar: {}, searchInput: {},
+  filterTab: {}, filterTabText: {}, sectionHeader: {}, sectionTitle: {}, sectionSeeAll: {},
+  grid: {}, featureCard: {}, featureEmoji: {}, featureName: {}, featureSub: {},
+  emptyState: {}, emptyText: {}, emptySubtext: {},
+});
+
 // Carte de méditation compacte (utilisée dans les sections horizontales)
 function MeditationCardHorizontal({
   item, categories, isFav, isLocked, onPress, onFav, colors,
@@ -104,7 +133,7 @@ function MeditationCardGrid({
 export default function ExploreScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
-  const styles = useMemo(() => makeStyles(isDark), [isDark]);
+  const dynStyles = useMemo(() => makeStyles(isDark), [isDark]);
   const GOLD = isDark ? '#C8A96E' : '#8B6914';
   const { favorites, toggleFavorite, profile } = useUser();
   const [search, setSearch] = useState('');
@@ -169,11 +198,11 @@ export default function ExploreScreen() {
     <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={320}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={dynStyles.scrollContent}>
         {/* En-tête */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.foreground }]}>Bibliothèque</Text>
-          <Text style={[styles.subtitle, { color: colors.muted }]}>
+        <View style={dynStyles.header}>
+          <Text style={[dynStyles.title, { color: colors.foreground }]}>Bibliothèque</Text>
+          <Text style={[dynStyles.subtitle, { color: colors.muted }]}>
             {isLoading ? 'Chargement...' : `${dbMeditations.length} méditations · ${dbCategories.length} catégories`}
           </Text>
         </View>
@@ -186,40 +215,40 @@ export default function ExploreScreen() {
           contentContainerStyle={{ gap: 10, paddingRight: 4 }}
         >
           <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]} onPress={() => router.push('/ambient' as never)}>
-            <LinearGradient colors={['#0C4A6E', '#0EA5E9']} style={styles.featureCard}>
-              <Text style={styles.featureEmoji}>🌊</Text>
-              <Text style={styles.featureName}>Sons d'ambiance</Text>
-              <Text style={styles.featureSub}>Pluie, forêt, océan...</Text>
+            <LinearGradient colors={['#0C4A6E', '#0EA5E9']} style={dynStyles.featureCard}>
+              <Text style={dynStyles.featureEmoji}>🌊</Text>
+              <Text style={dynStyles.featureName}>Sons d'ambiance</Text>
+              <Text style={dynStyles.featureSub}>Pluie, forêt, océan...</Text>
             </LinearGradient>
           </Pressable>
           <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]} onPress={() => router.push('/breathing' as never)}>
-            <LinearGradient colors={['#4F46E5', '#7C3AED']} style={styles.featureCard}>
-              <Text style={styles.featureEmoji}>🫁</Text>
-              <Text style={styles.featureName}>Respiration</Text>
-              <Text style={styles.featureSub}>5 techniques guidées</Text>
+            <LinearGradient colors={['#4F46E5', '#7C3AED']} style={dynStyles.featureCard}>
+              <Text style={dynStyles.featureEmoji}>🫁</Text>
+              <Text style={dynStyles.featureName}>Respiration</Text>
+              <Text style={dynStyles.featureSub}>5 techniques guidées</Text>
             </LinearGradient>
           </Pressable>
           <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]} onPress={() => router.push('/programs' as never)}>
-            <LinearGradient colors={['#065F46', '#059669']} style={styles.featureCard}>
-              <Text style={styles.featureEmoji}>🌙</Text>
-              <Text style={styles.featureName}>Programmes</Text>
-              <Text style={styles.featureSub}>21j & 30j guidés</Text>
+            <LinearGradient colors={['#065F46', '#059669']} style={dynStyles.featureCard}>
+              <Text style={dynStyles.featureEmoji}>🌙</Text>
+              <Text style={dynStyles.featureName}>Programmes</Text>
+              <Text style={dynStyles.featureSub}>21j & 30j guidés</Text>
             </LinearGradient>
           </Pressable>
           <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]} onPress={() => router.push('/progress' as never)}>
-            <LinearGradient colors={['#7C2D12', '#EA580C']} style={styles.featureCard}>
-              <Text style={styles.featureEmoji}>📊</Text>
-              <Text style={styles.featureName}>Progression</Text>
-              <Text style={styles.featureSub}>Votre parcours</Text>
+            <LinearGradient colors={['#7C2D12', '#EA580C']} style={dynStyles.featureCard}>
+              <Text style={dynStyles.featureEmoji}>📊</Text>
+              <Text style={dynStyles.featureName}>Progression</Text>
+              <Text style={dynStyles.featureSub}>Votre parcours</Text>
             </LinearGradient>
           </Pressable>
         </HScrollView>
 
         {/* Barre de recherche */}
-        <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[dynStyles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <IconSymbol name="magnifyingglass" size={18} color={colors.muted} />
           <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
+            style={[dynStyles.searchInput, { color: colors.foreground }]}
             placeholder="Rechercher une méditation..."
             placeholderTextColor={colors.muted}
             value={search}
@@ -244,7 +273,7 @@ export default function ExploreScreen() {
             <Pressable
               key={item.slug}
               style={({ pressed }) => [
-                styles.categoryChip,
+                dynStyles.categoryChip,
                 {
                   backgroundColor: activeCategory === item.slug ? GOLD : '#2A2540',
                   borderColor: activeCategory === item.slug ? GOLD : 'rgba(180,168,220,0.12)',
@@ -253,8 +282,8 @@ export default function ExploreScreen() {
               ]}
               onPress={() => setActiveCategory(item.slug)}
             >
-              {item.emoji ? <Text style={styles.categoryEmoji}>{item.emoji}</Text> : null}
-              <Text style={[styles.categoryChipText, { color: activeCategory === item.slug ? '#07051C' : 'rgba(180,168,220,0.85)' }]}>
+              {item.emoji ? <Text style={dynStyles.categoryEmoji}>{item.emoji}</Text> : null}
+              <Text style={[dynStyles.categoryChipText, { color: activeCategory === item.slug ? '#07051C' : 'rgba(180,168,220,0.85)' }]}>
                 {item.name}
               </Text>
             </Pressable>
@@ -263,9 +292,9 @@ export default function ExploreScreen() {
 
         {/* État de chargement */}
         {isLoading && (
-          <View style={styles.loadingContainer}>
+          <View style={dynStyles.loadingContainer}>
             <ActivityIndicator color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.muted }]}>Chargement du catalogue...</Text>
+            <Text style={[dynStyles.loadingText, { color: colors.muted }]}>Chargement du catalogue...</Text>
           </View>
         )}
 
@@ -273,21 +302,21 @@ export default function ExploreScreen() {
         {!isLoading && isFiltered && (
           <>
             {filtered.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyEmoji}>🔍</Text>
-                <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Aucun résultat</Text>
-                <Text style={[styles.emptyText, { color: colors.muted }]}>
+              <View style={dynStyles.emptyContainer}>
+                <Text style={dynStyles.emptyEmoji}>🔍</Text>
+                <Text style={[dynStyles.emptyTitle, { color: colors.foreground }]}>Aucun résultat</Text>
+                <Text style={[dynStyles.emptyText, { color: colors.muted }]}>
                   {search ? `Aucune méditation pour "${search}"` : 'Aucune méditation dans cette catégorie'}
                 </Text>
               </View>
             ) : (
               <>
-                <Text style={[styles.sectionCount, { color: colors.muted }]}>
+                <Text style={[dynStyles.sectionCount, { color: colors.muted }]}>
                   {filtered.length} méditation{filtered.length > 1 ? 's' : ''}
                 </Text>
-                <View style={styles.grid}>
+                <View style={dynStyles.grid}>
                   {filtered.map((item, idx) => (
-                    <StaggeredItem key={item.id} index={idx} staggerDelay={55} style={styles.gridItem}>
+                    <StaggeredItem key={item.id} index={idx} staggerDelay={55} style={dynStyles.gridItem}>
                       <MeditationCardGrid
                         item={item}
                         categories={dbCategories}
@@ -310,10 +339,10 @@ export default function ExploreScreen() {
           <>
             {/* Section À la une */}
             {featured.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>⭐ À la une</Text>
-                  <Text style={[styles.sectionCount, { color: colors.muted }]}>{featured.length}</Text>
+              <View style={dynStyles.section}>
+                <View style={dynStyles.sectionHeader}>
+                  <Text style={[dynStyles.sectionTitle, { color: colors.foreground }]}>⭐ À la une</Text>
+                  <Text style={[dynStyles.sectionCount, { color: colors.muted }]}>{featured.length}</Text>
                 </View>
                 <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
                   {featured.map((item, idx) => (
@@ -335,19 +364,19 @@ export default function ExploreScreen() {
 
             {/* Sections par catégorie */}
             {categorySections.map(section => (
-              <View key={section.slug} style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+              <View key={section.slug} style={dynStyles.section}>
+                <View style={dynStyles.sectionHeader}>
+                  <Text style={[dynStyles.sectionTitle, { color: colors.foreground }]}>
                     {section.emoji} {section.name}
                   </Text>
                   <Pressable
                     style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
                     onPress={() => setActiveCategory(section.slug)}
                   >
-                    <Text style={[styles.seeAll, { color: colors.primary }]}>Voir tout</Text>
+                    <Text style={[dynStyles.seeAll, { color: colors.primary }]}>Voir tout</Text>
                   </Pressable>
                 </View>
-                <Text style={[styles.sectionDesc, { color: colors.muted }]} numberOfLines={1}>
+                <Text style={[dynStyles.sectionDesc, { color: colors.muted }]} numberOfLines={1}>
                   {section.description}
                 </Text>
                 <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingTop: 8 }}>
@@ -370,9 +399,9 @@ export default function ExploreScreen() {
 
             {/* Section Nouvelles méditations */}
             {recent.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>🆕 Récemment ajoutées</Text>
+              <View style={dynStyles.section}>
+                <View style={dynStyles.sectionHeader}>
+                  <Text style={[dynStyles.sectionTitle, { color: colors.foreground }]}>🆕 Récemment ajoutées</Text>
                 </View>
                 <HScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
                   {recent.map((item, idx) => (

@@ -11,6 +11,10 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 
+// Styles statiques pour les sous-composants (avant le composant principal)
+const styles = {} as ReturnType<typeof makeStyles>;
+
+
 const MOOD_SCORE: Record<string, number> = {
   happy: 5,
   grateful: 5,

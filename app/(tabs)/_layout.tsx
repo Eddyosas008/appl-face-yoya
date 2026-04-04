@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform, View, StyleSheet } from "react-native";

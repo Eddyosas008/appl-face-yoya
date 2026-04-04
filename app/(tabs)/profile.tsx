@@ -17,7 +17,7 @@ import { useThemeContext } from '@/lib/theme-provider';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
-const PREMIUM_FEATURESS = [
+const PREMIUM_FEATURES = [
   { icon: '🧘‍♀️', text: 'Accès illimité aux 50+ méditations' },
   { icon: '🌿', text: 'Tous les parcours adaptatifs' },
   { icon: '💜', text: 'Chat IA sans limite' },

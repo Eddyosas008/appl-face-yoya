@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,10 @@ import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from "expo-audio";
 import { useThemeContext } from "@/lib/theme-provider";
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 // ─── Données statiques ─────────────────────────────────────────────────────────
 

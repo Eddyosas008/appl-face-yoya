@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Pressable, TextInput,
   FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Animated,
@@ -10,6 +10,10 @@ import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import { useThemeContext } from '@/lib/theme-provider';
 import { StarField } from '@/components/star-field';
+
+// Styles statiques pour les sous-composants (avant le composant principal)
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type LocalMessage = {

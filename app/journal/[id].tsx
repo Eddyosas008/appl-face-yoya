@@ -21,6 +21,10 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
+
 const MOOD_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
   anxious:   { label: "Anxieux",   emoji: "😰", color: "#F59E0B" },
   sad:       { label: "Triste",    emoji: "😢", color: "#6366F1" },

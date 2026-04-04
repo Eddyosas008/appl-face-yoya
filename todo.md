@@ -464,3 +464,12 @@
 - [ ] Vérifier et corriger les autres écrans tabs (Explore, Journal, Journeys, Profile)
 - [ ] Vérifier et corriger les écrans secondaires avec ScrollView
 - [ ] Sauvegarder le checkpoint
+
+## Phase 42 : Sons de relaxation depuis la base de données
+
+- [x] Ajouter la table `ambientSounds` dans drizzle/schema.ts
+- [x] Migrer la DB (pnpm db:push)
+- [x] Ajouter les fonctions DB : getAmbientSounds, getAmbientSoundBySlug, upsertAmbientSound
+- [x] Ajouter les routes tRPC : ambient.list, ambient.get, ambient.upsert (admin)
+- [x] Adapter ambient.tsx pour charger les sons depuis la DB (avec fallback local)
+- [x] Seed initial : 10 sons de relaxation avec URLs à remplir par l'admin

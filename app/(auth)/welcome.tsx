@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import Svg, { Circle, Ellipse } from 'react-native-svg';

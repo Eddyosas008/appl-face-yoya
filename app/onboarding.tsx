@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
@@ -7,6 +7,10 @@ import { useUser } from '@/lib/user-context';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import type { UserProfile } from '@/shared/wellness-types';
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 type OnboardingData = Partial<UserProfile>;
 

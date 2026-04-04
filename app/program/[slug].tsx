@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,10 @@ import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import { useThemeContext } from "@/lib/theme-provider";
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 const LEVEL_LABELS: Record<string, { label: string; emoji: string }> = {
   beginner: { label: "Débutant", emoji: "🌱" },

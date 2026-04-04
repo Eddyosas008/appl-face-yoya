@@ -12,7 +12,16 @@ import { StarField } from '@/components/star-field';
 import { useColors } from '@/hooks/use-colors';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AMBIENT_SOUNDS } from '@/lib/mock-data';
+import { trpc } from '@/lib/trpc';
 import { useThemeContext } from '@/lib/theme-provider';
+
+// Type unifié pour un son ambiant (DB ou local)
+type AmbientSoundDef = {
+  id: string;
+  label: string;
+  emoji: string;
+  url: string | null;
+};
 
 type SoundState = {
   id: string;
@@ -49,9 +58,35 @@ export default function AmbientScreen() {
   const AM_LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(80,60,140,0.70)';
   const AM_BORDER  = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(120,100,180,0.18)';
   const AM_GLASS   = isDark ? '#2A2540' : 'rgba(255,255,255,0.72)';
-  const [sounds, setSounds] = useState<SoundState[]>(
-    AMBIENT_SOUNDS.map((s) => ({ id: s.id, player: null, volume: 0.7, isPlaying: false }))
-  );
+  // Charger les sons depuis la DB, avec fallback sur les données locales
+  const { data: dbSounds } = trpc.ambient.list.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fusionner DB + fallback local : DB en priorité, local si pas de DB
+  const soundDefs = useMemo<AmbientSoundDef[]>(() => {
+    if (dbSounds && dbSounds.length > 0) {
+      return dbSounds.map((s) => ({
+        id: s.slug,
+        label: s.name,
+        emoji: s.emoji,
+        url: s.audioUrl ?? null,
+      }));
+    }
+    return AMBIENT_SOUNDS.map((s) => ({ id: s.id, label: s.label, emoji: s.emoji, url: s.url }));
+  }, [dbSounds]);
+
+  const [sounds, setSounds] = useState<SoundState[]>([]);
+
+  // Synchroniser l'état des sons quand soundDefs change
+  useEffect(() => {
+    setSounds((prev) =>
+      soundDefs.map((s) => {
+        const existing = prev.find((p) => p.id === s.id);
+        return existing ?? { id: s.id, player: null, volume: 0.7, isPlaying: false };
+      })
+    );
+  }, [soundDefs]);
   const [selectedTimer, setSelectedTimer] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -123,7 +158,7 @@ export default function AmbientScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
-    const soundDef = AMBIENT_SOUNDS.find((s) => s.id === soundId);
+    const soundDef = soundDefs.find((s) => s.id === soundId);
     if (!soundDef) return;
 
     setSounds((prev) =>
@@ -141,6 +176,10 @@ export default function AmbientScreen() {
           try {
             let player = s.player;
             if (!player) {
+              if (!soundDef.url) {
+                console.warn('Pas d\'URL audio pour ce son:', soundId);
+                return s;
+              }
               player = createAudioPlayer({ uri: soundDef.url });
               player.loop = true;
               player.volume = s.volume;
@@ -225,16 +264,17 @@ export default function AmbientScreen() {
 
         {/* Sound grid */}
         <View style={styles.grid}>
-          {AMBIENT_SOUNDS.map((sound) => {
+          {soundDefs.map((sound) => {
             const state = sounds.find((s) => s.id === sound.id);
             const isPlaying = state?.isPlaying || false;
             const gradient = SOUND_GRADIENTS[sound.id] || ['#374151', '#6B7280'];
+            const hasUrl = !!sound.url;
 
             return (
               <Pressable
                 key={sound.id}
-                style={({ pressed }) => [styles.soundCard, { opacity: pressed ? 0.85 : 1 }]}
-                onPress={() => toggleSound(sound.id)}
+                style={({ pressed }) => [styles.soundCard, { opacity: pressed ? (hasUrl ? 0.85 : 0.5) : (hasUrl ? 1 : 0.6) }]}
+                onPress={() => hasUrl ? toggleSound(sound.id) : undefined}
               >
                 <LinearGradient
                   colors={gradient as [string, string]}
@@ -254,6 +294,11 @@ export default function AmbientScreen() {
                   )}
                   <Text style={styles.soundEmoji}>{sound.emoji}</Text>
                   <Text style={[styles.soundLabel, { color: '#FFFFFF' }]}>{sound.label}</Text>
+                  {!hasUrl && !isPlaying && (
+                    <View style={[styles.activeIndicator, { backgroundColor: 'rgba(80,80,80,0.3)', borderColor: 'rgba(150,150,150,0.3)' }]}>
+                      <Text style={[styles.activeText, { color: 'rgba(255,255,255,0.5)' }]}>Bientôt</Text>
+                    </View>
+                  )}
                   {isPlaying && (
                     <View style={[styles.activeIndicator, { backgroundColor: 'rgba(201,168,76,0.12)', borderColor: 'rgba(201,168,76,0.2)' }]}>
                       <Text style={[styles.activeText, { color: AM_GOLD }]}>▶ En lecture</Text>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,6 +8,10 @@ import { useUser } from '@/lib/user-context';
 import { ADAPTIVE_JOURNEYS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PremiumBadge } from '@/components/ui/premium-badge';
+
+// Styles statiques pour les sous-composants
+const styles = {} as ReturnType<typeof makeStyles>;
+
 
 const STEP_ICONS: Record<string, string> = {
   intro: '🌸',

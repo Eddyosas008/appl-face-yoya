@@ -293,3 +293,22 @@ export const sleepLogs = mysqlTable("sleepLogs", {
 
 export type SleepLog = typeof sleepLogs.$inferSelect;
 export type InsertSleepLog = typeof sleepLogs.$inferInsert;
+
+// ─── Ambient Sounds (sons de relaxation) ─────────────────────────────────────
+export const ambientSounds = mysqlTable("ambientSounds", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  name: varchar("name", { length: 150 }).notNull(),
+  emoji: varchar("emoji", { length: 10 }).notNull().default("🎵"),
+  category: varchar("category", { length: 50 }).notNull().default("nature"),
+  audioUrl: text("audioUrl"),
+  durationSeconds: int("durationSeconds").default(0),
+  isPremium: boolean("isPremium").default(false).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type AmbientSound = typeof ambientSounds.$inferSelect;
+export type InsertAmbientSound = typeof ambientSounds.$inferInsert;

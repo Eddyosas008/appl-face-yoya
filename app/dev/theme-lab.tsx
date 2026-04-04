@@ -8,6 +8,10 @@ import { SchemeColors, type ColorScheme } from "@/constants/theme";
 import { useColors } from "@/hooks/use-colors";
 import { useThemeContext } from "@/lib/theme-provider";
 
+// Styles statiques pour les sous-composants (avant le composant principal)
+const styles = {} as ReturnType<typeof makeStyles>;
+
+
 type PaletteName = keyof typeof SchemeColors.light;
 
 const paletteNames: PaletteName[] = Object.keys(SchemeColors.light) as PaletteName[];

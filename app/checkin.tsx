@@ -11,6 +11,10 @@ import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
 import { useThemeContext } from '@/lib/theme-provider';
 
+// Styles statiques pour les sous-composants (avant le composant principal)
+const styles = {} as ReturnType<typeof makeStyles>;
+
+
 const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'tired', 'anxious', 'sad', 'overwhelmed'];
 
 function ScaleSelector({
