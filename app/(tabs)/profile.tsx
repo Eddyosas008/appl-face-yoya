@@ -14,6 +14,7 @@ import { AnimatedScreen } from '@/components/animated-screen';
 import { StarField } from '@/components/star-field';
 import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
 import { ReminderSettings } from '@/components/reminder-settings';
+import { DailyGoalPicker } from '@/components/daily-goal-picker';
 import { useThemeContext } from '@/lib/theme-provider';
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -372,6 +373,9 @@ export default function ProfileScreen() {
             </View>
           </Pressable>
         </View>
+
+        {/* Objectif quotidien de méditation */}
+        <DailyGoalPicker />
 
         {/* Rappels de méditation — composant intégré */}
         <ReminderSettings />

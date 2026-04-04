@@ -16,6 +16,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AnimatedScreen, AnimatedItem } from '@/components/animated-screen';
 import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
+import { DailyProgressBar } from '@/components/daily-progress-bar';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -637,7 +638,12 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ── CTA CHECK-IN ───────────────────────────────────────────────── */}
+        {/* ── PROGRESSION QUOTIDIENNE */}
+        <View style={styles.section}>
+          <DailyProgressBar />
+        </View>
+
+        {/* ── CTA CHECK-IN */}
         <View style={styles.section}>
           <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]} onPress={() => router.push('/checkin' as never)}>
             <LinearGradient colors={isDark ? [INDIGO_MID, '#4F46E5'] : ['#8B5CF6', '#7C3AED']} style={styles.ctaCard}>

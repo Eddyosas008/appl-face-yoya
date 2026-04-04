@@ -502,3 +502,15 @@
 - [x] Persister les préférences de rappel dans AsyncStorage
 - [x] Intégrer ReminderSettings dans l'écran profil
 - [x] Handler de notifications déjà configuré dans _layout.tsx (setupNotificationHandler)
+
+## Phase 48 : Objectif quotidien configurable
+
+- [ ] Ajouter dailyGoalMinutes dans le schéma DB (table profiles)
+- [ ] Migrer la DB
+- [ ] Ajouter updateDailyGoal dans server/db.ts et route tRPC profile.updateGoal
+- [ ] Créer composant DailyGoalPicker (sélecteur 5/10/15/20/30/45/60 min)
+- [ ] Intégrer DailyGoalPicker dans l'écran Profil (remplacer "10 min" statique)
+- [ ] Persister l'objectif localement (AsyncStorage) + DB si connecté
+- [ ] Afficher barre de progression de l'objectif sur la Home (minutes du jour / objectif)
+- [ ] Animation de la barre de progression (Reanimated)
+- [ ] Message de félicitation quand objectif atteint

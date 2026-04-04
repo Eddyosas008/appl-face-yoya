@@ -54,6 +54,7 @@ import {
   getAmbientSounds,
   getAmbientSoundBySlug,
   upsertAmbientSound,
+  getTodayMinutes,
 } from "./db";
 // Namespace alias pour compatibilité avec le code existant utilisant db.xxx
 const db = {
@@ -159,6 +160,26 @@ export const appRouter = router({
 
     stats: protectedProcedure.query(async ({ ctx }) => {
       return db.getSessionStats(ctx.user.id);
+    }),
+
+    // Met à jour l'objectif quotidien (preferredDuration)
+    updateGoal: protectedProcedure
+      .input(z.object({ minutes: z.number().min(5).max(120) }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateUserProfile(ctx.user.id, { preferredDuration: input.minutes });
+        return db.getUserProfile(ctx.user.id);
+      }),
+
+    // Minutes méditées aujourd'hui + objectif
+    todayProgress: protectedProcedure.query(async ({ ctx }) => {
+      const [todayMin, profile] = await Promise.all([
+        getTodayMinutes(ctx.user.id),
+        db.getUserProfile(ctx.user.id),
+      ]);
+      return {
+        todayMinutes: todayMin,
+        goalMinutes: profile?.preferredDuration ?? 10,
+      };
     }),
   }),
 

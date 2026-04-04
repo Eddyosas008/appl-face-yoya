@@ -97,7 +97,7 @@ export interface UserProfile {
   ageRange: '18-24' | '25-30' | '31-35' | '36-40' | '40+';
   mainGoal: 'sleep' | 'stress_relief' | 'emotional_balance' | 'confidence' | 'focus' | 'recovery';
   meditationLevel: 'beginner' | 'intermediate' | 'advanced';
-  preferredDuration: 5 | 10 | 15 | 20 | 30;
+  preferredDuration: 5 | 10 | 15 | 20 | 30 | 45 | 60;
   guidanceTone: 'gentle' | 'motivating' | 'neutral' | 'spiritual';
   isPremium: boolean;
   totalSessions: number;

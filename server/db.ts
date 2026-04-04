@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, sum } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -255,6 +255,18 @@ export async function getSessionStats(userId: number) {
     currentStreak: profile?.currentStreak ?? 0,
     longestStreak: profile?.longestStreak ?? 0,
   };
+}
+
+export async function getTodayMinutes(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const rows = await db
+    .select({ total: sum(sessionHistory.duration) })
+    .from(sessionHistory)
+    .where(and(eq(sessionHistory.userId, userId), gte(sessionHistory.completedAt, today)));
+  return Number(rows[0]?.total ?? 0);
 }
 
 // ─── Favorites ──────────────────────────────────────────────────────────────────
