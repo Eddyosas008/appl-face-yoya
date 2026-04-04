@@ -311,6 +311,7 @@ function makeStyles(isDark: boolean) {
     padding: 10,
     alignItems: 'center',
     gap: 4,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   moodEmoji: {
     fontSize: 24,
@@ -395,6 +396,7 @@ function makeStyles(isDark: boolean) {
     padding: 20,
     borderWidth: 1,
     marginBottom: 16,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   recommendLabel: {
     fontSize: 12,

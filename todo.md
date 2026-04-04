@@ -442,3 +442,11 @@
 - [x] Ajouter le sélecteur 3 boutons dans Profil (Clair / Sombre / Auto)
 - [x] Corriger les imports dupliqués (React, useMemo)
 - [x] Vérifier la cohérence et sauvegarder le checkpoint
+
+## Phase 42 : Ombres portées cartes mode clair
+
+- [ ] Ajouter les tokens d'ombres dynamiques dans theme-constants.ts
+- [ ] Appliquer les ombres sur les cartes de l'écran Home
+- [ ] Appliquer les ombres sur les cartes Explore, Journal, Journeys, Profile
+- [ ] Appliquer les ombres sur les écrans secondaires (chat, méditation, programmes)
+- [ ] Vérifier la cohérence et sauvegarder le checkpoint

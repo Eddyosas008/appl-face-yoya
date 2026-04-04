@@ -358,7 +358,7 @@ function makeStyles(isDark: boolean) {
   soundLabel: { fontSize: 14, fontWeight: '700' },
   activeIndicator: { marginTop: 6, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start', borderWidth: 1 },
   activeText: { fontSize: 10, fontWeight: '600' },
-  timerCard: { borderRadius: 18, padding: 16, marginBottom: 14, borderWidth: 1 },
+  timerCard: { borderRadius: 18, padding: 16, marginBottom: 14, borderWidth: 1 , shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   timerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, marginBottom: 4 },
   timerSubtitle: { fontSize: 12, marginBottom: 14 },
   timerOptions: { flexDirection: 'row', gap: 8, marginBottom: 14, flexWrap: 'wrap' },
@@ -370,7 +370,7 @@ function makeStyles(isDark: boolean) {
   timerCountdown: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 48 },
   timerStopBtn: { borderRadius: 999, paddingHorizontal: 20, paddingVertical: 8, borderWidth: 1 },
   timerStopText: { fontSize: 14, fontWeight: '600' },
-  tipsCard: { borderRadius: 14, padding: 14, borderWidth: 1 },
+  tipsCard: { borderRadius: 14, padding: 14, borderWidth: 1 , shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   tipsTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 14, marginBottom: 6 },
   tipText: { fontSize: 13, lineHeight: 19 },
   });

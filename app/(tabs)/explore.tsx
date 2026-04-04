@@ -492,7 +492,7 @@ function makeStyles(isDark: boolean) {
   hDuration: { fontSize: 10, color: LAVENDER },
 
   // Feature cards
-  featureCard: { borderRadius: 16, padding: 14, width: 140, height: 90, justifyContent: 'flex-end' },
+  featureCard: { borderRadius: 16, padding: 14, width: 140, height: 90, justifyContent: 'flex-end' , shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   featureEmoji: { fontSize: 22, marginBottom: 4 },
   featureName: { color: '#FFFFFF', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
   featureSub: { color: 'rgba(255,255,255,0.6)', fontSize: 10, marginTop: 2 },

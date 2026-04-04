@@ -684,7 +684,8 @@ function makeStyles(isDark: boolean) {
   seeAll: { fontSize: 10, color: GOLD_C, letterSpacing: 0.6, marginTop: 4 },
 
   // Carte sommeil
-  sleepCard: { backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  sleepCard: { backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
+  sleepCardShadow: { shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   sleepCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: CARD2, borderWidth: 1, borderColor: BORD2, alignItems: 'center', justifyContent: 'center' },
   sleepCardTitle: { fontSize: 13, fontWeight: '500', color: TEXT1, marginBottom: 2 },
@@ -693,7 +694,7 @@ function makeStyles(isDark: boolean) {
   arrowBtnText: { color: GOLD_C, fontSize: 18, lineHeight: 20 },
 
   // Mini graphique sommeil
-  sleepMiniChart: { marginTop: 10, backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 16, padding: 14 },
+  sleepMiniChart: { marginTop: 10, backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 16, padding: 14, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 1 }, shadowOpacity: isDark ? 0.18 : 0.07, shadowRadius: isDark ? 5 : 4, elevation: isDark ? 3 : 2 },
   sleepMiniChartTitle: { fontSize: 11, color: TEXT3, marginBottom: 10, letterSpacing: 0.3 },
   sleepBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 52 },
   sleepBarCol: { alignItems: 'center', flex: 1, gap: 4 },
@@ -712,7 +713,7 @@ function makeStyles(isDark: boolean) {
   playBtnIcon: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', paddingLeft: 2 },
 
   // Mini méditations
-  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: CARD, borderWidth: 1, borderColor: BORD },
+  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: CARD, borderWidth: 1, borderColor: BORD, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 1 }, shadowOpacity: isDark ? 0.18 : 0.07, shadowRadius: isDark ? 5 : 4, elevation: isDark ? 3 : 2 },
   miniMedCover: { height: 70, justifyContent: 'center', alignItems: 'center' },
   miniMedEmoji: { fontSize: 26 },
   miniMedTitle: { fontSize: 11, fontWeight: '600', color: TEXT1, lineHeight: 15, margin: 8, marginBottom: 2 },
@@ -720,7 +721,7 @@ function makeStyles(isDark: boolean) {
 
   // Mini cards accès rapide
   miniCardsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 18, marginTop: 22 },
-  miniCard: { flex: 1, backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  miniCard: { flex: 1, backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 1 }, shadowOpacity: isDark ? 0.18 : 0.07, shadowRadius: isDark ? 5 : 4, elevation: isDark ? 3 : 2 },
   miniCardIcon: { fontSize: 22 },
   miniCardLabel: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: TEXT2, textAlign: 'center' },
 
@@ -757,7 +758,7 @@ function makeStyles(isDark: boolean) {
   issueDesc: { fontSize: 11, color: isDark ? 'rgba(240,235,224,0.65)' : 'rgba(255,255,255,0.75)', lineHeight: 16 },
 
   // Conseil du soir
-  tipCard: { borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: BORD, backgroundColor: CARD },
+  tipCard: { borderRadius: 18, overflow: 'hidden', borderWidth: 1, borderColor: BORD, backgroundColor: CARD, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   tipGradient: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18 },
   tipEmoji: { fontSize: 34 },
   tipContent: { flex: 1 },

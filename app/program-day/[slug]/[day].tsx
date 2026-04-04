@@ -942,6 +942,7 @@ function makeStyles(isDark: boolean) {
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   activityIconText: { fontSize: 22 },
   activityContent: { flex: 1 },
@@ -956,6 +957,7 @@ function makeStyles(isDark: boolean) {
     padding: 16,
     borderWidth: 1,
     gap: 10,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   routineStep: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   routineCheckbox: {
@@ -967,6 +969,7 @@ function makeStyles(isDark: boolean) {
     justifyContent: 'center',
     flexShrink: 0,
     marginTop: 1,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   routineCheckboxDone: {},
   routineCheckmark: { fontSize: 12, fontWeight: '800' },
@@ -985,6 +988,7 @@ function makeStyles(isDark: boolean) {
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   tipQuote: {
     fontSize: 36,
@@ -999,6 +1003,7 @@ function makeStyles(isDark: boolean) {
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
+    shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
   },
   journalPrompt: {
     fontSize: 14,

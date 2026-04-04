@@ -94,23 +94,55 @@ export const SHADOW_GOLD = {
   elevation: 8,
 };
 
-export const SHADOW_DARK = {
+// Mode sombre : ombres noires profondes
+export const SHADOW_DARK_SM = {
+  shadowColor: '#000000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.40,
+  shadowRadius: 6,
+  elevation: 4,
+};
+export const SHADOW_DARK_MD = {
   shadowColor: '#000000',
   shadowOffset: { width: 0, height: 3 },
   shadowOpacity: 0.55,
   shadowRadius: 12,
+  elevation: 8,
+};
+export const SHADOW_DARK_LG = {
+  shadowColor: '#000000',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.65,
+  shadowRadius: 20,
+  elevation: 14,
+};
+export const SHADOW_DARK = SHADOW_DARK_MD;
+
+// Mode clair : ombres brun-or visibles sur fond crème
+export const SHADOW_LIGHT_SM = {
+  shadowColor: '#5C3D0A',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.12,
+  shadowRadius: 6,
+  elevation: 3,
+};
+export const SHADOW_LIGHT_MD = {
+  shadowColor: '#5C3D0A',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.18,
+  shadowRadius: 12,
+  elevation: 6,
+};
+export const SHADOW_LIGHT_LG = {
+  shadowColor: '#5C3D0A',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.22,
+  shadowRadius: 20,
   elevation: 10,
 };
+export const SHADOW_LIGHT = SHADOW_LIGHT_MD;
 
-export const SHADOW_LIGHT = {
-  shadowColor: '#8B6914',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.15,
-  shadowRadius: 8,
-  elevation: 4,
-};
-
-// ── Aurora blobs (discrets) ────────────────────────────────────────────────────
+// ── Aurora blobs (discrets) ─────────────────────────────────────────────────────
 export const AURORA_BLOBS_DARK = [
   { leftPct: 5,  topPct: 5,  width: 180, height: 100, color: 'rgba(200,169,110,0.07)' },
   { leftPct: 60, topPct: 12, width: 140, height: 80,  color: 'rgba(180,140,80,0.06)'  },
@@ -125,7 +157,7 @@ export const AURORA_BLOBS_LIGHT = [
 
 export const AURORA_BLOBS = AURORA_BLOBS_DARK;
 
-// ── Gradients réutilisables ────────────────────────────────────────────────────
+// ── Gradients réutilisables ─────────────────────────────────────────────────────
 export const GRADIENT_HERO         = [DARK_HERO, DARK_BG] as const;
 export const GRADIENT_HERO_LIGHT   = [LIGHT_HERO, LIGHT_BG] as const;
 export const GRADIENT_CARD         = ['rgba(42,37,64,0.95)', 'rgba(13,11,26,0.98)'] as const;
@@ -134,7 +166,7 @@ export const GRADIENT_GOLD         = ['rgba(200,169,110,0.25)', 'rgba(200,169,11
 export const GRADIENT_SECTION      = ['rgba(42,37,64,0.75)', 'rgba(13,11,26,0.90)'] as const;
 export const GRADIENT_SECTION_LIGHT = ['rgba(240,235,224,0.75)', 'rgba(250,247,242,0.90)'] as const;
 
-// ── Helper principal : couleurs selon le mode ──────────────────────────────────
+// ── Helper principal : couleurs selon le mode ───────────────────────────────────
 export function getThemeColors(isDark: boolean) {
   return {
     // Fonds
@@ -180,7 +212,9 @@ export function getThemeColors(isDark: boolean) {
     gradientCard:    isDark ? GRADIENT_CARD    : GRADIENT_CARD_LIGHT,
     gradientSection: isDark ? GRADIENT_SECTION : GRADIENT_SECTION_LIGHT,
 
-    // Ombres
-    shadow: isDark ? SHADOW_DARK : SHADOW_LIGHT,
+    // Ombres (3 niveaux)
+    shadowSm: isDark ? SHADOW_DARK_SM : SHADOW_LIGHT_SM,
+    shadow:   isDark ? SHADOW_DARK_MD : SHADOW_LIGHT_MD,
+    shadowLg: isDark ? SHADOW_DARK_LG : SHADOW_LIGHT_LG,
   };
 }

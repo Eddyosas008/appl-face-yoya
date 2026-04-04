@@ -440,7 +440,7 @@ function makeStyles(isDark: boolean) {
   listHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 24 },
   listTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22 },
   listSubtitle: { fontSize: 14, marginTop: 2 },
-  techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', borderWidth: 1 },
+  techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', borderWidth: 1 , shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   techniqueLeft: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   techniqueEmoji: { fontSize: 32, marginTop: 2 },
   techniqueName: { fontSize: 17, fontWeight: '700', marginBottom: 4 },
