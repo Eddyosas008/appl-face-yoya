@@ -1,11 +1,28 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance, View, useColorScheme as useSystemColorScheme } from "react-native";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Animated,
+  Appearance,
+  Platform,
+  StyleSheet,
+  View,
+  useColorScheme as useSystemColorScheme,
+} from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
 
 const THEME_STORAGE_KEY = "somniopax_color_scheme";
+/** Durée du fondu de transition en millisecondes */
+const FADE_DURATION = 300;
 
 type ThemeMode = "light" | "dark" | "system";
 
@@ -27,6 +44,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [themeMode, setThemeModeState] = useState<ThemeMode>("dark");
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>("dark");
 
+  // Valeur animée pour le fondu de l'overlay de transition
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  // Couleur de fond de l'overlay (correspond au fond du thème cible)
+  const [overlayColor, setOverlayColor] = useState<string>("#0D0B1A");
+
   // Charger la préférence persistée au démarrage
   useEffect(() => {
     AsyncStorage.getItem(THEME_STORAGE_KEY).then((stored) => {
@@ -36,7 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setColorSchemeState(resolved);
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Quand le mode système change et que l'utilisateur est en mode "system"
@@ -60,15 +82,55 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  /**
+   * Lance l'animation de fondu :
+   * 1. L'overlay devient visible (opacité 0 → 1) en FADE_DURATION/2
+   * 2. Le thème est appliqué pendant que l'overlay masque le flash
+   * 3. L'overlay disparaît (opacité 1 → 0) en FADE_DURATION/2
+   */
+  const animateThemeChange = useCallback(
+    (newScheme: ColorScheme, applyFn: () => void) => {
+      // Couleur de fond du thème cible pour l'overlay
+      const bgColor = newScheme === "dark" ? "#0D0B1A" : "#FAF7F2";
+      setOverlayColor(bgColor);
+
+      // Sur le web, pas d'animation native — appliquer directement
+      if (Platform.OS === "web") {
+        applyFn();
+        return;
+      }
+
+      // Phase 1 : fade in de l'overlay
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: FADE_DURATION / 2,
+        useNativeDriver: true,
+      }).start(() => {
+        // Appliquer le thème pendant que l'overlay est opaque
+        applyFn();
+        // Phase 2 : fade out de l'overlay
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: FADE_DURATION / 2,
+          useNativeDriver: true,
+        }).start();
+      });
+    },
+    [fadeAnim],
+  );
+
   const setThemeMode = useCallback(
     (mode: ThemeMode) => {
-      setThemeModeState(mode);
       const resolved: ColorScheme = mode === "system" ? systemScheme : mode;
-      setColorSchemeState(resolved);
-      applyScheme(resolved);
-      AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+
+      animateThemeChange(resolved, () => {
+        setThemeModeState(mode);
+        setColorSchemeState(resolved);
+        applyScheme(resolved);
+        AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+      });
     },
-    [applyScheme, systemScheme],
+    [animateThemeChange, applyScheme, systemScheme],
   );
 
   // Compat: setColorScheme force un mode fixe
@@ -100,7 +162,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 
   const toggleTheme = useCallback(() => {
-    setThemeMode(colorScheme === 'dark' ? 'light' : 'dark');
+    setThemeMode(colorScheme === "dark" ? "light" : "dark");
   }, [colorScheme, setThemeMode]);
 
   const value = useMemo(
@@ -117,10 +179,30 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={value}>
-      <View style={[{ flex: 1 }, themeVariables]}>{children}</View>
+      <View style={[styles.container, themeVariables]}>
+        {children}
+        {/* Overlay de transition — visible brièvement lors du changement de thème */}
+        <Animated.View
+          style={[
+            styles.overlay,
+            { backgroundColor: overlayColor, opacity: fadeAnim },
+          ]}
+          pointerEvents="none"
+        />
+      </View>
     </ThemeContext.Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+  },
+});
 
 export function useThemeContext(): ThemeContextValue {
   const ctx = useContext(ThemeContext);

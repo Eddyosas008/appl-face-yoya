@@ -450,3 +450,10 @@
 - [ ] Appliquer les ombres sur les cartes Explore, Journal, Journeys, Profile
 - [ ] Appliquer les ombres sur les écrans secondaires (chat, méditation, programmes)
 - [ ] Vérifier la cohérence et sauvegarder le checkpoint
+
+## Phase 43 : Animation fondu transition thème
+
+- [x] Analyser ThemeProvider et layout root
+- [x] Implémenter animation fondu 300ms dans ThemeProvider (overlay Animated.View)
+- [x] Tests vitest 10/10 passés
+- [x] Vérifier et sauvegarder le checkpoint
