@@ -104,6 +104,10 @@ const db = {
   getSleep30Days,
   getSessions30Days,
   getWellnessScore,
+  getAmbientSounds,
+  getAmbientSoundBySlug,
+  upsertAmbientSound,
+  getTodayMinutes,
 };
 
 const MoodEnum = z.enum(["anxious", "sad", "neutral", "calm", "happy", "energetic", "grateful"]);

@@ -505,15 +505,14 @@
 
 ## Phase 48 : Objectif quotidien configurable
 
-- [ ] Ajouter dailyGoalMinutes dans le schéma DB (table profiles)
-- [ ] Migrer la DB
-- [ ] Ajouter updateDailyGoal dans server/db.ts et route tRPC profile.updateGoal
-- [ ] Créer composant DailyGoalPicker (sélecteur 5/10/15/20/30/45/60 min)
-- [ ] Intégrer DailyGoalPicker dans l'écran Profil (remplacer "10 min" statique)
-- [ ] Persister l'objectif localement (AsyncStorage) + DB si connecté
-- [ ] Afficher barre de progression de l'objectif sur la Home (minutes du jour / objectif)
-- [ ] Animation de la barre de progression (Reanimated)
-- [ ] Message de félicitation quand objectif atteint
+- [x] Ajouter dailyGoalMinutes dans le schéma DB (table profiles via preferredDuration)
+- [x] Ajouter updateDailyGoal dans server/db.ts et route tRPC profile.updateGoal + todayProgress
+- [x] Créer composant DailyGoalPicker (sélecteur 5/10/15/20/30/45/60 min avec niveau)
+- [x] Intégrer DailyGoalPicker dans l'écran Profil
+- [x] Persister l'objectif localement (AsyncStorage) + DB si connecté
+- [x] Afficher barre de progression de l'objectif sur la Home (minutes du jour / objectif)
+- [x] Animation de la barre de progression (Reanimated)
+- [x] Message de félicitation quand objectif atteint
 
 ## Phase 49 : Refonte page Bibliothèque (Explore)
 
@@ -529,3 +528,16 @@
 - [x] Bouton favori visible directement sur toutes les cartes
 - [x] Bouton "Réinitialiser les filtres" sur l'état vide
 - [x] Séparateurs visuels entre les sections catégories
+
+## Phase 50 : Refonte page de lecture audio (meditation/[id].tsx)
+
+- [x] Fond dégradé immersif animé par catégorie de méditation
+- [x] Artwork de méditation agrandi avec ombre portée, rotation lente et halo pulsant
+- [x] Visualiseur audio animé (36 barres Reanimated pendant la lecture)
+- [x] Barre de progression avec temps écoulé/restant et seek interactif
+- [x] Contrôles enrichis : vitesse de lecture (0.75x, 1x, 1.25x, 1.5x), mode boucle
+- [x] Minuteur de sommeil (s'arrête après 15/30/45/60 min)
+- [x] Section script déroulant
+- [x] Bouton partage de la méditation
+- [x] Méditations similaires redessinées en bas de page
+- [x] Corriger erreurs TS server/routers.ts (fonctions ambient + getTodayMinutes dans namespace db)

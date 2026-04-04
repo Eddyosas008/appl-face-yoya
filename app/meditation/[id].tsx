@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  Platform, ActivityIndicator, FlatList, Dimensions,
+  Platform, ActivityIndicator, Dimensions, Share, TouchableOpacity,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,11 +9,12 @@ import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-au
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import Animated, {
-  useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing,
+  useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence,
+  Easing,
+  type SharedValue,
 } from 'react-native-reanimated';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { PremiumBadge } from '@/components/ui/premium-badge';
 import { trpc } from '@/lib/trpc';
 import { useUser } from '@/lib/user-context';
 import { useAuth } from '@/hooks/use-auth';
@@ -24,7 +25,7 @@ import { StarField } from '@/components/star-field';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-// ─── Couleurs de catégories (sombre) ────────────────────────────────────────
+// ─── Couleurs de catégories ──────────────────────────────────────────────────
 const CATEGORY_COLORS_DARK: Record<string, [string, string]> = {
   stress:      ['#2D1B69', '#4C1D95'],
   sleep:       ['#0F0C29', '#302B63'],
@@ -35,8 +36,6 @@ const CATEGORY_COLORS_DARK: Record<string, [string, string]> = {
   gratitude:   ['#2D0A2E', '#7C1D7C'],
   'body-scan': ['#0A1A2E', '#1D3D7C'],
 };
-
-// ─── Couleurs de catégories (clair) ─────────────────────────────────────────
 const CATEGORY_COLORS_LIGHT: Record<string, [string, string]> = {
   stress:      ['#C4B5FD', '#A78BFA'],
   sleep:       ['#BAE6FD', '#7DD3FC'],
@@ -48,12 +47,88 @@ const CATEGORY_COLORS_LIGHT: Record<string, [string, string]> = {
   'body-scan': ['#BFDBFE', '#93C5FD'],
 };
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Vitesses de lecture ─────────────────────────────────────────────────────
+const SPEEDS = [0.75, 1.0, 1.25, 1.5] as const;
+type Speed = typeof SPEEDS[number];
+
+// ─── Minuteur de sommeil ─────────────────────────────────────────────────────
+const SLEEP_TIMERS = [
+  { label: 'Off', minutes: 0 },
+  { label: '15 min', minutes: 15 },
+  { label: '30 min', minutes: 30 },
+  { label: '45 min', minutes: 45 },
+  { label: '60 min', minutes: 60 },
+];
+
 function formatTime(seconds: number): string {
   if (!seconds || isNaN(seconds)) return '0:00';
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// ─── Composant visualiseur audio animé ──────────────────────────────────────
+function AudioVisualizer({ isPlaying, progress, color, dimColor }: {
+  isPlaying: boolean;
+  progress: number;
+  color: string;
+  dimColor: string;
+}) {
+  const BAR_COUNT = 36;
+  const bars = useMemo(() => Array.from({ length: BAR_COUNT }, (_, i) => {
+    const baseH = 4 + Math.abs(Math.sin(i * 0.8)) * 18 + Math.abs(Math.cos(i * 0.5)) * 10;
+    return { baseH, phase: i * 0.3 };
+  }), []);
+
+  const tick = useSharedValue(0);
+
+  useEffect(() => {
+    if (isPlaying) {
+      tick.value = withRepeat(
+        withTiming(Math.PI * 2, { duration: 2000, easing: Easing.linear }),
+        -1, false
+      );
+    } else {
+      tick.value = withTiming(0, { duration: 600 });
+    }
+  }, [isPlaying]);
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2.5, height: 50 }}>
+      {bars.map((bar, i) => {
+        const active = i / BAR_COUNT <= progress;
+        return (
+          <AnimatedBar
+            key={i}
+            baseH={bar.baseH}
+            phase={bar.phase}
+            tick={tick}
+            isPlaying={isPlaying}
+            active={active}
+            color={color}
+            dimColor={dimColor}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+function AnimatedBar({ baseH, phase, tick, isPlaying, active, color, dimColor }: {
+  baseH: number; phase: number; tick: SharedValue<number>;
+  isPlaying: boolean; active: boolean; color: string; dimColor: string;
+}) {
+  const animStyle = useAnimatedStyle(() => {
+    const h = isPlaying
+      ? baseH * (0.5 + 0.5 * Math.abs(Math.sin(tick.value + phase)))
+      : baseH * 0.35;
+    return {
+      height: withTiming(h, { duration: 80 }),
+      opacity: active ? 1 : 0.35,
+      backgroundColor: active ? color : dimColor,
+    };
+  });
+  return <Animated.View style={[{ width: 3, borderRadius: 2 }, animStyle]} />;
 }
 
 // ─── Composant principal ─────────────────────────────────────────────────────
@@ -78,25 +153,33 @@ export default function MeditationPlayerScreen() {
   const GLASS_BORDER = isDark ? 'rgba(180,168,220,0.14)' : 'rgba(100,80,160,0.18)';
   const CATEGORY_COLORS = isDark ? CATEGORY_COLORS_DARK : CATEGORY_COLORS_LIGHT;
 
+  // ── Données ────────────────────────────────────────────────────────────────
   const { data: meditation, isLoading: loadingMed } = trpc.catalog.get.useQuery(
-    { slug: id ?? '' },
-    { enabled: !!id }
+    { slug: id ?? '' }, { enabled: !!id }
   );
   const { data: categories = [] } = trpc.catalog.categories.useQuery();
   const completeSessionMutation = trpc.sessions.complete.useMutation();
   const toggleFavMutation = trpc.favorites.toggle.useMutation();
   const playedMutation = trpc.catalog.played.useMutation();
   const { data: favList = [], refetch: refetchFavs } = trpc.favorites.list.useQuery(
-    undefined,
-    { enabled: isAuthenticated }
+    undefined, { enabled: isAuthenticated }
   );
   const { data: allMeds = [] } = trpc.catalog.list.useQuery({ limit: 100 });
 
+  // ── État ───────────────────────────────────────────────────────────────────
   const isLocked = meditation?.isPremium && !profile?.isPremium;
   const isFav = meditation ? favList.includes(String(meditation.id)) : false;
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<Speed>(1.0);
+  const [isLooping, setIsLooping] = useState(false);
+  const [sleepTimerIdx, setSleepTimerIdx] = useState(0);
+  const [sleepSecondsLeft, setSleepSecondsLeft] = useState<number | null>(null);
+  const [showSleepMenu, setShowSleepMenu] = useState(false);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [scriptExpanded, setScriptExpanded] = useState(false);
   const completedRef = useRef(false);
   const playCountedRef = useRef(false);
+  const sleepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useKeepAwake();
 
@@ -109,17 +192,18 @@ export default function MeditationPlayerScreen() {
   const player = useAudioPlayer(audioSource ?? { uri: '' });
   const status = useAudioPlayerStatus(player);
 
-  // Animation pulsante du bouton play
-  const pulseScale = useSharedValue(1);
-  const pulseOpacity = useSharedValue(1);
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-    opacity: pulseOpacity.value,
-  }));
-
-  // Halo animé autour du bouton play
+  // ── Animations ─────────────────────────────────────────────────────────────
+  const artworkRotate = useSharedValue(0);
+  const artworkScale = useSharedValue(1);
   const haloScale = useSharedValue(1);
   const haloOpacity = useSharedValue(0);
+
+  const artworkStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${artworkRotate.value}deg` },
+      { scale: artworkScale.value },
+    ],
+  }));
   const haloStyle = useAnimatedStyle(() => ({
     transform: [{ scale: haloScale.value }],
     opacity: haloOpacity.value,
@@ -127,40 +211,57 @@ export default function MeditationPlayerScreen() {
 
   useEffect(() => {
     if (status.playing) {
-      pulseScale.value = withRepeat(
-        withSequence(
-          withTiming(1.05, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1.0,  { duration: 1200, easing: Easing.inOut(Easing.ease) })
-        ),
+      artworkRotate.value = withRepeat(
+        withTiming(360, { duration: 20000, easing: Easing.linear }),
         -1, false
+      );
+      artworkScale.value = withRepeat(
+        withSequence(
+          withTiming(1.04, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.0,  { duration: 2000, easing: Easing.inOut(Easing.ease) })
+        ), -1, false
       );
       haloScale.value = withRepeat(
         withSequence(
-          withTiming(1.5, { duration: 1800, easing: Easing.out(Easing.ease) }),
+          withTiming(1.6, { duration: 2000, easing: Easing.out(Easing.ease) }),
           withTiming(1.0, { duration: 0 })
-        ),
-        -1, false
+        ), -1, false
       );
       haloOpacity.value = withRepeat(
         withSequence(
-          withTiming(0.35, { duration: 600 }),
-          withTiming(0,    { duration: 1200 })
-        ),
-        -1, false
+          withTiming(0.4, { duration: 700 }),
+          withTiming(0,   { duration: 1300 })
+        ), -1, false
       );
     } else {
-      pulseScale.value = withTiming(1, { duration: 300 });
-      haloOpacity.value = withTiming(0, { duration: 300 });
+      artworkRotate.value = withTiming(artworkRotate.value, { duration: 1500 });
+      artworkScale.value = withTiming(1, { duration: 400 });
+      haloOpacity.value = withTiming(0, { duration: 400 });
     }
   }, [status.playing]);
 
+  // ── Setup audio ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (Platform.OS !== 'web') {
       setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
     }
-    return () => { player.remove(); };
+    return () => {
+      player.remove();
+      if (sleepTimerRef.current) clearInterval(sleepTimerRef.current);
+    };
   }, []);
 
+  // ── Vitesse de lecture ─────────────────────────────────────────────────────
+  useEffect(() => {
+    try { player.setPlaybackRate(playbackSpeed); } catch (_) {}
+  }, [playbackSpeed]);
+
+  // ── Boucle ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    try { player.loop = isLooping; } catch (_) {}
+  }, [isLooping]);
+
+  // ── Play count ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (status.playing && !playCountedRef.current && meditation && isAuthenticated) {
       playCountedRef.current = true;
@@ -168,6 +269,7 @@ export default function MeditationPlayerScreen() {
     }
   }, [status.playing, meditation, isAuthenticated]);
 
+  // ── Complétion ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (
       !completedRef.current &&
@@ -180,6 +282,23 @@ export default function MeditationPlayerScreen() {
       handleComplete(Math.ceil(status.duration / 60));
     }
   }, [status.currentTime, status.duration, status.playing]);
+
+  // ── Minuteur de sommeil ────────────────────────────────────────────────────
+  function startSleepTimer(minutes: number) {
+    if (sleepTimerRef.current) clearInterval(sleepTimerRef.current);
+    if (minutes === 0) { setSleepSecondsLeft(null); return; }
+    setSleepSecondsLeft(minutes * 60);
+    sleepTimerRef.current = setInterval(() => {
+      setSleepSecondsLeft(prev => {
+        if (prev === null || prev <= 1) {
+          clearInterval(sleepTimerRef.current!);
+          player.pause();
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
 
   async function handleComplete(minutes: number) {
     if (!meditation) return;
@@ -208,8 +327,33 @@ export default function MeditationPlayerScreen() {
     }
   }
 
-  function seekBackward() { player.seekTo(Math.max(0, status.currentTime - 15)); }
-  function seekForward()  { player.seekTo(Math.min(status.duration, status.currentTime + 15)); }
+  function seekBackward() {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    player.seekTo(Math.max(0, status.currentTime - 15));
+  }
+  function seekForward() {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    player.seekTo(Math.min(status.duration, status.currentTime + 15));
+  }
+
+  function handleSeekOnTrack(evt: any) {
+    if (status.duration <= 0) return;
+    const { locationX, target } = evt.nativeEvent;
+    // Largeur de la piste = SCREEN_W - 40 - 48 (padding)
+    const trackW = SCREEN_W - 88;
+    const ratio = Math.max(0, Math.min(1, locationX / trackW));
+    player.seekTo(ratio * status.duration);
+  }
+
+  async function handleShare() {
+    if (!meditation) return;
+    try {
+      await Share.share({
+        message: `🧘 "${meditation.title}" — une méditation guidée sur SomnioPax`,
+        title: meditation.title,
+      });
+    } catch (_) {}
+  }
 
   const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
   const categoryInfo = categories.find(c => c.slug === meditation?.categorySlug);
@@ -221,7 +365,7 @@ export default function MeditationPlayerScreen() {
     [allMeds, meditation]
   );
 
-  // ── États de chargement / erreur ──────────────────────────────────────────
+  // ── Chargement ─────────────────────────────────────────────────────────────
   if (loadingMed) {
     return (
       <View style={[styles.root, { backgroundColor: NIGHT_BG }]}>
@@ -258,28 +402,35 @@ export default function MeditationPlayerScreen() {
   // ── Rendu principal ───────────────────────────────────────────────────────
   return (
     <View style={[styles.root, { backgroundColor: NIGHT_BG }]}>
-      {/* Fond */}
+      {/* Fond dégradé immersif */}
       <LinearGradient
-        colors={isDark ? [NIGHT_BG, NIGHT_MID, '#0F0B2E'] : [NIGHT_BG, NIGHT_MID, '#EDE8F8']}
+        colors={isDark
+          ? [NIGHT_BG, NIGHT_MID, '#0F0B2E']
+          : [NIGHT_BG, NIGHT_MID, '#EDE8F8']}
         style={StyleSheet.absoluteFillObject}
       />
       <StarField />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-
-        {/* ── Hero : pochette ──────────────────────────────────────────────── */}
-        <View style={styles.heroSection}>
-          {/* Boutons flottants */}
+      {/* Boutons flottants */}
+      <View style={styles.floatRow}>
+        <Pressable
+          style={({ pressed }) => [styles.floatBtn, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER, opacity: pressed ? 0.7 : 1 }]}
+          onPress={() => router.back()}
+        >
+          <IconSymbol name="xmark" size={16} color={WHITE_SOFT} />
+        </Pressable>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
           <Pressable
             style={({ pressed }) => [styles.floatBtn, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => router.back()}
+            onPress={handleShare}
           >
-            <IconSymbol name="xmark" size={16} color={WHITE_SOFT} />
+            <IconSymbol name="square.and.arrow.up" size={16} color={WHITE_SOFT} />
           </Pressable>
           <Pressable
-            style={({ pressed }) => [styles.floatBtnRight, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER, opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.floatBtn, { backgroundColor: isFav ? 'rgba(244,63,94,0.15)' : GLASS_BG, borderColor: isFav ? 'rgba(244,63,94,0.4)' : GLASS_BORDER, opacity: pressed ? 0.7 : 1 }]}
             onPress={async () => {
               if (isAuthenticated) {
+                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 await toggleFavMutation.mutateAsync({ meditationId: String(meditation.id) });
                 refetchFavs();
               }
@@ -291,30 +442,40 @@ export default function MeditationPlayerScreen() {
               color={isFav ? '#F43F5E' : WHITE_SOFT}
             />
           </Pressable>
+        </View>
+      </View>
 
-          {/* Pochette glassmorphisme */}
-          <View style={styles.coverWrapper}>
-            {/* Halo extérieur */}
-            <View style={[styles.coverHaloOuter, { backgroundColor: GOLD_GLOW, shadowColor: GOLD }]} />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+
+        {/* ── Hero : artwork ─────────────────────────────────────────────── */}
+        <View style={styles.heroSection}>
+          {/* Halo de fond */}
+          <Animated.View style={[styles.artworkHalo, { backgroundColor: GOLD_GLOW, shadowColor: GOLD }, haloStyle]} />
+
+          {/* Artwork animé */}
+          <Animated.View style={[styles.artworkWrapper, artworkStyle]}>
             <LinearGradient
-              colors={[...coverGradient, isDark ? 'rgba(212,168,83,0.08)' : 'rgba(184,146,46,0.08)']}
-              style={[styles.coverGlass, { borderColor: isDark ? 'rgba(212,168,83,0.25)' : 'rgba(184,146,46,0.30)' }]}
+              colors={[...coverGradient, isDark ? 'rgba(212,168,83,0.1)' : 'rgba(184,146,46,0.1)']}
+              style={[styles.artworkGlass, { borderColor: isDark ? 'rgba(212,168,83,0.3)' : 'rgba(184,146,46,0.35)' }]}
               start={{ x: 0.2, y: 0 }}
               end={{ x: 0.8, y: 1 }}
             >
-              <Text style={styles.coverEmoji}>{categoryInfo?.emoji ?? '🧘'}</Text>
+              <Text style={styles.artworkEmoji}>{categoryInfo?.emoji ?? '🧘'}</Text>
             </LinearGradient>
-            {/* Reflet doré en bas */}
-            <View style={styles.coverReflect} />
-          </View>
+          </Animated.View>
+
+          {/* Reflet */}
+          <View style={[styles.artworkReflect, { backgroundColor: GOLD_GLOW }]} />
 
           {/* Titre & catégorie */}
           <View style={styles.titleBlock}>
             <Text style={[styles.categoryLabel, { color: GOLD }]}>
-              {categoryInfo?.name ?? meditation.categorySlug}
+              {categoryInfo?.name?.toUpperCase() ?? meditation.categorySlug.toUpperCase()}
               {meditation.instructor ? `  ·  ${meditation.instructor}` : ''}
             </Text>
-            <Text style={[styles.meditationTitle, { color: WHITE_SOFT }]} numberOfLines={2}>{meditation.title}</Text>
+            <Text style={[styles.meditationTitle, { color: WHITE_SOFT }]} numberOfLines={2}>
+              {meditation.title}
+            </Text>
             {meditation.subtitle && (
               <Text style={[styles.meditationSubtitle, { color: LAVENDER }]}>{meditation.subtitle}</Text>
             )}
@@ -352,8 +513,8 @@ export default function MeditationPlayerScreen() {
 
           {/* ── Lecteur ──────────────────────────────────────────────────── */}
           {isLocked ? (
-            <View style={[styles.lockedPlayer, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
-              <Text style={{ fontSize: 36 }}>🔒</Text>
+            <View style={[styles.player, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER, alignItems: 'center', gap: 12, paddingVertical: 36 }]}>
+              <Text style={{ fontSize: 40 }}>🔒</Text>
               <Text style={[styles.lockedTitle, { color: WHITE_SOFT }]}>Contenu Premium</Text>
               <Text style={[styles.lockedSub, { color: LAVENDER }]}>
                 Débloquez toutes les méditations avec un abonnement Premium.
@@ -367,85 +528,80 @@ export default function MeditationPlayerScreen() {
             </View>
           ) : (
             <View style={[styles.player, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
-              {/* Waveform dorée */}
-              <View style={styles.waveform}>
-                {Array.from({ length: 30 }).map((_, i) => {
-                  const h = status.playing
-                    ? 6 + Math.abs(Math.sin((i + Date.now() / 400) * 0.9)) * 22
-                    : 3 + (i % 4) * 5;
-                  const active = i / 30 <= progress;
-                  return (
-                    <View
-                      key={i}
-                      style={[
-                        styles.waveBar,
-                        {
-                          height: h,
-                          backgroundColor: active ? GOLD : LAVENDER_DIM,
-                          opacity: status.playing ? 1 : 0.6,
-                        },
-                      ]}
-                    />
-                  );
-                })}
-              </View>
 
-              {/* Barre de progression */}
+              {/* ── Visualiseur audio animé ── */}
+              <AudioVisualizer
+                isPlaying={status.playing}
+                progress={progress}
+                color={GOLD}
+                dimColor={LAVENDER_DIM}
+              />
+
+              {/* ── Barre de progression interactive ── */}
               <View style={styles.progressContainer}>
-                <View style={[styles.progressTrack, { backgroundColor: LAVENDER_DIM }]}>
-                  <View style={[styles.progressFill, { width: `${progress * 100}%` as any, backgroundColor: GOLD }]} />
-                  <View style={[styles.progressThumb, { left: `${Math.max(0, Math.min(98, progress * 100 - 1))}%` as any, backgroundColor: GOLD, shadowColor: GOLD }]} />
-                </View>
+                <Pressable onPress={handleSeekOnTrack} style={styles.progressTouchArea}>
+                  <View style={[styles.progressTrack, { backgroundColor: LAVENDER_DIM }]}>
+                    <View style={[styles.progressFill, { width: `${progress * 100}%` as any, backgroundColor: GOLD }]} />
+                    <View style={[styles.progressThumb, {
+                      left: `${Math.max(0, Math.min(97, progress * 100 - 1.5))}%` as any,
+                      backgroundColor: GOLD,
+                      shadowColor: GOLD,
+                    }]} />
+                  </View>
+                </Pressable>
                 <View style={styles.timeRow}>
                   <Text style={[styles.timeText, { color: LAVENDER }]}>
                     {status.duration > 0 ? formatTime(status.currentTime) : '0:00'}
                   </Text>
+                  {sleepSecondsLeft !== null && (
+                    <View style={[styles.sleepBadge, { backgroundColor: GOLD_SOFT, borderColor: isDark ? 'rgba(212,168,83,0.3)' : 'rgba(184,146,46,0.3)' }]}>
+                      <Text style={{ fontSize: 10 }}>🌙</Text>
+                      <Text style={[styles.sleepBadgeText, { color: GOLD }]}>{formatTime(sleepSecondsLeft)}</Text>
+                    </View>
+                  )}
                   <Text style={[styles.timeText, { color: LAVENDER }]}>
                     {status.duration > 0
-                      ? formatTime(status.duration)
+                      ? `-${formatTime(status.duration - status.currentTime)}`
                       : formatTime(meditation.audioDurationSeconds)}
                   </Text>
                 </View>
               </View>
 
-              {/* Contrôles */}
+              {/* ── Contrôles principaux ── */}
               <View style={styles.controls}>
                 {/* Reculer 15s */}
                 <Pressable
                   style={({ pressed }) => [styles.seekBtn, { opacity: pressed ? 0.6 : 1 }]}
                   onPress={seekBackward}
                 >
-                  <IconSymbol name="backward.fill" size={24} color={LAVENDER} />
+                  <IconSymbol name="backward.fill" size={26} color={LAVENDER} />
                   <Text style={[styles.seekLabel, { color: LAVENDER }]}>15</Text>
                 </Pressable>
 
                 {/* Bouton play principal */}
                 <View style={styles.playBtnWrapper}>
-                  {/* Halo animé */}
                   <Animated.View style={[styles.playHalo, haloStyle, { backgroundColor: GOLD_GLOW }]} />
-                  <Animated.View style={pulseStyle}>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.playButton,
-                        { opacity: pressed ? 0.9 : 1, shadowColor: GOLD },
-                        !audioSource && styles.playButtonDisabled,
-                      ]}
-                      onPress={togglePlay}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.playButton,
+                      { opacity: pressed ? 0.9 : 1, shadowColor: GOLD },
+                      !audioSource && styles.playButtonDisabled,
+                    ]}
+                    onPress={togglePlay}
+                  >
+                    <LinearGradient
+                      colors={['#E8C06A', GOLD, '#B8882A']}
+                      style={styles.playButtonGradient}
+                      start={{ x: 0.2, y: 0 }}
+                      end={{ x: 0.8, y: 1 }}
                     >
-                      <LinearGradient
-                        colors={['#E8C06A', GOLD, '#B8882A']}
-                        style={styles.playButtonGradient}
-                        start={{ x: 0.2, y: 0 }}
-                        end={{ x: 0.8, y: 1 }}
-                      >
-                        <IconSymbol
-                          name={status.playing ? 'pause.fill' : 'play.fill'}
-                          size={32}
-                          color={NIGHT_BG}
-                        />
-                      </LinearGradient>
-                    </Pressable>
-                  </Animated.View>
+                      <IconSymbol
+                        name={status.playing ? 'pause.fill' : 'play.fill'}
+                        size={34}
+                        color={NIGHT_BG}
+                      />
+                    </LinearGradient>
+                  </Pressable>
                 </View>
 
                 {/* Avancer 15s */}
@@ -453,18 +609,113 @@ export default function MeditationPlayerScreen() {
                   style={({ pressed }) => [styles.seekBtn, { opacity: pressed ? 0.6 : 1 }]}
                   onPress={seekForward}
                 >
-                  <IconSymbol name="forward.fill" size={24} color={LAVENDER} />
+                  <IconSymbol name="forward.fill" size={26} color={LAVENDER} />
                   <Text style={[styles.seekLabel, { color: LAVENDER }]}>15</Text>
                 </Pressable>
               </View>
+
+              {/* ── Contrôles secondaires ── */}
+              <View style={styles.secondaryControls}>
+                {/* Boucle */}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryBtn,
+                    { backgroundColor: isLooping ? GOLD_SOFT : 'transparent', borderColor: isLooping ? GOLD : GLASS_BORDER, opacity: pressed ? 0.7 : 1 },
+                  ]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setIsLooping(v => !v);
+                  }}
+                >
+                  <Text style={{ fontSize: 14 }}>🔁</Text>
+                  <Text style={[styles.secondaryBtnLabel, { color: isLooping ? GOLD : LAVENDER }]}>Boucle</Text>
+                </Pressable>
+
+                {/* Vitesse */}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryBtn,
+                    { backgroundColor: playbackSpeed !== 1.0 ? GOLD_SOFT : 'transparent', borderColor: playbackSpeed !== 1.0 ? GOLD : GLASS_BORDER, opacity: pressed ? 0.7 : 1 },
+                  ]}
+                  onPress={() => setShowSpeedMenu(v => !v)}
+                >
+                  <Text style={{ fontSize: 14 }}>⚡</Text>
+                  <Text style={[styles.secondaryBtnLabel, { color: playbackSpeed !== 1.0 ? GOLD : LAVENDER }]}>{playbackSpeed}x</Text>
+                </Pressable>
+
+                {/* Minuteur sommeil */}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryBtn,
+                    { backgroundColor: sleepTimerIdx > 0 ? GOLD_SOFT : 'transparent', borderColor: sleepTimerIdx > 0 ? GOLD : GLASS_BORDER, opacity: pressed ? 0.7 : 1 },
+                  ]}
+                  onPress={() => setShowSleepMenu(v => !v)}
+                >
+                  <Text style={{ fontSize: 14 }}>🌙</Text>
+                  <Text style={[styles.secondaryBtnLabel, { color: sleepTimerIdx > 0 ? GOLD : LAVENDER }]}>
+                    {sleepTimerIdx > 0 ? SLEEP_TIMERS[sleepTimerIdx].label : 'Sommeil'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* ── Menu vitesse ── */}
+              {showSpeedMenu && (
+                <View style={[styles.menuContainer, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
+                  <Text style={[styles.menuTitle, { color: WHITE_SOFT }]}>Vitesse de lecture</Text>
+                  <View style={styles.menuRow}>
+                    {SPEEDS.map(speed => (
+                      <Pressable
+                        key={speed}
+                        style={({ pressed }) => [
+                          styles.menuChip,
+                          { backgroundColor: playbackSpeed === speed ? GOLD : GOLD_SOFT, borderColor: GOLD, opacity: pressed ? 0.8 : 1 },
+                        ]}
+                        onPress={() => {
+                          setPlaybackSpeed(speed);
+                          setShowSpeedMenu(false);
+                          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }}
+                      >
+                        <Text style={[styles.menuChipText, { color: playbackSpeed === speed ? NIGHT_BG : GOLD }]}>{speed}x</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* ── Menu minuteur sommeil ── */}
+              {showSleepMenu && (
+                <View style={[styles.menuContainer, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
+                  <Text style={[styles.menuTitle, { color: WHITE_SOFT }]}>Minuteur de sommeil</Text>
+                  <View style={styles.menuRow}>
+                    {SLEEP_TIMERS.map((t, idx) => (
+                      <Pressable
+                        key={t.label}
+                        style={({ pressed }) => [
+                          styles.menuChip,
+                          { backgroundColor: sleepTimerIdx === idx ? GOLD : GOLD_SOFT, borderColor: GOLD, opacity: pressed ? 0.8 : 1 },
+                        ]}
+                        onPress={() => {
+                          setSleepTimerIdx(idx);
+                          startSleepTimer(t.minutes);
+                          setShowSleepMenu(false);
+                          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }}
+                      >
+                        <Text style={[styles.menuChipText, { color: sleepTimerIdx === idx ? NIGHT_BG : GOLD }]}>{t.label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              )}
 
               {/* Hint */}
               <Text style={[styles.playerHint, { color: LAVENDER }]}>
                 {status.playing
                   ? '✦  Méditation en cours  ✦'
                   : isPlaceholderAudio
-                  ? 'Script disponible ci-dessous'
-                  : 'Appuyez pour commencer'}
+                  ? '✦  Script disponible ci-dessous  ✦'
+                  : '✦  Appuyez pour commencer  ✦'}
               </Text>
             </View>
           )}
@@ -497,17 +748,33 @@ export default function MeditationPlayerScreen() {
                 </Text>
                 <Text style={[styles.infoLabel, { color: LAVENDER }]}>Catégorie</Text>
               </View>
+              {meditation.playCount > 0 && (
+                <>
+                  <View style={[styles.infoSep, { backgroundColor: GLASS_BORDER }]} />
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoEmoji}>🎧</Text>
+                    <Text style={[styles.infoValue, { color: WHITE_SOFT }]}>{meditation.playCount}</Text>
+                    <Text style={[styles.infoLabel, { color: LAVENDER }]}>Écoutes</Text>
+                  </View>
+                </>
+              )}
             </View>
           </View>
 
-          {/* ── Script de méditation ─────────────────────────────────────── */}
+          {/* ── Script de méditation (déroulant) ─────────────────────────── */}
           {meditation.scriptText && (
             <View style={[styles.scriptContainer, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
-              <View style={styles.scriptHeader}>
+              <Pressable
+                style={({ pressed }) => [styles.scriptHeader, { opacity: pressed ? 0.8 : 1 }]}
+                onPress={() => setScriptExpanded(v => !v)}
+              >
                 <Text style={styles.scriptTitleIcon}>📖</Text>
-                <Text style={[styles.scriptTitle, { color: WHITE_SOFT }]}>Script de méditation</Text>
-              </View>
-              <Text style={[styles.scriptText, { color: LAVENDER }]}>{meditation.scriptText}</Text>
+                <Text style={[styles.scriptTitle, { color: WHITE_SOFT, flex: 1 }]}>Script de méditation</Text>
+                <Text style={{ color: GOLD, fontSize: 18 }}>{scriptExpanded ? '▲' : '▼'}</Text>
+              </Pressable>
+              {scriptExpanded && (
+                <Text style={[styles.scriptText, { color: LAVENDER }]}>{meditation.scriptText}</Text>
+              )}
             </View>
           )}
 
@@ -515,7 +782,7 @@ export default function MeditationPlayerScreen() {
           {similar.length > 0 && (
             <View style={styles.similarSection}>
               <Text style={[styles.similarTitle, { color: WHITE_SOFT }]}>Dans la même catégorie</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 4 }}>
                 {similar.map((sim, idx) => {
                   const simCat = categories.find(c => c.slug === sim.categorySlug);
                   const simGrad = CATEGORY_COLORS[sim.categorySlug] ?? (isDark ? ['#1A0A2E', '#302B63'] : ['#DDD6FE', '#C4B5FD']);
@@ -527,15 +794,25 @@ export default function MeditationPlayerScreen() {
                       >
                         <LinearGradient colors={simGrad} style={styles.simCover}>
                           <Text style={styles.simEmoji}>{simCat?.emoji ?? '🧘'}</Text>
+                          {sim.isPremium && (
+                            <View style={[styles.simPremiumBadge, { backgroundColor: GOLD }]}>
+                              <Text style={{ fontSize: 8, color: '#000', fontWeight: '700' }}>PRO</Text>
+                            </View>
+                          )}
                         </LinearGradient>
                         <View style={styles.simInfo}>
                           <Text style={[styles.simCatLabel, { color: GOLD }]} numberOfLines={1}>
                             {simCat?.name ?? sim.categorySlug}
                           </Text>
                           <Text style={[styles.simCardTitle, { color: WHITE_SOFT }]} numberOfLines={2}>{sim.title}</Text>
-                          <Text style={[styles.simDuration, { color: LAVENDER }]}>
-                            {Math.round(sim.audioDurationSeconds / 60)} min
-                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                            <Text style={[styles.simDuration, { color: LAVENDER }]}>
+                              {Math.round(sim.audioDurationSeconds / 60)} min
+                            </Text>
+                            {sim.playCount > 0 && (
+                              <Text style={[styles.simDuration, { color: LAVENDER }]}>· {sim.playCount} 🎧</Text>
+                            )}
+                          </View>
                         </View>
                       </Pressable>
                     </StaggeredItem>
@@ -545,23 +822,16 @@ export default function MeditationPlayerScreen() {
             </View>
           )}
 
-          <View style={{ height: 40 }} />
+          <View style={{ height: 120 }} />
         </View>
       </ScrollView>
     </View>
   );
 }
 
-// ─── Styles (layout uniquement, les couleurs sont injectées dynamiquement) ───
+// ─── Styles ──────────────────────────────────────────────────────────────────
 function makeStyles(isDark: boolean) {
-  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
-  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
-  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
-  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
-  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
-  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
-  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
-  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+  const NIGHT_BG = isDark ? '#07051C' : '#FAF7F2';
   return StyleSheet.create({
   root: { flex: 1 },
   scroll: { paddingBottom: 0 },
@@ -570,76 +840,71 @@ function makeStyles(isDark: boolean) {
   loadingText: { fontSize: 14, letterSpacing: 0.3 },
   notFoundTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22, textAlign: 'center' },
   notFoundSub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
-  backBtn: {
-    marginTop: 8, paddingHorizontal: 28, paddingVertical: 12,
-    borderRadius: 999, borderWidth: 0.5,
-  },
+  backBtn: { marginTop: 8, paddingHorizontal: 28, paddingVertical: 12, borderRadius: 999, borderWidth: 0.5 },
   backBtnText: { fontWeight: '600', fontSize: 14 },
 
-  // Hero
-  heroSection: {
-    paddingTop: 56,
-    paddingBottom: 32,
-    alignItems: 'center',
-    position: 'relative',
+  // Boutons flottants
+  floatRow: {
+    position: 'absolute', top: 52, left: 20, right: 20,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    zIndex: 10,
   },
   floatBtn: {
-    position: 'absolute', top: 52, left: 20,
-    width: 38, height: 38, borderRadius: 12,
-    borderWidth: 0.5,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  floatBtnRight: {
-    position: 'absolute', top: 52, right: 20,
-    width: 38, height: 38, borderRadius: 12,
+    width: 40, height: 40, borderRadius: 13,
     borderWidth: 0.5,
     alignItems: 'center', justifyContent: 'center',
   },
 
-  // Pochette
-  coverWrapper: {
-    width: 200, height: 200,
+  // Hero / Artwork
+  heroSection: {
+    paddingTop: 110,
+    paddingBottom: 28,
+    alignItems: 'center',
+  },
+  artworkHalo: {
+    position: 'absolute',
+    top: 80,
+    width: 260, height: 260,
+    borderRadius: 130,
+    shadowRadius: 50,
+    shadowOpacity: 0.35,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  artworkWrapper: {
+    width: 220, height: 220,
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 28,
   },
-  coverHaloOuter: {
-    position: 'absolute',
-    width: 220, height: 220,
-    borderRadius: 110,
-    shadowRadius: 40,
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  coverGlass: {
-    width: 190, height: 190,
-    borderRadius: 32,
+  artworkGlass: {
+    width: 210, height: 210,
+    borderRadius: 38,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 0.5,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowRadius: 24,
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
   },
-  coverEmoji: { fontSize: 80 },
-  coverReflect: {
+  artworkEmoji: { fontSize: 88 },
+  artworkReflect: {
     position: 'absolute',
-    bottom: 0,
-    width: 190,
-    height: 40,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    backgroundColor: 'rgba(212,168,83,0.06)',
+    bottom: 28,
+    width: 200,
+    height: 30,
+    borderRadius: 100,
+    opacity: 0.3,
   },
 
   // Titre
   titleBlock: { alignItems: 'center', paddingHorizontal: 24, gap: 6 },
-  categoryLabel: {
-    fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.2,
-  },
+  categoryLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1.4 },
   meditationTitle: {
     fontFamily: 'CormorantGaramond-Medium',
-    fontSize: 28, textAlign: 'center', lineHeight: 34,
+    fontSize: 30, textAlign: 'center', lineHeight: 36,
   },
-  meditationSubtitle: {
-    fontSize: 13, textAlign: 'center', letterSpacing: 0.3,
-  },
+  meditationSubtitle: { fontSize: 13, textAlign: 'center', letterSpacing: 0.3 },
 
   // Contenu
   content: { paddingHorizontal: 20 },
@@ -655,90 +920,107 @@ function makeStyles(isDark: boolean) {
     backgroundColor: 'rgba(74,222,128,0.08)',
     borderWidth: 0.5, borderColor: 'rgba(74,222,128,0.25)',
   },
-  completionText: {
-    flex: 1, fontSize: 13, color: '#4ADE80',
-    fontWeight: '500', lineHeight: 18,
-  },
+  completionText: { flex: 1, fontSize: 13, color: '#4ADE80', fontWeight: '500', lineHeight: 18 },
 
   // Lecteur verrouillé
-  lockedPlayer: {
-    borderRadius: 24, padding: 32, marginBottom: 24,
-    borderWidth: 0.5, alignItems: 'center', gap: 12,
-  },
   lockedTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 22 },
   lockedSub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
-  unlockButton: {
-    marginTop: 8, paddingHorizontal: 28, paddingVertical: 14, borderRadius: 999,
-  },
+  unlockButton: { marginTop: 8, paddingHorizontal: 28, paddingVertical: 14, borderRadius: 999 },
   unlockButtonText: { fontWeight: '700', fontSize: 14, letterSpacing: 0.3 },
 
   // Lecteur actif
-  player: { borderRadius: 24, padding: 24, marginBottom: 24, borderWidth: 0.5 },
-  waveform: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 3, height: 44, marginBottom: 20,
-  },
-  waveBar: { width: 3, borderRadius: 2 },
-  progressContainer: { marginBottom: 24 },
-  progressTrack: { height: 3, borderRadius: 2, position: 'relative' },
-  progressFill: { height: 3, borderRadius: 2, position: 'absolute', top: 0, left: 0 },
-  progressThumb: {
-    width: 12, height: 12, borderRadius: 6,
-    position: 'absolute', top: -4.5,
-    shadowRadius: 6, shadowOpacity: 0.8,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  timeRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  timeText: { fontSize: 11, letterSpacing: 0.3 },
+  player: { borderRadius: 24, padding: 22, marginBottom: 20, borderWidth: 0.5 },
 
-  // Contrôles
+  // Barre de progression
+  progressContainer: { marginBottom: 20, marginTop: 16 },
+  progressTouchArea: { paddingVertical: 10 },
+  progressTrack: { height: 4, borderRadius: 2, position: 'relative' },
+  progressFill: { height: 4, borderRadius: 2, position: 'absolute', top: 0, left: 0 },
+  progressThumb: {
+    width: 14, height: 14, borderRadius: 7,
+    position: 'absolute', top: -5,
+    shadowRadius: 8, shadowOpacity: 0.9,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 4,
+  },
+  timeRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  timeText: { fontSize: 11, letterSpacing: 0.3 },
+  sleepBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: 999, borderWidth: 0.5,
+  },
+  sleepBadgeText: { fontSize: 10, fontWeight: '600' },
+
+  // Contrôles principaux
   controls: {
     flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'center', gap: 36, marginBottom: 16,
+    justifyContent: 'center', gap: 32, marginBottom: 20,
   },
   seekBtn: { alignItems: 'center', gap: 3 },
   seekLabel: { fontSize: 9, letterSpacing: 0.3 },
-  playBtnWrapper: { width: 80, height: 80, alignItems: 'center', justifyContent: 'center' },
-  playHalo: {
-    position: 'absolute', width: 80, height: 80, borderRadius: 40,
-  },
+  playBtnWrapper: { width: 84, height: 84, alignItems: 'center', justifyContent: 'center' },
+  playHalo: { position: 'absolute', width: 84, height: 84, borderRadius: 42 },
   playButton: {
-    width: 76, height: 76, borderRadius: 38, overflow: 'hidden',
-    shadowRadius: 16, shadowOpacity: 0.5, shadowOffset: { width: 0, height: 4 }, elevation: 8,
+    width: 80, height: 80, borderRadius: 40, overflow: 'hidden',
+    shadowRadius: 20, shadowOpacity: 0.6, shadowOffset: { width: 0, height: 4 }, elevation: 10,
   },
   playButtonGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   playButtonDisabled: { opacity: 0.4 },
-  playerHint: { textAlign: 'center', fontSize: 11, letterSpacing: 0.8 },
 
-  // Script
-  scriptContainer: { borderRadius: 20, padding: 20, marginTop: 8, marginBottom: 24, borderWidth: 0.5 },
-  scriptHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-  scriptTitleIcon: { fontSize: 16 },
-  scriptTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18 },
-  scriptText: { fontSize: 14, lineHeight: 24, letterSpacing: 0.2 },
+  // Contrôles secondaires
+  secondaryControls: {
+    flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 14,
+  },
+  secondaryBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 7,
+    borderRadius: 999, borderWidth: 0.5,
+  },
+  secondaryBtnLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.2 },
 
-  // Similaires
-  similarSection: { marginTop: 8, marginBottom: 8 },
-  similarTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, marginBottom: 14 },
-  simCard: { borderRadius: 16, overflow: 'hidden', width: 152, borderWidth: 0.5 },
-  simCover: { height: 84, justifyContent: 'center', alignItems: 'center' },
-  simEmoji: { fontSize: 30 },
-  simInfo: { padding: 10 },
-  simCatLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 },
-  simCardTitle: { fontSize: 12, fontWeight: '500', lineHeight: 16, marginBottom: 4 },
-  simDuration: { fontSize: 10 },
+  // Menus
+  menuContainer: {
+    borderRadius: 16, padding: 16, marginBottom: 14, borderWidth: 0.5,
+  },
+  menuTitle: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3, marginBottom: 12, textAlign: 'center' },
+  menuRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' },
+  menuChip: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, borderWidth: 0.5,
+  },
+  menuChipText: { fontSize: 12, fontWeight: '700' },
+
+  playerHint: { textAlign: 'center', fontSize: 11, letterSpacing: 0.8, marginTop: 4 },
 
   // Infos enrichies
-  infoCard: {
-    borderRadius: 18, padding: 18, marginBottom: 20, borderWidth: 0.5,
-  },
-  infoRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-  },
+  infoCard: { borderRadius: 18, padding: 18, marginBottom: 20, borderWidth: 0.5 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' },
   infoItem: { flex: 1, alignItems: 'center', gap: 4 },
   infoEmoji: { fontSize: 22 },
   infoValue: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
   infoLabel: { fontSize: 10, textAlign: 'center', letterSpacing: 0.3 },
   infoSep: { width: 0.5, height: 48, opacity: 0.5 },
+
+  // Script
+  scriptContainer: { borderRadius: 20, padding: 20, marginBottom: 20, borderWidth: 0.5 },
+  scriptHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  scriptTitleIcon: { fontSize: 16 },
+  scriptTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18 },
+  scriptText: { fontSize: 14, lineHeight: 24, letterSpacing: 0.2, marginTop: 14 },
+
+  // Similaires
+  similarSection: { marginBottom: 8 },
+  similarTitle: { fontFamily: 'CormorantGaramond-Medium', fontSize: 18, marginBottom: 14 },
+  simCard: { borderRadius: 16, overflow: 'hidden', width: 160, borderWidth: 0.5 },
+  simCover: { height: 90, justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  simEmoji: { fontSize: 32 },
+  simPremiumBadge: {
+    position: 'absolute', top: 6, right: 6,
+    paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4,
+  },
+  simInfo: { padding: 10 },
+  simCatLabel: { fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 },
+  simCardTitle: { fontSize: 12, fontWeight: '500', lineHeight: 16, marginBottom: 3 },
+  simDuration: { fontSize: 10 },
   });
 }
