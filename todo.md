@@ -493,3 +493,12 @@
 - [x] Animation de confirmation après enregistrement (récap humeur + scores)
 - [x] Bouton favori sur les cartes de méditation dans Explore (fond rose quand actif)
 - [x] Section infos enrichies dans le lecteur méditation (durée, niveau, catégorie)
+
+## Phase 47 : Notifications de rappel méditation
+
+- [x] Lire DOCS.md expo-notifications
+- [x] Créer hook useNotifications (permissions, scheduling, cancel)
+- [x] Créer composant ReminderSettings (toggle, heure, jours de la semaine)
+- [x] Persister les préférences de rappel dans AsyncStorage
+- [x] Intégrer ReminderSettings dans l'écran profil
+- [x] Handler de notifications déjà configuré dans _layout.tsx (setupNotificationHandler)

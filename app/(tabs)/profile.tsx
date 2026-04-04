@@ -13,6 +13,7 @@ import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { AnimatedScreen } from '@/components/animated-screen';
 import { StarField } from '@/components/star-field';
 import { loadNotificationSettings, formatTime, type NotificationSettings, DEFAULT_NOTIFICATION_SETTINGS } from '@/lib/notification-service';
+import { ReminderSettings } from '@/components/reminder-settings';
 import { useThemeContext } from '@/lib/theme-provider';
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -354,28 +355,6 @@ export default function ProfileScreen() {
               })}
             </View>
           </View>
-          <Pressable
-            style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
-            onPress={() => router.push('/notifications-settings' as never)}
-          >
-            <Text style={styles.settingIcon}>🔔</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Rappels quotidiens</Text>
-              {notifSettings.enabled ? (
-                <Text style={[styles.settingSubValue, { color: colors.primary }]}>
-                  Activé · {formatTime(notifSettings.hour, notifSettings.minute)}
-                </Text>
-              ) : (
-                <Text style={[styles.settingSubValue, { color: colors.muted }]}>Désactivé</Text>
-              )}
-            </View>
-            <View style={styles.settingRight}>
-              {notifSettings.enabled && (
-                <View style={[styles.notifActiveDot, { backgroundColor: colors.success }]} />
-              )}
-              <IconSymbol name="chevron.right" size={16} color={colors.muted} />
-            </View>
-          </Pressable>
           <Pressable style={({ pressed }) => [styles.settingRow, { borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}>
             <Text style={styles.settingIcon}>🎯</Text>
             <Text style={[styles.settingLabel, { color: colors.foreground }]}>Objectif quotidien</Text>
@@ -393,6 +372,9 @@ export default function ProfileScreen() {
             </View>
           </Pressable>
         </View>
+
+        {/* Rappels de méditation — composant intégré */}
+        <ReminderSettings />
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Compte</Text>
         <View style={[styles.settingsGroup, { backgroundColor: colors.surface }]}>
