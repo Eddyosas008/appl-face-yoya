@@ -158,10 +158,10 @@ export default function ProgramCompleteScreen() {
   const { isDark } = useThemeContext();
 
   // Couleurs dynamiques
-  const GOLD    = isDark ? '#C9963E' : '#A0722A';
-  const FG      = isDark ? '#EDE8FF' : '#1E1A3C';
-  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
-  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const GOLD    = isDark ? '#C8A96E' : '#A0722A';
+  const FG      = isDark ? '#EDE8DC' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
   const SURFACE = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const SUCCESS = isDark ? 'rgba(74,222,128,0.8)' : 'rgba(22,163,74,0.9)';
@@ -231,7 +231,7 @@ export default function ProgramCompleteScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       {/* Confettis */}
       <View style={styles.confettiContainer} pointerEvents="none">

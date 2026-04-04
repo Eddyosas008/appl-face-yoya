@@ -44,12 +44,12 @@ export default function WelcomeScreen() {
   const { isDark } = useThemeContext();
 
   // Palette dynamique
-  const BG      = isDark ? '#120E2E' : '#F7F3FD';
-  const GOLD    = isDark ? '#C9963E' : '#A8762C';
-  const WHITE   = isDark ? '#EDE8FF' : '#1A1230';
-  const LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
-  const LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
-  const BORDER  = isDark ? 'rgba(139,108,200,0.20)' : 'rgba(120,100,180,0.18)';
+  const BG      = isDark ? '#0D0B1A' : '#FAF7F2';
+  const GOLD    = isDark ? '#C8A96E' : '#8B6914';
+  const WHITE   = isDark ? '#EDE8DC' : '#1C1410';
+  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.70)';
+  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.45)';
+  const BORDER  = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(120,100,180,0.18)';
   const SEC_BTN = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.60)';
 
   return (

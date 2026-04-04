@@ -418,3 +418,11 @@
 - [x] Générer et intégrer le nouveau logo SomnioPax (lune + lotus + fond indigo)
 - [x] Remplacer toutes les occurrences de Yoya par SomnioPax dans les fichiers tsx
 - [x] Corriger les fonds clair dans les écrans auth (#F0EDF8 → #F7F3FD)
+
+## Phase 39 : Refonte palette premium épurée
+
+- [x] Définir la palette premium (crème/ivoire clair, bleu nuit sombre, or subtil)
+- [x] Mettre à jour theme.config.js et theme-constants.ts
+- [x] Appliquer sur tous les écrans tabs
+- [x] Appliquer sur tous les écrans secondaires
+- [x] Vérifier la cohérence et sauvegarder le checkpoint

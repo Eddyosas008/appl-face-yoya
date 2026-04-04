@@ -1,46 +1,49 @@
 /**
- * SomnioPax — Palette de thème
- * Deux modes très distincts :
- *   CLAIR  : fond #F7F3FD (lavande pâle), texte #1A1230 (violet foncé), or #A8762C
- *   SOMBRE : fond #120E2E (bleu nuit profond), texte #EDE8FF (lavande clair), or #C9963E
+ * SomnioPax — Palette Premium Épurée
+ *
+ * SOMBRE : Bleu nuit profond (#0D0B1A), surface (#16132B), or doux (#C8A96E)
+ * CLAIR  : Crème ivoire (#FAF7F2), surface (#FFFFFF), or riche (#8B6914)
+ *
+ * Philosophie : contraste élevé, tons neutres chauds, un seul accent (or),
+ *               lisibilité parfaite, aucune couleur criarde.
  */
 
 /** @type {const} */
 const themeColors = {
-  // Couleur d'accent principale
+  // Accent principal — or premium
   primary: {
-    light: '#5A3BA0',   // violet moyen — boutons, liens
-    dark:  '#8B6CC8',   // violet clair — boutons, liens
+    light: '#8B6914',   // or foncé — boutons, liens (mode clair)
+    dark:  '#C8A96E',   // or doux — boutons, liens (mode sombre)
   },
   // Fond de l'application
   background: {
-    light: '#F7F3FD',   // lavande très pâle
-    dark:  '#120E2E',   // bleu nuit profond
+    light: '#FAF7F2',   // crème ivoire chaud
+    dark:  '#0D0B1A',   // bleu nuit très profond
   },
   // Surface des cartes
   surface: {
     light: '#FFFFFF',   // blanc pur
-    dark:  '#1C1740',   // bleu nuit légèrement plus clair
+    dark:  '#16132B',   // bleu nuit légèrement plus clair
   },
   // Texte principal
   foreground: {
-    light: '#1A1230',   // violet très foncé
-    dark:  '#EDE8FF',   // lavande clair
+    light: '#1C1410',   // brun très foncé (quasi noir chaud)
+    dark:  '#EDE8DC',   // crème clair (chaud, pas blanc froid)
   },
   // Texte secondaire
   muted: {
-    light: '#7A6A9A',   // violet moyen-clair
-    dark:  '#8878AA',   // violet grisé
+    light: '#7A6A58',   // brun moyen chaud
+    dark:  '#9A8F7E',   // crème atténué
   },
   // Bordures
   border: {
-    light: 'rgba(139,108,200,0.20)',
-    dark:  'rgba(139,108,200,0.18)',
+    light: 'rgba(139,105,20,0.15)',   // or très transparent
+    dark:  'rgba(200,169,110,0.14)',  // or très transparent
   },
   // États
-  success: { light: '#1A7A6E', dark: '#4ADE80' },
-  warning: { light: '#8A5A10', dark: '#FBBF24' },
-  error:   { light: '#9B3060', dark: '#F87171' },
+  success: { light: '#2D6A4F', dark: '#52B788' },
+  warning: { light: '#7D4E00', dark: '#E9C46A' },
+  error:   { light: '#9B2335', dark: '#E07070' },
 };
 
 module.exports = { themeColors };

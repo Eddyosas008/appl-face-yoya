@@ -142,7 +142,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -325,7 +325,7 @@ export default function ProfileScreen() {
               value={isDark}
               onValueChange={toggleTheme}
               trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={isDark ? '#C9963E' : '#ffffff'}
+              thumbColor={isDark ? '#C8A96E' : '#ffffff'}
             />
           </View>
           <Pressable
@@ -475,15 +475,15 @@ export default function ProfileScreen() {
 }
 
 // Constantes palette (statiques pour StyleSheet)
-const GOLD_P         = '#C9963E';
+const GOLD_P         = '#C8A96E';
 const GOLD_SOFT_P    = 'rgba(201,168,76,0.12)';
 const LAVENDER_P     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM_P = 'rgba(139,108,200,0.18)';
-const LAVENDER_MED_P = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT_P   = '#EDE8FF';
-const NIGHT_BG_P     = '#120E2E';
+const LAVENDER_DIM_P = 'rgba(200,169,110,0.14)';
+const LAVENDER_MED_P = 'rgba(237,232,220,0.50)';
+const WHITE_SOFT_P   = '#EDE8DC';
+const NIGHT_BG_P     = '#0D0B1A';
 const GLASS_BG_P     = 'rgba(28,23,64,0.80)';
-const GLASS_BORDER_P = 'rgba(139,108,200,0.18)';
+const GLASS_BORDER_P = 'rgba(200,169,110,0.14)';
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },

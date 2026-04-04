@@ -33,9 +33,9 @@ function ChatBubble({
   const slideAnim = useRef(new Animated.Value(12)).current;
 
   // Couleurs dynamiques
-  const GOLD        = isDark ? '#C9963E' : '#A8762C';
+  const GOLD        = isDark ? '#C8A96E' : '#8B6914';
   const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
-  const TEXT_USER   = isDark ? '#EDE8FF' : '#1A1230';
+  const TEXT_USER   = isDark ? '#EDE8DC' : '#1C1410';
   const TEXT_AI     = isDark ? 'rgba(237,233,255,0.70)' : 'rgba(60,40,120,0.80)';
   const BUBBLE_USER_BG     = isDark ? 'rgba(201,168,76,0.18)' : 'rgba(184,146,46,0.14)';
   const BUBBLE_AI_BG       = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
@@ -95,7 +95,7 @@ function ChatBubble({
 
 // ── Indicateur de frappe ─────────────────────────────────────────────────────
 function TypingIndicator({ isDark }: { isDark: boolean }) {
-  const GOLD        = isDark ? '#C9963E' : '#A8762C';
+  const GOLD        = isDark ? '#C8A96E' : '#8B6914';
   const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
   const AVATAR_BG   = isDark ? 'rgba(201,168,76,0.15)' : 'rgba(184,146,46,0.12)';
   const BUBBLE_AI_BG     = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
@@ -149,9 +149,9 @@ export default function ChatScreen() {
   const { isDark } = useThemeContext();
 
   // ── Palette dynamique ──────────────────────────────────────────────────────
-  const GOLD        = isDark ? '#C9963E' : '#A8762C';
+  const GOLD        = isDark ? '#C8A96E' : '#8B6914';
   const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
-  const TEXT_MAIN   = isDark ? '#EDE8FF' : '#1A1230';
+  const TEXT_MAIN   = isDark ? '#EDE8DC' : '#1C1410';
   const TEXT_MUTED  = isDark ? 'rgba(237,233,255,0.50)' : 'rgba(100,80,140,0.60)';
   const AVATAR_BG   = isDark ? 'rgba(201,168,76,0.20)' : 'rgba(184,146,46,0.15)';
   const AVATAR_HALO = isDark ? 'rgba(201,168,76,0.12)' : 'rgba(184,146,46,0.10)';
@@ -159,8 +159,8 @@ export default function ChatScreen() {
   const WRAP_BG     = isDark ? 'rgba(3,2,15,0.95)' : 'rgba(240,237,248,0.97)';
   const PROMPT_BG   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.65)';
   const PROMPT_BORDER = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
-  const SEND_ACTIVE = isDark ? '#C9963E' : '#A8762C';
-  const SEND_ICON_COLOR = isDark ? '#120E2E' : '#F7F3FD';
+  const SEND_ACTIVE = isDark ? '#C8A96E' : '#8B6914';
+  const SEND_ICON_COLOR = isDark ? '#0D0B1A' : '#FAF7F2';
   const SEND_DISABLED_BG = isDark ? 'rgba(28,23,64,0.90)' : 'rgba(0,0,0,0.06)';
 
   const flatListRef = useRef<FlatList>(null);
@@ -258,7 +258,7 @@ export default function ChatScreen() {
   return (
     <ScreenContainer
       edges={['top', 'left', 'right']}
-      containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}
+      containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}
     >
       {/* Fond étoilé */}
       <StarField />

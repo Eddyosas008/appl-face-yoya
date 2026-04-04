@@ -364,7 +364,7 @@ export default function SleepTrackerScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#120E2E]">
+    <ScreenContainer containerClassName="bg-[#0D0B1A]">
       <StarField />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
@@ -717,15 +717,15 @@ export default function SleepTrackerScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 // ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const S_BG      = '#120E2E';
+const S_BG      = '#0D0B1A';
 const S_SURFACE = '#0D0B22';
 const S_GLASS   = 'rgba(28,23,64,0.80)';
-const S_BORDER  = 'rgba(139,108,200,0.20)';
-const S_GOLD    = '#C9963E';
+const S_BORDER  = 'rgba(200,169,110,0.14)';
+const S_GOLD    = '#C8A96E';
 const S_GOLD_BG = 'rgba(201,168,76,0.14)';
-const S_WHITE   = '#EDE8FF';
-const S_LAV     = 'rgba(184,174,255,0.55)';
-const S_LAV_DIM = 'rgba(184,174,255,0.35)';
+const S_WHITE   = '#EDE8DC';
+const S_LAV     = 'rgba(237,232,220,0.50)';
+const S_LAV_DIM = 'rgba(237,232,220,0.50)';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: S_BG },
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
   qualityBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   qualityText: { fontSize: 11, fontWeight: '600' },
   logIndicators: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 6 },
-  indicator: { fontSize: 11, color: S_LAV, backgroundColor: 'rgba(139,108,200,0.18)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  indicator: { fontSize: 11, color: S_LAV, backgroundColor: 'rgba(200,169,110,0.14)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   indicatorWarn: { color: '#FCD34D', backgroundColor: 'rgba(252,211,77,0.10)' },
   logNotesContainer: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: S_GOLD_BG, borderRadius: 10, padding: 10, marginBottom: 10, gap: 8 },
   logNotesIcon: { fontSize: 13, marginTop: 1 },

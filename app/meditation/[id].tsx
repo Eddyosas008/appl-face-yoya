@@ -65,9 +65,9 @@ export default function MeditationPlayerScreen() {
   const colors = useColors();
 
   // ── Palette dynamique ──────────────────────────────────────────────────────
-  const NIGHT_BG     = isDark ? '#07051C' : '#F0EDF8';
+  const NIGHT_BG     = isDark ? '#07051C' : '#FAF7F2';
   const NIGHT_MID    = isDark ? '#0C0830' : '#E8E3F5';
-  const GOLD         = isDark ? '#D4A853' : '#A8762C';
+  const GOLD         = isDark ? '#D4A853' : '#8B6914';
   const GOLD_GLOW    = isDark ? 'rgba(212,168,83,0.25)' : 'rgba(184,146,46,0.20)';
   const GOLD_SOFT    = isDark ? 'rgba(212,168,83,0.10)' : 'rgba(184,146,46,0.12)';
   const LAVENDER     = isDark ? 'rgba(180,168,220,0.75)' : 'rgba(100,80,160,0.80)';

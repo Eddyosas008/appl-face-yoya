@@ -35,10 +35,10 @@ export default function ProgramsListScreen() {
   const [activeFilter, setActiveFilter] = useState("all");
 
   // Couleurs dynamiques
-  const GOLD    = isDark ? '#C9963E' : '#A0722A';
-  const FG      = isDark ? '#EDE8FF' : '#1E1A3C';
-  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
-  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const GOLD    = isDark ? '#C8A96E' : '#A0722A';
+  const FG      = isDark ? '#EDE8DC' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
   const GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
 
@@ -57,7 +57,7 @@ export default function ProgramsListScreen() {
   };
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}
@@ -175,7 +175,7 @@ export default function ProgramsListScreen() {
                     {progress ? (
                       <View style={styles.progressBox}>
                         <View style={[styles.progressBarBg, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                          <View style={[styles.progressBarFill, { width: `${pct}%` as `${number}%`, backgroundColor: '#C9963E' }]} />
+                          <View style={[styles.progressBarFill, { width: `${pct}%` as `${number}%`, backgroundColor: '#C8A96E' }]} />
                         </View>
                         <Text style={styles.progressText}>
                           {progress.completed}/{progress.total} jours — {pct}%
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   badgeFeatured: { backgroundColor: 'rgba(201,168,76,0.20)', borderColor: 'rgba(201,168,76,0.35)' },
-  badgePremium: { backgroundColor: 'rgba(184,174,255,0.18)', borderColor: 'rgba(184,174,255,0.30)' },
+  badgePremium: { backgroundColor: 'rgba(237,232,220,0.50)', borderColor: 'rgba(237,232,220,0.50)' },
   badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
   cardEmoji: { fontSize: 36, marginBottom: 8 },
   cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: '#FFFFFF', marginBottom: 4 },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   progressText: { fontSize: 12, color: 'rgba(255,255,255,0.60)' },
   startRow: { marginTop: 12 },
   startBtn: {
-    color: '#C9963E',
+    color: '#C8A96E',
     fontWeight: '700',
     fontSize: 15,
   },

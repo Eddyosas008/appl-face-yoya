@@ -29,7 +29,7 @@ const AURORA_BLOBS_LIGHT = [
 export function StarField() {
   const { isDark } = useThemeContext();
 
-  const starColor = isDark ? '#EDE8FF' : 'rgba(140,110,200,0.7)';
+  const starColor = isDark ? '#EDE8DC' : 'rgba(140,110,200,0.7)';
   const AURORA_BLOBS = isDark ? AURORA_BLOBS_DARK : AURORA_BLOBS_LIGHT;
 
   const stars = useRef(

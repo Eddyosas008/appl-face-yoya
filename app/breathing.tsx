@@ -105,11 +105,11 @@ export default function BreathingScreen() {
   const { isDark } = useThemeContext();
 
   // Palette dynamique
-  const B_GOLD    = isDark ? '#C9963E' : '#A8762C';
-  const B_WHITE   = isDark ? '#EDE8FF' : '#1A1230';
-  const B_LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
-  const B_LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
-  const B_BORDER  = isDark ? 'rgba(139,108,200,0.20)' : 'rgba(120,100,180,0.18)';
+  const B_GOLD    = isDark ? '#C8A96E' : '#8B6914';
+  const B_WHITE   = isDark ? '#EDE8DC' : '#1C1410';
+  const B_LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.70)';
+  const B_LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.45)';
+  const B_BORDER  = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(120,100,180,0.18)';
   const B_GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.72)';
   const [selected, setSelected] = useState<BreathingTechnique | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -314,7 +314,7 @@ export default function BreathingScreen() {
             <View style={styles.exerciseControls}>
               {!isRunning && !isComplete && (
                 <Pressable
-                  style={({ pressed }) => [styles.mainBtn, { backgroundColor: '#C9963E', opacity: pressed ? 0.85 : 1 }]}
+                  style={({ pressed }) => [styles.mainBtn, { backgroundColor: '#C8A96E', opacity: pressed ? 0.85 : 1 }]}
                   onPress={handleStart}
                 >
                   <Text style={styles.mainBtnText}>Commencer</Text>
@@ -347,7 +347,7 @@ export default function BreathingScreen() {
 
   // Technique selection screen
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {/* Header */}
@@ -384,7 +384,7 @@ export default function BreathingScreen() {
                   <Text style={[styles.techniqueDesc, { color: 'rgba(255,255,255,0.75)' }]} numberOfLines={2}>{technique.description}</Text>
                   <View style={styles.techniqueMeta}>
                     <View style={[styles.benefitBadge, { backgroundColor: 'rgba(201,168,76,0.15)', borderColor: 'rgba(201,168,76,0.25)' }]}>
-                      <Text style={[styles.benefitText, { color: '#C9963E' }]}>{technique.benefit}</Text>
+                      <Text style={[styles.benefitText, { color: '#C8A96E' }]}>{technique.benefit}</Text>
                     </View>
                     <Text style={[styles.cyclesText, { color: 'rgba(255,255,255,0.5)' }]}>{technique.cycles} cycles</Text>
                   </View>
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   exerciseControls: { gap: 12, width: '100%', alignItems: 'center' },
   mainBtn: { borderRadius: 999, paddingVertical: 16, paddingHorizontal: 48 },
   stopBtn: { borderWidth: 1 },
-  mainBtnText: { color: '#120E2E', fontSize: 16, fontWeight: '800' },
+  mainBtnText: { color: '#0D0B1A', fontSize: 16, fontWeight: '800' },
   secondaryBtn: { paddingVertical: 10 },
   secondaryBtnText: { fontSize: 14 },
   durationHint: { fontSize: 12, marginTop: 20 },

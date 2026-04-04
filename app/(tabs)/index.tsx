@@ -119,9 +119,9 @@ function _LocalStarField_UNUSED() {
   }, []);
 
   const blobConfigs = [
-    { left: '10%', top: '8%',  width: 160, height: 90,  color: 'rgba(74,44,138,0.22)' },
-    { left: '55%', top: '15%', width: 130, height: 75,  color: 'rgba(40,20,100,0.18)' },
-    { left: '30%', top: '2%',  width: 170, height: 60,  color: 'rgba(100,60,180,0.14)' },
+    { left: '10%', top: '8%',  width: 160, height: 90,  color: 'rgba(200,169,110,0.08)' },
+    { left: '55%', top: '15%', width: 130, height: 75,  color: 'rgba(180,140,80,0.06)' },
+    { left: '30%', top: '2%',  width: 170, height: 60,  color: 'rgba(200,169,110,0.06)' },
   ];
 
   return (
@@ -156,7 +156,7 @@ function _LocalStarField_UNUSED() {
             width: star.size,
             height: star.size,
             borderRadius: star.size / 2,
-            backgroundColor: '#EDE8FF',
+            backgroundColor: '#EDE8DC',
             opacity: star.anim,
           }}
         />
@@ -173,15 +173,15 @@ export default function HomeScreen() {
   const { profile } = useUser();
   const { isAuthenticated } = useAuth();
   // Palette selon modèle de référence
-  const GOLD        = isDark ? '#C9963E' : '#A8762C';
-  const GLASS_BORDER = isDark ? 'rgba(139,108,200,0.18)' : 'rgba(139,108,200,0.20)';
-  const NIGHT_BG    = isDark ? '#120E2E' : '#F7F3FD';   // sombre : bleu nuit | clair : lavande
-  const WHITE_SOFT  = isDark ? '#EDE8FF' : '#1A1230';   // sombre : lavande | clair : violet foncé
-  const TEXT_MID    = isDark ? '#B8AEDD' : '#4A3870';
-  const TEXT_SOFT   = isDark ? '#8878AA' : '#7A6A9A';
+  const GOLD        = isDark ? '#C8A96E' : '#8B6914';
+  const GLASS_BORDER = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(200,169,110,0.14)';
+  const NIGHT_BG    = isDark ? '#0D0B1A' : '#FAF7F2';   // sombre : bleu nuit | clair : lavande
+  const WHITE_SOFT  = isDark ? '#EDE8DC' : '#1C1410';   // sombre : lavande | clair : violet foncé
+  const TEXT_MID    = isDark ? '#C4BCAC' : '#3D3020';
+  const TEXT_SOFT   = isDark ? '#9A8F7E' : '#7A6A58';
   const CARD_BG     = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.98)';
-  const CARD_BORDER = isDark ? 'rgba(139,108,200,0.18)' : 'rgba(139,108,200,0.16)';
-  const HERO_BG     = isDark ? '#1A1040' : '#EDE6FF';
+  const CARD_BORDER = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(200,169,110,0.14)';
+  const HERO_BG     = isDark ? '#120F24' : '#F0EBE0';
   const { greeting, isNight } = getTimeGreeting();
   const moonPhase = getMoonPhaseLabel();
   const moonEmoji = getMoonEmoji();
@@ -239,13 +239,13 @@ export default function HomeScreen() {
   const currentTime   = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
         {/* ── HERO NOCTURNE ──────────────────────────────────────────────── */}
         <View style={styles.heroWrapper}>
           <LinearGradient
-            colors={isDark ? ['#1A1040', '#120E2E', '#0E0A22'] : ['#EDE6FF', '#EDE6FF', '#F7F3FD']}
+            colors={isDark ? ['#120F24', '#0D0B1A', '#0D0B1A'] : ['#F0EBE0', '#F0EBE0', '#FAF7F2']}
             style={styles.hero}
           >
             <StarField />
@@ -573,7 +573,7 @@ export default function HomeScreen() {
 
         {/* ── CITATION NOCTURNE ──────────────────────────────────────────── */}
         <View style={styles.section}>
-          <LinearGradient colors={isDark ? [INDIGO_DEEP, '#0C0828'] : ['#EDE8FF', '#E8E0FF']} style={styles.quoteCard}>
+          <LinearGradient colors={isDark ? [INDIGO_DEEP, '#0C0828'] : ['#EDE8DC', '#E8E0FF']} style={styles.quoteCard}>
             <Text style={styles.quoteStars}>✦  ✧  ✦</Text>
             <Text style={styles.quoteText}>"{quote.text}"</Text>
             <Text style={styles.quoteAuthor}>— {quote.author}</Text>
@@ -644,45 +644,45 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(201,150,62,0.08)',
     borderWidth: 1, borderColor: 'rgba(201,150,62,0.30)',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#C9963E', shadowRadius: 16, shadowOpacity: 0.35, shadowOffset: { width: 0, height: 0 },
+    shadowColor: '#C8A96E', shadowRadius: 16, shadowOpacity: 0.35, shadowOffset: { width: 0, height: 0 },
   },
   moonEmoji: { fontSize: 38 },
   heroContent: { alignItems: 'center' },
-  heroGreeting: { fontSize: 10.5, letterSpacing: 1.8, textTransform: 'uppercase', color: '#C9963E', marginBottom: 12, fontWeight: '500' },
-  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 32, color: '#EDE8FF', textAlign: 'center', lineHeight: 38, marginBottom: 12, letterSpacing: -0.3 },
+  heroGreeting: { fontSize: 10.5, letterSpacing: 1.8, textTransform: 'uppercase', color: '#C8A96E', marginBottom: 12, fontWeight: '500' },
+  heroTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 32, color: '#EDE8DC', textAlign: 'center', lineHeight: 38, marginBottom: 12, letterSpacing: -0.3 },
   heroSubtitle: { fontFamily: 'PlayfairDisplay-Regular', fontSize: 13, color: 'rgba(237,232,255,0.55)', textAlign: 'center', lineHeight: 21, paddingHorizontal: 16, marginBottom: 20 },
   moonPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(28,23,64,0.90)', borderWidth: 1, borderColor: 'rgba(201,150,62,0.22)', borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
-  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#C9963E', shadowColor: '#C9963E', shadowRadius: 8, shadowOpacity: 1 },
+  moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#C8A96E', shadowColor: '#C8A96E', shadowRadius: 8, shadowOpacity: 1 },
   moonPillText: { color: 'rgba(237,232,255,0.70)', fontSize: 10.5, letterSpacing: 0.5 },
 
   // Stats SomnioPax v3 — anneaux SVG style
   statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 18, marginBottom: 4 },
-  statCard: { flex: 1, backgroundColor: 'rgba(139,108,200,0.10)', borderWidth: 1, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 20, paddingVertical: 16, paddingHorizontal: 6, alignItems: 'center', position: 'relative', overflow: 'hidden' },
+  statCard: { flex: 1, backgroundColor: 'rgba(200,169,110,0.14)', borderWidth: 1, borderColor: 'rgba(200,169,110,0.14)', borderRadius: 20, paddingVertical: 16, paddingHorizontal: 6, alignItems: 'center', position: 'relative', overflow: 'hidden' },
   statIcon: { fontSize: 18, marginBottom: 4 },
-  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE8FF', lineHeight: 26, marginBottom: 4 },
-  statLabel: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(184,174,255,0.45)' },
+  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE8DC', lineHeight: 26, marginBottom: 4 },
+  statLabel: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(237,232,220,0.50)' },
 
   // Divider
-  divider: { height: 0.5, backgroundColor: 'rgba(139,108,200,0.15)', marginHorizontal: 24, marginVertical: 8 },
+  divider: { height: 0.5, backgroundColor: 'rgba(200,169,110,0.14)', marginHorizontal: 24, marginVertical: 8 },
 
   // Sections SomnioPax v3
   section: { marginTop: 24, paddingHorizontal: 18 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: '#EDE8FF', marginBottom: 3 },
-  sectionSub: { fontSize: 10.5, color: 'rgba(184,174,255,0.45)', letterSpacing: 0.2 },
-  seeAll: { fontSize: 10, color: '#C9963E', letterSpacing: 0.6, marginTop: 4, opacity: 0.8 },
+  sectionTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 19, color: '#EDE8DC', marginBottom: 3 },
+  sectionSub: { fontSize: 10.5, color: 'rgba(237,232,220,0.50)', letterSpacing: 0.2 },
+  seeAll: { fontSize: 10, color: '#C8A96E', letterSpacing: 0.6, marginTop: 4, opacity: 0.8 },
 
   // Carte sommeil
-  sleepCard: { backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  sleepCard: { backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   sleepCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#1C1740', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', alignItems: 'center', justifyContent: 'center' },
-  sleepCardTitle: { fontSize: 13, fontWeight: '500', color: '#EDE8FF', marginBottom: 2 },
+  sleepCardIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#16132B', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)', alignItems: 'center', justifyContent: 'center' },
+  sleepCardTitle: { fontSize: 13, fontWeight: '500', color: '#EDE8DC', marginBottom: 2 },
   sleepCardSub: { fontSize: 10.5, color: 'rgba(237,232,255,0.55)', letterSpacing: 0.3 },
   arrowBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(201,150,62,0.15)', borderWidth: 0.5, borderColor: 'rgba(201,150,62,0.28)', alignItems: 'center', justifyContent: 'center' },
-  arrowBtnText: { color: '#C9963E', fontSize: 18, lineHeight: 20 },
+  arrowBtnText: { color: '#C8A96E', fontSize: 18, lineHeight: 20 },
 
   // Mini graphique sommeil
-  sleepMiniChart: { marginTop: 10, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 16, padding: 14 },
+  sleepMiniChart: { marginTop: 10, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)', borderRadius: 16, padding: 14 },
   sleepMiniChartTitle: { fontSize: 11, color: 'rgba(237,232,255,0.55)', marginBottom: 10, letterSpacing: 0.3 },
   sleepBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 52 },
   sleepBarCol: { alignItems: 'center', flex: 1, gap: 4 },
@@ -695,21 +695,21 @@ const styles = StyleSheet.create({
   featuredLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1, zIndex: 1 },
   featuredMoon: { fontSize: 32, textShadowColor: 'rgba(201,150,62,0.5)', textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } },
   featuredTag: { fontSize: 8.5, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(201,150,62,0.85)', marginBottom: 4 },
-  featuredTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: '#EDE8FF', lineHeight: 23, marginBottom: 3 },
-  featuredMeta: { fontSize: 10.5, color: 'rgba(184,174,255,0.65)', letterSpacing: 0.3 },
-  playBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#C9963E', alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: '#C9963E', shadowRadius: 16, shadowOpacity: 0.45, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
-  playBtnIcon: { color: '#120E2E', fontSize: 14, fontWeight: '700', paddingLeft: 2 },
+  featuredTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: '#EDE8DC', lineHeight: 23, marginBottom: 3 },
+  featuredMeta: { fontSize: 10.5, color: 'rgba(237,232,220,0.50)', letterSpacing: 0.3 },
+  playBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#C8A96E', alignItems: 'center', justifyContent: 'center', zIndex: 1, shadowColor: '#C8A96E', shadowRadius: 16, shadowOpacity: 0.45, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  playBtnIcon: { color: '#0D0B1A', fontSize: 14, fontWeight: '700', paddingLeft: 2 },
 
   // Mini méditations
-  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)' },
+  miniMedCard: { borderRadius: 14, overflow: 'hidden', width: 128, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)' },
   miniMedCover: { height: 70, justifyContent: 'center', alignItems: 'center' },
   miniMedEmoji: { fontSize: 26 },
-  miniMedTitle: { fontSize: 11, fontWeight: '600', color: '#EDE8FF', lineHeight: 15, margin: 8, marginBottom: 2 },
+  miniMedTitle: { fontSize: 11, fontWeight: '600', color: '#EDE8DC', lineHeight: 15, margin: 8, marginBottom: 2 },
   miniMedDur: { fontSize: 10, color: 'rgba(237,232,255,0.55)', marginHorizontal: 8, marginBottom: 8 },
 
   // Mini cards accès rapide
   miniCardsRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 18, marginTop: 22 },
-  miniCard: { flex: 1, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)', borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  miniCard: { flex: 1, backgroundColor: 'rgba(28,23,64,0.80)', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)', borderRadius: 14, aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
   miniCardIcon: { fontSize: 22 },
   miniCardLabel: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(237,232,255,0.55)', textAlign: 'center' },
 
@@ -718,13 +718,13 @@ const styles = StyleSheet.create({
   inProgressLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   inProgressEmoji: { fontSize: 36 },
   inProgressLabel: { color: 'rgba(237,232,255,0.65)', fontSize: 9, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 2 },
-  inProgressTitle: { color: '#EDE8FF', fontSize: 15, fontWeight: '700', marginBottom: 2 },
+  inProgressTitle: { color: '#EDE8DC', fontSize: 15, fontWeight: '700', marginBottom: 2 },
   inProgressDay: { color: 'rgba(237,232,255,0.70)', fontSize: 11 },
   inProgressRight: { alignItems: 'flex-end', gap: 6, minWidth: 80 },
-  inProgressPct: { color: '#EDE8FF', fontSize: 20, fontWeight: '800' },
-  inProgressBarBg: { width: 80, height: 5, backgroundColor: 'rgba(139,108,200,0.20)', borderRadius: 3, overflow: 'hidden' },
+  inProgressPct: { color: '#EDE8DC', fontSize: 20, fontWeight: '800' },
+  inProgressBarBg: { width: 80, height: 5, backgroundColor: 'rgba(200,169,110,0.14)', borderRadius: 3, overflow: 'hidden' },
   inProgressBarFill: { height: 5, backgroundColor: '#4ADE80', borderRadius: 3 },
-  inProgressCta: { color: '#C9963E', fontSize: 11, fontWeight: '600' },
+  inProgressCta: { color: '#C8A96E', fontSize: 11, fontWeight: '600' },
 
   // Programmes SomnioPax v3
   programCard: { width: 160 },
@@ -732,17 +732,17 @@ const styles = StyleSheet.create({
   programEmoji: { fontSize: 30 },
   programDaysBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 },
   programDaysText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
-  programTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8FF', fontSize: 17, lineHeight: 21 },
+  programTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8DC', fontSize: 17, lineHeight: 21 },
   programDesc: { color: 'rgba(237,232,255,0.55)', fontSize: 11 },
   programStartBtn: { backgroundColor: 'rgba(201,150,62,0.15)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(201,150,62,0.30)' },
-  programStartText: { color: '#C9963E', fontSize: 11, fontWeight: '600' },
+  programStartText: { color: '#C8A96E', fontSize: 11, fontWeight: '600' },
 
   // Problématiques
   issuesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  issueCard: { width: (SCREEN_WIDTH - 36 - 10) / 2, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.18)' },
+  issueCard: { width: (SCREEN_WIDTH - 36 - 10) / 2, borderRadius: 16, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)' },
   issueGradient: { padding: 16 },
   issueEmoji: { fontSize: 26, marginBottom: 8 },
-  issueLabel: { fontSize: 13, fontWeight: '600', color: '#EDE8FF', marginBottom: 3 },
+  issueLabel: { fontSize: 13, fontWeight: '600', color: '#EDE8DC', marginBottom: 3 },
   issueDesc: { fontSize: 11, color: 'rgba(237,232,255,0.55)', lineHeight: 16 },
 
   // Conseil du soir
@@ -750,43 +750,43 @@ const styles = StyleSheet.create({
   tipGradient: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18 },
   tipEmoji: { fontSize: 34 },
   tipContent: { flex: 1 },
-  tipTitle: { fontSize: 14, fontWeight: '600', color: '#EDE8FF', marginBottom: 4 },
+  tipTitle: { fontSize: 14, fontWeight: '600', color: '#EDE8DC', marginBottom: 4 },
   tipDesc: { fontSize: 12, color: 'rgba(237,232,255,0.55)', lineHeight: 18 },
   tipDots: { flexDirection: 'row', justifyContent: 'center', gap: 6, paddingBottom: 12 },
   tipDot: { width: 5, height: 5, borderRadius: 2.5 },
 
   // Science SomnioPax v3
-  scienceCard: { width: 200, borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(139,108,200,0.18)' },
+  scienceCard: { width: 200, borderRadius: 22, padding: 18, borderWidth: 1, borderColor: 'rgba(200,169,110,0.14)' },
   scienceEmoji: { fontSize: 30, marginBottom: 10 },
-  scienceTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8FF', fontSize: 16, marginBottom: 6 },
+  scienceTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8DC', fontSize: 16, marginBottom: 6 },
   scienceDesc: { color: 'rgba(237,232,255,0.55)', fontSize: 12, lineHeight: 18 },
 
   // Citation SomnioPax v3
   quoteCard: { borderRadius: 22, padding: 30, alignItems: 'center' },
   quoteStars: { color: 'rgba(201,168,76,0.5)', fontSize: 13, letterSpacing: 10, marginBottom: 18 },
-  quoteText: { fontFamily: 'PlayfairDisplay-Italic', color: '#EDE8FF', fontSize: 19, lineHeight: 28, textAlign: 'center', marginBottom: 14 },
-  quoteAuthor: { color: 'rgba(184,174,255,0.50)', fontSize: 12, letterSpacing: 0.5 },
+  quoteText: { fontFamily: 'PlayfairDisplay-Italic', color: '#EDE8DC', fontSize: 19, lineHeight: 28, textAlign: 'center', marginBottom: 14 },
+  quoteAuthor: { color: 'rgba(237,232,220,0.50)', fontSize: 12, letterSpacing: 0.5 },
 
   // CTA SomnioPax v3
   ctaCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
   ctaEmoji: { fontSize: 34 },
   ctaContent: { flex: 1 },
-  ctaTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8FF', fontSize: 18, marginBottom: 4, lineHeight: 23 },
+  ctaTitle: { fontFamily: 'PlayfairDisplay-Medium', color: '#EDE8DC', fontSize: 18, marginBottom: 4, lineHeight: 23 },
   ctaSub: { color: 'rgba(237,232,255,0.55)', fontSize: 12 },
 
   // Modal sommeil SomnioPax v3
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.80)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#1C1740', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: 'rgba(139,108,200,0.18)' },
-  modalHandle: { width: 40, height: 3, borderRadius: 2, backgroundColor: 'rgba(139,108,200,0.25)', alignSelf: 'center', marginBottom: 22 },
-  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE8FF', marginBottom: 6 },
+  modalSheet: { backgroundColor: '#16132B', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 24, paddingBottom: 40, borderTopWidth: 1, borderColor: 'rgba(200,169,110,0.14)' },
+  modalHandle: { width: 40, height: 3, borderRadius: 2, backgroundColor: 'rgba(200,169,110,0.14)', alignSelf: 'center', marginBottom: 22 },
+  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: '#EDE8DC', marginBottom: 6 },
   modalSub: { fontSize: 13, color: 'rgba(237,232,255,0.55)', marginBottom: 24 },
   modalLabel: { fontSize: 12, fontWeight: '600', color: 'rgba(237,232,255,0.75)', marginBottom: 8, letterSpacing: 0.3 },
-  modalInput: { backgroundColor: 'rgba(139,108,200,0.10)', borderWidth: 0.5, borderColor: 'rgba(139,108,200,0.22)', borderRadius: 12, padding: 14, fontSize: 16, color: '#EDE8FF', marginBottom: 16 },
+  modalInput: { backgroundColor: 'rgba(200,169,110,0.14)', borderWidth: 0.5, borderColor: 'rgba(200,169,110,0.14)', borderRadius: 12, padding: 14, fontSize: 16, color: '#EDE8DC', marginBottom: 16 },
   modalInputNotes: { minHeight: 80, paddingTop: 12 },
   qualityRow: { flexDirection: 'row', gap: 8, marginBottom: 24 },
   qualityBtn: { flex: 1, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 0.5 },
   qualityBtnEmoji: { fontSize: 18, marginBottom: 3 },
   qualityBtnNum: { fontSize: 12, fontWeight: '700' },
-  modalSaveBtn: { backgroundColor: '#C9963E', borderRadius: 16, padding: 18, alignItems: 'center' },
-  modalSaveBtnText: { color: '#120E2E', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
+  modalSaveBtn: { backgroundColor: '#C8A96E', borderRadius: 16, padding: 18, alignItems: 'center' },
+  modalSaveBtnText: { color: '#0D0B1A', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
 });

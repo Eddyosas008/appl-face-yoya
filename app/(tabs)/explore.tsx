@@ -104,7 +104,7 @@ function MeditationCardGrid({
 export default function ExploreScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
-  const GOLD = isDark ? '#C9963E' : '#A8762C';
+  const GOLD = isDark ? '#C8A96E' : '#8B6914';
   const { favorites, toggleFavorite, profile } = useUser();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -165,7 +165,7 @@ export default function ExploreScreen() {
   const handleFav = (item: any) => toggleFavorite(String(item.id));
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F7F3FD]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={320}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -401,12 +401,12 @@ export default function ExploreScreen() {
 }
 
 // Palette SomnioPax v3 (constantes statiques pour les styles)
-const GOLD_STATIC  = '#C9963E';
+const GOLD_STATIC  = '#C8A96E';
 const LAVENDER     = 'rgba(237,233,255,0.55)';
-const LAVENDER_MED = 'rgba(184,174,255,0.35)';
-const WHITE_SOFT   = '#EDE8FF';
+const LAVENDER_MED = 'rgba(237,232,220,0.50)';
+const WHITE_SOFT   = '#EDE8DC';
 const GLASS_BG     = 'rgba(28,23,64,0.80)';
-const GLASS_BORDER = 'rgba(139,108,200,0.18)';
+const GLASS_BORDER = 'rgba(200,169,110,0.14)';
 
 const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 18, paddingTop: 0 },

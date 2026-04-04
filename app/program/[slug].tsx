@@ -31,15 +31,15 @@ export default function ProgramDetailScreen() {
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
   // Couleurs dynamiques
-  const GOLD    = isDark ? '#C9963E' : '#A0722A';
+  const GOLD    = isDark ? '#C8A96E' : '#A0722A';
   const GOLD_BG = isDark ? 'rgba(201,168,76,0.14)' : 'rgba(160,114,42,0.10)';
-  const FG      = isDark ? '#EDE8FF' : '#1E1A3C';
-  const LAV     = isDark ? 'rgba(184,174,255,0.65)' : 'rgba(100,80,180,0.75)';
-  const LAV_DIM = isDark ? 'rgba(184,174,255,0.40)' : 'rgba(100,80,180,0.50)';
+  const FG      = isDark ? '#EDE8DC' : '#1E1A3C';
+  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
   const SURFACE = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
   const SUCCESS = isDark ? 'rgba(74,222,128,0.85)' : 'rgba(22,163,74,0.90)';
-  const BG_TEXT = isDark ? '#120E2E' : '#FFFFFF';
+  const BG_TEXT = isDark ? '#0D0B1A' : '#FFFFFF';
 
   const { data: program, isLoading } = trpc.programs.get.useQuery(
     { slug: slug ?? "" },
@@ -84,7 +84,7 @@ export default function ProgramDetailScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator color={isDark ? '#A78BFA' : '#6B46C1'} size="large" />
           <Text style={[styles.loadingText, { color: LAV_DIM }]}>Chargement du programme...</Text>
@@ -95,7 +95,7 @@ export default function ProgramDetailScreen() {
 
   if (!program) {
     return (
-      <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+      <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>Programme introuvable</Text>
         </View>
@@ -106,7 +106,7 @@ export default function ProgramDetailScreen() {
   const level = LEVEL_LABELS[program.level] ?? { label: program.level, emoji: "🌙" };
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Hero */}
@@ -434,12 +434,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.20)',
   },
   premiumBadge: { backgroundColor: 'rgba(201,168,76,0.20)', borderColor: 'rgba(201,168,76,0.35)' },
-  featuredBadge: { backgroundColor: 'rgba(184,174,255,0.18)', borderColor: 'rgba(255,255,255,0.20)' },
+  featuredBadge: { backgroundColor: 'rgba(237,232,220,0.50)', borderColor: 'rgba(255,255,255,0.20)' },
   heroBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   heroProgress: { marginTop: 4 },
   heroProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   heroProgressLabel: { color: 'rgba(255,255,255,0.80)', fontSize: 13, fontWeight: '600' },
-  heroProgressPct: { color: '#C9963E', fontSize: 13, fontWeight: '700' },
+  heroProgressPct: { color: '#C8A96E', fontSize: 13, fontWeight: '700' },
   heroProgressBar: {
     height: 6,
     backgroundColor: 'rgba(255,255,255,0.20)',
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 6,
   },
-  heroProgressFill: { height: '100%', backgroundColor: '#C9963E', borderRadius: 3 },
+  heroProgressFill: { height: '100%', backgroundColor: '#C8A96E', borderRadius: 3 },
   heroProgressSub: { color: 'rgba(255,255,255,0.60)', fontSize: 11 },
 
   // Stats

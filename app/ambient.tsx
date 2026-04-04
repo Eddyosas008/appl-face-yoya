@@ -43,10 +43,10 @@ export default function AmbientScreen() {
   const { isDark } = useThemeContext();
 
   // Palette dynamique
-  const AM_GOLD    = isDark ? '#C9963E' : '#A8762C';
-  const AM_WHITE   = isDark ? '#EDE8FF' : '#1A1230';
-  const AM_LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
-  const AM_BORDER  = isDark ? 'rgba(139,108,200,0.20)' : 'rgba(120,100,180,0.18)';
+  const AM_GOLD    = isDark ? '#C8A96E' : '#8B6914';
+  const AM_WHITE   = isDark ? '#EDE8DC' : '#1C1410';
+  const AM_LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.70)';
+  const AM_BORDER  = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(120,100,180,0.18)';
   const AM_GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.72)';
   const [sounds, setSounds] = useState<SoundState[]>(
     AMBIENT_SOUNDS.map((s) => ({ id: s.id, player: null, volume: 0.7, isPlaying: false }))
@@ -187,7 +187,7 @@ export default function AmbientScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName={isDark ? 'bg-[#120E2E]' : 'bg-[#F0EDF8]'}>
+    <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Header */}
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   timerOption: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1 },
   timerOptionText: { fontSize: 13, fontWeight: '600' },
   startTimerBtn: { borderRadius: 999, paddingVertical: 12, alignItems: 'center' },
-  startTimerText: { color: '#120E2E', fontSize: 14, fontWeight: '800' },
+  startTimerText: { color: '#0D0B1A', fontSize: 14, fontWeight: '800' },
   timerRunning: { alignItems: 'center', gap: 12 },
   timerCountdown: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 48 },
   timerStopBtn: { borderRadius: 999, paddingHorizontal: 20, paddingVertical: 8, borderWidth: 1 },
