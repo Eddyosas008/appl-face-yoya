@@ -426,3 +426,9 @@
 - [x] Appliquer sur tous les écrans tabs
 - [x] Appliquer sur tous les écrans secondaires
 - [x] Vérifier la cohérence et sauvegarder le checkpoint
+
+## Phase 40 : Correction visibilité et contraste
+
+- [x] Corriger les tokens de thème (surfaces très distinctes du fond, bordures visibles)
+- [x] Corriger l'écran Home (cartes stats, sections, méditation du soir)
+- [x] Corriger les autres écrans tabs et secondaires

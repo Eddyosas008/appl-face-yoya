@@ -73,7 +73,7 @@ export default function MeditationPlayerScreen() {
   const LAVENDER     = isDark ? 'rgba(180,168,220,0.75)' : 'rgba(100,80,160,0.80)';
   const LAVENDER_DIM = isDark ? 'rgba(180,168,220,0.12)' : 'rgba(100,80,160,0.12)';
   const WHITE_SOFT   = isDark ? '#F0EEF8' : '#1A1240';
-  const GLASS_BG     = isDark ? 'rgba(28,23,64,0.85)' : 'rgba(255,255,255,0.70)';
+  const GLASS_BG     = isDark ? '#2A2540' : 'rgba(255,255,255,0.70)';
   const GLASS_BORDER = isDark ? 'rgba(180,168,220,0.14)' : 'rgba(100,80,160,0.18)';
   const CATEGORY_COLORS = isDark ? CATEGORY_COLORS_DARK : CATEGORY_COLORS_LIGHT;
 

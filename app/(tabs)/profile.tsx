@@ -478,12 +478,12 @@ export default function ProfileScreen() {
 const GOLD_P         = '#C8A96E';
 const GOLD_SOFT_P    = 'rgba(201,168,76,0.12)';
 const LAVENDER_P     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM_P = 'rgba(200,169,110,0.14)';
-const LAVENDER_MED_P = 'rgba(237,232,220,0.50)';
+const LAVENDER_DIM_P = 'rgba(200,169,110,0.40)';
+const LAVENDER_MED_P = 'rgba(240,235,224,0.65)';
 const WHITE_SOFT_P   = '#EDE8DC';
 const NIGHT_BG_P     = '#0D0B1A';
-const GLASS_BG_P     = 'rgba(28,23,64,0.80)';
-const GLASS_BORDER_P = 'rgba(200,169,110,0.14)';
+const GLASS_BG_P     = '#2A2540';
+const GLASS_BORDER_P = 'rgba(200,169,110,0.40)';
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },

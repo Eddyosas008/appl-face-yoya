@@ -279,11 +279,11 @@ export default function JournalScreen() {
 const GOLD_J         = '#C8A96E';
 const GOLD_SOFT_J    = 'rgba(201,168,76,0.10)';
 const LAVENDER_J     = 'rgba(237,233,255,0.55)';
-const LAVENDER_MED_J = 'rgba(237,232,220,0.50)';
+const LAVENDER_MED_J = 'rgba(240,235,224,0.65)';
 const WHITE_SOFT_J   = '#EDE8DC';
 const NIGHT_BG_J     = '#0D0B1A';
-const GLASS_BG_J     = 'rgba(28,23,64,0.80)';
-const GLASS_BORDER_J = 'rgba(200,169,110,0.14)';
+const GLASS_BG_J     = '#2A2540';
+const GLASS_BORDER_J = 'rgba(200,169,110,0.40)';
 
 const styles = StyleSheet.create({
   list: { paddingHorizontal: 20, paddingBottom: 32 },

@@ -18,10 +18,10 @@ export default function SignInScreen() {
   const BG      = isDark ? '#0D0B1A' : '#FAF7F2';
   const GOLD    = isDark ? '#C8A96E' : '#8B6914';
   const WHITE   = isDark ? '#EDE8DC' : '#1C1410';
-  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.70)';
-  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.45)';
-  const BORDER  = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(120,100,180,0.18)';
-  const GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.75)';
+  const LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(80,60,140,0.70)';
+  const LAV_DIM = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(80,60,140,0.45)';
+  const BORDER  = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(120,100,180,0.18)';
+  const GLASS   = isDark ? '#2A2540' : 'rgba(255,255,255,0.75)';
 
   async function handleSignIn() {
     setError('');

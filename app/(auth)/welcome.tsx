@@ -47,9 +47,9 @@ export default function WelcomeScreen() {
   const BG      = isDark ? '#0D0B1A' : '#FAF7F2';
   const GOLD    = isDark ? '#C8A96E' : '#8B6914';
   const WHITE   = isDark ? '#EDE8DC' : '#1C1410';
-  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.70)';
-  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.45)';
-  const BORDER  = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(120,100,180,0.18)';
+  const LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(80,60,140,0.70)';
+  const LAV_DIM = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(80,60,140,0.45)';
+  const BORDER  = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(120,100,180,0.18)';
   const SEC_BTN = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.60)';
 
   return (

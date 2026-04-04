@@ -245,7 +245,7 @@ export default function ExploreScreen() {
               style={({ pressed }) => [
                 styles.categoryChip,
                 {
-                  backgroundColor: activeCategory === item.slug ? GOLD : 'rgba(28,23,64,0.80)',
+                  backgroundColor: activeCategory === item.slug ? GOLD : '#2A2540',
                   borderColor: activeCategory === item.slug ? GOLD : 'rgba(180,168,220,0.12)',
                   opacity: pressed ? 0.7 : 1,
                 },
@@ -403,10 +403,10 @@ export default function ExploreScreen() {
 // Palette SomnioPax v3 (constantes statiques pour les styles)
 const GOLD_STATIC  = '#C8A96E';
 const LAVENDER     = 'rgba(237,233,255,0.55)';
-const LAVENDER_MED = 'rgba(237,232,220,0.50)';
+const LAVENDER_MED = 'rgba(240,235,224,0.65)';
 const WHITE_SOFT   = '#EDE8DC';
-const GLASS_BG     = 'rgba(28,23,64,0.80)';
-const GLASS_BORDER = 'rgba(200,169,110,0.14)';
+const GLASS_BG     = '#2A2540';
+const GLASS_BORDER = 'rgba(200,169,110,0.40)';
 
 const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: 18, paddingTop: 0 },

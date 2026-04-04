@@ -37,10 +37,10 @@ export default function ProgramsListScreen() {
   // Couleurs dynamiques
   const GOLD    = isDark ? '#C8A96E' : '#A0722A';
   const FG      = isDark ? '#EDE8DC' : '#1E1A3C';
-  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.75)';
-  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.50)';
+  const LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
-  const GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
+  const GLASS   = isDark ? '#2A2540' : 'rgba(255,255,255,0.70)';
 
   const { data: programs, isLoading } = trpc.programs.list.useQuery();
   const { data: myPrograms } = trpc.programs.myPrograms.useQuery();
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   badgeFeatured: { backgroundColor: 'rgba(201,168,76,0.20)', borderColor: 'rgba(201,168,76,0.35)' },
-  badgePremium: { backgroundColor: 'rgba(237,232,220,0.50)', borderColor: 'rgba(237,232,220,0.50)' },
+  badgePremium: { backgroundColor: 'rgba(240,235,224,0.65)', borderColor: 'rgba(240,235,224,0.65)' },
   badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
   cardEmoji: { fontSize: 36, marginBottom: 8 },
   cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: '#FFFFFF', marginBottom: 4 },

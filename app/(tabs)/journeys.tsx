@@ -270,11 +270,11 @@ export default function JourneysScreen() {
 const GOLD_C         = '#C8A96E';
 const GOLD_SOFT_C    = 'rgba(201,168,76,0.10)';
 const LAVENDER_C     = 'rgba(237,233,255,0.55)';
-const LAVENDER_DIM_C = 'rgba(200,169,110,0.14)';
-const LAVENDER_MED_C = 'rgba(237,232,220,0.50)';
+const LAVENDER_DIM_C = 'rgba(200,169,110,0.40)';
+const LAVENDER_MED_C = 'rgba(240,235,224,0.65)';
 const WHITE_SOFT_C   = '#EDE8DC';
-const GLASS_BG_C     = 'rgba(28,23,64,0.80)';
-const GLASS_BORDER_C = 'rgba(200,169,110,0.14)';
+const GLASS_BG_C     = '#2A2540';
+const GLASS_BORDER_C = 'rgba(200,169,110,0.40)';
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 100 },

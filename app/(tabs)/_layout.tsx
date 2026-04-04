@@ -13,10 +13,10 @@ export default function TabLayout() {
   // ── Palette dynamique ─────────────────────────────────────────────────────
   // Palette selon le modèle de référence
   const GOLD        = isDark ? '#C8A96E' : '#8B6914';
-  const GOLD_GLOW   = isDark ? 'rgba(201,150,62,0.22)' : 'rgba(168,118,44,0.18)';
+  const GOLD_GLOW   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(168,118,44,0.18)';
   // Sombre : fond bleu nuit #0D0B1A | Clair : fond lavande #FAF7F2
   const PILL_BG     = isDark ? 'rgba(14,10,34,0.98)' : 'rgba(250,247,242,0.90)';
-  const PILL_BORDER = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(200,169,110,0.14)';
+  const PILL_BORDER = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(200,169,110,0.40)';
   const INACTIVE    = isDark ? '#5C5448' : '#B0A090';
   const SHADOW_CLR  = isDark ? '#000' : '#1E1A35';
 

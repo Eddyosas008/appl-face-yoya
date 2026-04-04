@@ -72,9 +72,9 @@ export default function CheckInScreen() {
   // Palette dynamique
   const CI_GOLD    = isDark ? '#C8A96E' : '#8B6914';
   const CI_WHITE   = isDark ? '#EDE8DC' : '#1C1410';
-  const CI_LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(80,60,140,0.70)';
-  const CI_BORDER  = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(120,100,180,0.18)';
-  const CI_GLASS   = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
+  const CI_LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(80,60,140,0.70)';
+  const CI_BORDER  = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(120,100,180,0.18)';
+  const CI_GLASS   = isDark ? '#2A2540' : 'rgba(255,255,255,0.70)';
   const [mood, setMood] = useState<MoodState | null>(null);
   const [stress, setStress] = useState(3);
   const [energy, setEnergy] = useState(3);

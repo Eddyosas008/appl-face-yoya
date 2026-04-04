@@ -426,10 +426,10 @@ export default function ProgramDayScreen() {
   // Couleurs dynamiques
   const GOLD    = isDark ? '#C8A96E' : '#A0722A';
   const FG      = isDark ? '#EDE8DC' : '#1E1A3C';
-  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.75)';
-  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.50)';
+  const LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
-  const SURFACE = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
+  const SURFACE = isDark ? '#2A2540' : 'rgba(255,255,255,0.70)';
   const [routineChecked, setRoutineChecked] = useState<Record<number, boolean>>({});
   const [showBreathing, setShowBreathing] = useState(false);
   const [showTimer, setShowTimer] = useState(false);

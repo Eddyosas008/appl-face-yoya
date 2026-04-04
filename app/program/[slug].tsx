@@ -34,10 +34,10 @@ export default function ProgramDetailScreen() {
   const GOLD    = isDark ? '#C8A96E' : '#A0722A';
   const GOLD_BG = isDark ? 'rgba(201,168,76,0.14)' : 'rgba(160,114,42,0.10)';
   const FG      = isDark ? '#EDE8DC' : '#1E1A3C';
-  const LAV     = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.75)';
-  const LAV_DIM = isDark ? 'rgba(237,232,220,0.50)' : 'rgba(100,80,180,0.50)';
+  const LAV     = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(100,80,180,0.75)';
+  const LAV_DIM = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(100,80,180,0.50)';
   const BORDER  = isDark ? 'rgba(180,160,255,0.14)' : 'rgba(120,100,200,0.18)';
-  const SURFACE = isDark ? 'rgba(28,23,64,0.80)' : 'rgba(255,255,255,0.70)';
+  const SURFACE = isDark ? '#2A2540' : 'rgba(255,255,255,0.70)';
   const SUCCESS = isDark ? 'rgba(74,222,128,0.85)' : 'rgba(22,163,74,0.90)';
   const BG_TEXT = isDark ? '#0D0B1A' : '#FFFFFF';
 
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.20)',
   },
   premiumBadge: { backgroundColor: 'rgba(201,168,76,0.20)', borderColor: 'rgba(201,168,76,0.35)' },
-  featuredBadge: { backgroundColor: 'rgba(237,232,220,0.50)', borderColor: 'rgba(255,255,255,0.20)' },
+  featuredBadge: { backgroundColor: 'rgba(240,235,224,0.65)', borderColor: 'rgba(255,255,255,0.20)' },
   heroBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
   heroProgress: { marginTop: 4 },
   heroProgressHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
