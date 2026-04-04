@@ -439,6 +439,17 @@ export default function ProfileScreen() {
             </View>
             <IconSymbol name="chevron.right" size={16} color={colors.muted} />
           </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.settingRow, { borderBottomColor: 'transparent', opacity: pressed ? 0.7 : 1 }]}
+            onPress={() => router.push('/admin/ambient-manager' as never)}
+          >
+            <Text style={styles.settingIcon}>🎵</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Sons de relaxation</Text>
+              <Text style={[styles.settingSubValue, { color: colors.muted }]}>Gérer les URLs audio des sons ambiants</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+          </Pressable>
         </View>
 
         <Pressable style={({ pressed }) => [styles.logoutButton, { borderColor: colors.error, opacity: pressed ? 0.7 : 1 }]} onPress={logout}>

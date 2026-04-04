@@ -473,3 +473,14 @@
 - [x] Ajouter les routes tRPC : ambient.list, ambient.get, ambient.upsert (admin)
 - [x] Adapter ambient.tsx pour charger les sons depuis la DB (avec fallback local)
 - [x] Seed initial : 10 sons de relaxation avec URLs à remplir par l'admin
+
+## Phase 45 : Améliorations continues
+
+- [ ] Ombres portées dynamiques (mode clair) sur les cartes Home, Explore, Journal, Journeys, Profile
+- [x] Gestionnaire admin sons ambiants (/admin/ambient-manager)
+- [x] Contrôle de volume individuel par son (slider) dans l'écran Ambient
+- [x] Catégories de sons dans l'écran Ambient (Nature, Méditation, Cosmos)
+- [x] Widget humeur du jour sur la Home (dernier check-in + bouton rapide)
+- [ ] Citation nocturne personnalisée selon l'humeur du dernier check-in
+- [ ] Écran de détail méditation enrichi (durée, niveau, description longue)
+- [ ] Bouton "Ajouter aux favoris" visible directement sur les cartes de méditation

@@ -203,6 +203,7 @@ export default function HomeScreen() {
   const { data: sleepLogs = [] }     = trpc.sleep.list.useQuery({ limit: 7 }, { enabled: isAuthenticated });
   const { data: dbPrograms = [] }    = trpc.programs.list.useQuery();
   const { data: inProgressPrograms = [] } = trpc.programs.inProgress.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: recentCheckIns = [] }     = trpc.checkIns.list.useQuery({ limit: 1 }, { enabled: isAuthenticated });
 
   // Modal saisie sommeil
   const [showSleepModal, setShowSleepModal] = useState(false);
@@ -581,6 +582,61 @@ export default function HomeScreen() {
           </LinearGradient>
         </View>
 
+        {/* ── WIDGET HUMEUR DU JOUR ────────────────────────────────────── */}
+        {isAuthenticated && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>💭 Humeur du jour</Text>
+                <Text style={styles.sectionSub}>Votre état émotionnel</Text>
+              </View>
+              <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]} onPress={() => router.push('/checkin' as never)}>
+                <Text style={styles.seeAll}>+ Nouveau</Text>
+              </Pressable>
+            </View>
+            {recentCheckIns.length > 0 ? (() => {
+              const ci = recentCheckIns[0] as any;
+              const MOOD_EMOJI: Record<string, string> = { anxious: '😰', sad: '😢', neutral: '😐', calm: '😌', happy: '😊', energetic: '⚡', grateful: '🙏' };
+              const MOOD_LABEL: Record<string, string> = { anxious: 'Anxieux·se', sad: 'Triste', neutral: 'Neutre', calm: 'Calme', happy: 'Heureux·se', energetic: 'Énergique', grateful: 'Reconnaissant·e' };
+              const MOOD_COLOR: Record<string, string> = { anxious: '#F97316', sad: '#60A5FA', neutral: '#9CA3AF', calm: '#4ADE80', happy: '#FBBF24', energetic: '#F472B6', grateful: '#A78BFA' };
+              const moodColor = MOOD_COLOR[ci.mood] ?? GOLD;
+              const timeAgo = (() => { const d = new Date(ci.createdAt); const mins = Math.round((Date.now() - d.getTime()) / 60000); if (mins < 60) return `Il y a ${mins} min`; if (mins < 1440) return `Il y a ${Math.round(mins / 60)}h`; return `Il y a ${Math.round(mins / 1440)}j`; })();
+              return (
+                <Pressable
+                  style={({ pressed }) => [styles.moodCard, { backgroundColor: CARD_BG, borderColor: `${moodColor}35`, opacity: pressed ? 0.88 : 1 }]}
+                  onPress={() => router.push('/checkin' as never)}
+                >
+                  <View style={[styles.moodEmojiCircle, { backgroundColor: `${moodColor}18` }]}>
+                    <Text style={styles.moodEmojiLg}>{MOOD_EMOJI[ci.mood] ?? '😐'}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.moodLabel, { color: moodColor }]}>{MOOD_LABEL[ci.mood] ?? ci.mood}</Text>
+                    <Text style={[styles.moodIntensity, { color: TEXT_SOFT }]}>Intensité {ci.intensity}/10 · {timeAgo}</Text>
+                    {ci.note ? <Text style={[styles.moodNote, { color: TEXT_MID }]} numberOfLines={1}>{ci.note}</Text> : null}
+                  </View>
+                  <View style={[styles.moodBar, { backgroundColor: `${moodColor}15` }]}>
+                    <View style={[styles.moodBarFill, { height: `${ci.intensity * 10}%` as any, backgroundColor: moodColor }]} />
+                  </View>
+                </Pressable>
+              );
+            })() : (
+              <Pressable
+                style={({ pressed }) => [styles.moodCardEmpty, { backgroundColor: CARD_BG, borderColor: CARD_BORDER, opacity: pressed ? 0.88 : 1 }]}
+                onPress={() => router.push('/checkin' as never)}
+              >
+                <Text style={styles.moodEmptyEmoji}>💭</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.moodEmptyTitle, { color: WHITE_SOFT }]}>Pas encore de check-in aujourd'hui</Text>
+                  <Text style={[styles.moodEmptyHint, { color: TEXT_SOFT }]}>Prenez 30 secondes pour noter votre humeur</Text>
+                </View>
+                <View style={[styles.arrowBtn, { backgroundColor: `${GOLD}20` }]}>
+                  <Text style={[styles.arrowBtnText, { color: GOLD }]}>›</Text>
+                </View>
+              </Pressable>
+            )}
+          </View>
+        )}
+
         {/* ── CTA CHECK-IN ───────────────────────────────────────────────── */}
         <View style={styles.section}>
           <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]} onPress={() => router.push('/checkin' as never)}>
@@ -801,5 +857,35 @@ function makeStyles(isDark: boolean) {
   qualityBtnNum: { fontSize: 12, fontWeight: '700' },
   modalSaveBtn: { backgroundColor: GOLD_C, borderRadius: 16, padding: 18, alignItems: 'center' },
   modalSaveBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: 0.3 },
+
+  // Widget humeur du jour
+  moodCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    borderRadius: 18, padding: 16, borderWidth: 1.5,
+    shadowColor: isDark ? '#000' : '#5C3D0A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: isDark ? 0.22 : 0.10,
+    shadowRadius: isDark ? 8 : 6,
+    elevation: isDark ? 4 : 3,
+  },
+  moodCardEmpty: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    borderRadius: 18, padding: 16, borderWidth: 1,
+    shadowColor: isDark ? '#000' : '#5C3D0A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.15 : 0.07,
+    shadowRadius: isDark ? 6 : 5,
+    elevation: isDark ? 3 : 2,
+  },
+  moodEmojiCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
+  moodEmojiLg: { fontSize: 26 },
+  moodLabel: { fontSize: 16, fontWeight: '700', lineHeight: 20 },
+  moodIntensity: { fontSize: 11, marginTop: 2 },
+  moodNote: { fontSize: 11, marginTop: 3, fontStyle: 'italic' },
+  moodBar: { width: 6, height: 52, borderRadius: 3, overflow: 'hidden', justifyContent: 'flex-end' },
+  moodBarFill: { width: 6, borderRadius: 3 },
+  moodEmptyEmoji: { fontSize: 28 },
+  moodEmptyTitle: { fontSize: 14, fontWeight: '600', lineHeight: 19 },
+  moodEmptyHint: { fontSize: 11, marginTop: 2 },
   });
 }
