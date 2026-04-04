@@ -514,3 +514,18 @@
 - [ ] Afficher barre de progression de l'objectif sur la Home (minutes du jour / objectif)
 - [ ] Animation de la barre de progression (Reanimated)
 - [ ] Message de félicitation quand objectif atteint
+
+## Phase 49 : Refonte page Bibliothèque (Explore)
+
+- [x] Header amélioré avec compteur dynamique, sous-titre et bouton favoris rapide
+- [x] Quick-access cards redessinées (gradient + icône + description + flèche)
+- [x] Barre de recherche améliorée avec animation focus et compteur de résultats
+- [x] Filtres catégories avec icônes emoji et indicateur actif amélioré
+- [x] Carte hero "Méditation du moment" (première featured en pleine largeur)
+- [x] Section "Populaires" triée par playCount
+- [x] Cartes enrichies : gradient par catégorie, niveau, durée, playCount
+- [x] Section "Récemment ajoutées" avec cartes horizontales
+- [x] Animations d'entrée staggered sur les cartes
+- [x] Bouton favori visible directement sur toutes les cartes
+- [x] Bouton "Réinitialiser les filtres" sur l'état vide
+- [x] Séparateurs visuels entre les sections catégories
