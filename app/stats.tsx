@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
 import { useColors } from "@/hooks/use-colors";
+import { useThemeContext } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -355,6 +356,7 @@ function WellnessGauge({
 // ─── Écran principal ──────────────────────────────────────────────────────────
 export default function StatsScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"mood" | "sleep" | "sessions">("mood");
 
@@ -404,7 +406,7 @@ export default function StatsScreen() {
   ];
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
@@ -455,25 +457,25 @@ export default function StatsScreen() {
 
           {/* Résumé rapide */}
           <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.summaryEmoji}>😊</Text>
-              <Text style={[styles.summaryValue, { color: colors.foreground }]}>{moodData.length}</Text>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>{moodData.length}</Text>
               <Text style={[styles.summaryLabel, { color: colors.muted }]}>Check-ins</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.summaryEmoji}>🌙</Text>
-              <Text style={[styles.summaryValue, { color: colors.foreground }]}>{sleepAvg?.duration ?? "—"}</Text>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>{sleepAvg?.duration ?? "—"}</Text>
               <Text style={[styles.summaryLabel, { color: colors.muted }]}>Moy. sommeil</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
+            <View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.summaryEmoji}>🧘</Text>
-              <Text style={[styles.summaryValue, { color: colors.foreground }]}>{sessionStats.total}</Text>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>{sessionStats.total}</Text>
               <Text style={[styles.summaryLabel, { color: colors.muted }]}>Sessions</Text>
             </View>
           </View>
 
           {/* Tabs */}
-          <View style={[styles.tabBar, { backgroundColor: colors.surface }]}>
+          <View style={[styles.tabBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             {tabs.map((tab) => (
               <TouchableOpacity
                 key={tab.key}
@@ -494,7 +496,7 @@ export default function StatsScreen() {
           </View>
 
           {/* Graphique actif */}
-          <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             {activeTab === "mood" && (
               <>
                 <Text style={[styles.cardTitle, { color: colors.foreground }]}>Évolution de l'humeur</Text>
@@ -659,16 +661,6 @@ export default function StatsScreen() {
   );
 }
 
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const ST_BG      = '#03020F';
-const ST_SURFACE = 'rgba(255,255,255,0.04)';
-const ST_BORDER  = 'rgba(180,160,255,0.12)';
-const ST_GOLD    = '#C9A84C';
-const ST_GOLD_BG = 'rgba(201,168,76,0.12)';
-const ST_WHITE   = '#EDE9FF';
-const ST_LAV     = 'rgba(184,174,255,0.55)';
-const ST_LAV_DIM = 'rgba(184,174,255,0.35)';
-
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -677,22 +669,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
-    backgroundColor: ST_BG,
   },
   backBtn: { width: 40, height: 40, justifyContent: 'center' },
-  backArrow: { fontSize: 24, color: ST_LAV },
-  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: ST_WHITE },
+  backArrow: { fontSize: 24 },
+  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18 },
   card: {
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
-    backgroundColor: ST_SURFACE,
     borderWidth: 1,
-    borderColor: ST_BORDER,
   },
-  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: ST_WHITE, marginBottom: 2 },
-  cardSubtitle: { fontSize: 12, color: ST_LAV_DIM, marginBottom: 4 },
-  sectionLabel: { fontSize: 12, fontWeight: '600', color: ST_GOLD, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  cardTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, marginBottom: 2 },
+  cardSubtitle: { fontSize: 12, marginBottom: 4 },
+  sectionLabel: { fontSize: 12, fontWeight: '600', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   emptyChart: {
     height: CHART_HEIGHT,
     borderRadius: 12,
@@ -718,22 +707,18 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     gap: 4,
-    backgroundColor: ST_SURFACE,
     borderWidth: 1,
-    borderColor: ST_BORDER,
   },
   summaryEmoji: { fontSize: 22 },
-  summaryValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: ST_GOLD },
-  summaryLabel: { fontSize: 11, textAlign: 'center', color: ST_LAV_DIM },
+  summaryValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18 },
+  summaryLabel: { fontSize: 11, textAlign: 'center' },
   tabBar: {
     flexDirection: 'row',
     borderRadius: 16,
     padding: 4,
     marginBottom: 16,
     gap: 4,
-    backgroundColor: ST_SURFACE,
     borderWidth: 1,
-    borderColor: ST_BORDER,
   },
   tab: {
     flex: 1,
@@ -741,7 +726,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  tabText: { fontSize: 11, fontWeight: '600', color: ST_LAV_DIM },
+  tabText: { fontSize: 11, fontWeight: '600' },
   moodDistRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -749,26 +734,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   moodDot: { width: 10, height: 10, borderRadius: 5 },
-  moodDistLabel: { fontSize: 13, width: 100, color: ST_WHITE },
-  moodDistBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: ST_BORDER },
+  moodDistLabel: { fontSize: 13, width: 100 },
+  moodDistBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden' },
   moodDistBarFill: { height: 6, borderRadius: 3 },
-  moodDistCount: { fontSize: 12, width: 24, textAlign: 'right', color: ST_LAV_DIM },
+  moodDistCount: { fontSize: 12, width: 24, textAlign: 'right' },
   sleepStats: {
     flexDirection: 'row',
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: ST_BORDER,
   },
   sleepStatItem: { flex: 1, alignItems: 'center' },
-  sleepStatValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: ST_GOLD },
-  sleepStatLabel: { fontSize: 11, marginTop: 2, color: ST_LAV_DIM },
-  sleepStatDivider: { width: 1, marginHorizontal: 8, backgroundColor: ST_BORDER },
+  sleepStatValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18 },
+  sleepStatLabel: { fontSize: 11, marginTop: 2 },
+  sleepStatDivider: { width: 1, marginHorizontal: 8 },
   trendsList: { gap: 12, marginTop: 8 },
   trendItem: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   trendEmoji: { fontSize: 24, width: 32 },
   trendContent: { flex: 1 },
-  trendLabel: { fontSize: 14, fontWeight: '600', color: ST_WHITE },
-  trendDesc: { fontSize: 12, marginTop: 2, color: ST_LAV_DIM },
+  trendLabel: { fontSize: 14, fontWeight: '600' },
+  trendDesc: { fontSize: 12, marginTop: 2 },
   trendArrow: { fontSize: 22, fontWeight: '700' },
 });

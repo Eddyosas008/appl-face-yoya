@@ -2,18 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, Image, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import Svg, { Circle, Ellipse } from 'react-native-svg';
-import { ScreenContainer } from '@/components/screen-container';
+import { useThemeContext } from '@/lib/theme-provider';
 
 const { width: W, height: H } = Dimensions.get('window');
-
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const BG      = '#03020F';
-const GOLD    = '#C9A84C';
-const GOLD_BG = 'rgba(201,168,76,0.14)';
-const WHITE   = '#EDE9FF';
-const LAV     = 'rgba(184,174,255,0.55)';
-const LAV_DIM = 'rgba(184,174,255,0.35)';
-const BORDER  = 'rgba(180,160,255,0.12)';
 
 // ─── Étoiles statiques ───────────────────────────────────────────────────
 const STARS = [
@@ -26,7 +17,12 @@ const STARS = [
   { cx: 30,  cy: 350, r: 0.9 }, { cx: 240, cy: 380, r: 1.0 },
 ];
 
-function StarField() {
+function StarFieldSvg({ isDark }: { isDark: boolean }) {
+  const starColor = isDark ? 'rgba(255,255,255,0.55)' : 'rgba(100,70,200,0.25)';
+  const aurora1 = isDark ? 'rgba(100,60,200,0.12)' : 'rgba(140,100,220,0.10)';
+  const aurora2 = isDark ? 'rgba(80,40,180,0.10)' : 'rgba(100,70,200,0.08)';
+  const aurora3 = isDark ? 'rgba(201,168,76,0.06)' : 'rgba(180,140,60,0.08)';
+
   return (
     <Svg
       width={W}
@@ -34,25 +30,40 @@ function StarField() {
       style={{ position: 'absolute', top: 0, left: 0 }}
     >
       {STARS.map((s, i) => (
-        <Circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="rgba(255,255,255,0.55)" />
+        <Circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill={starColor} />
       ))}
       {/* Aurora blobs */}
-      <Ellipse cx={W * 0.3} cy={H * 0.15} rx={120} ry={70} fill="rgba(100,60,200,0.12)" />
-      <Ellipse cx={W * 0.75} cy={H * 0.22} rx={100} ry={60} fill="rgba(80,40,180,0.10)" />
-      <Ellipse cx={W * 0.5} cy={H * 0.32} rx={140} ry={50} fill="rgba(201,168,76,0.06)" />
+      <Ellipse cx={W * 0.3} cy={H * 0.15} rx={120} ry={70} fill={aurora1} />
+      <Ellipse cx={W * 0.75} cy={H * 0.22} rx={100} ry={60} fill={aurora2} />
+      <Ellipse cx={W * 0.5} cy={H * 0.32} rx={140} ry={50} fill={aurora3} />
     </Svg>
   );
 }
 
 export default function WelcomeScreen() {
+  const { isDark } = useThemeContext();
+
+  // Palette dynamique
+  const BG      = isDark ? '#03020F' : '#F0EDF8';
+  const GOLD    = isDark ? '#C9A84C' : '#B8922E';
+  const WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
+  const LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
+  const BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
+  const SEC_BTN = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.60)';
+
   return (
-    <View style={styles.container}>
-      <StarField />
+    <View style={[styles.container, { backgroundColor: BG }]}>
+      <StarFieldSvg isDark={isDark} />
 
       {/* Hero */}
       <View style={styles.hero}>
         {/* Logo avec halo doré */}
-        <View style={styles.logoHalo}>
+        <View style={[styles.logoHalo, {
+          backgroundColor: `${GOLD}14`,
+          borderColor: `${GOLD}30`,
+          shadowColor: GOLD,
+        }]}>
           <View style={styles.logoContainer}>
             <Image
               source={require('@/assets/images/icon.png')}
@@ -63,19 +74,19 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Titre Playfair Display */}
-        <Text style={styles.appName}>Yoya</Text>
-        <Text style={styles.tagline}>Votre sanctuaire du bien-être intérieur</Text>
+        <Text style={[styles.appName, { color: WHITE }]}>Yoya</Text>
+        <Text style={[styles.tagline, { color: LAV }]}>Votre sanctuaire du bien-être intérieur</Text>
       </View>
 
       {/* Séparateur lumineux */}
-      <View style={styles.separator} />
+      <View style={[styles.separator, { backgroundColor: BORDER }]} />
 
       {/* Contenu bas */}
       <View style={styles.bottomContent}>
-        <Text style={styles.headline}>
+        <Text style={[styles.headline, { color: WHITE }]}>
           Retrouvez votre{'\n'}équilibre intérieur
         </Text>
-        <Text style={styles.subheadline}>
+        <Text style={[styles.subheadline, { color: LAV }]}>
           Méditation guidée, régulation émotionnelle et parcours personnalisés pour votre bien-être.
         </Text>
 
@@ -84,27 +95,27 @@ export default function WelcomeScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.primaryButton,
-              { opacity: pressed ? 0.85 : 1 },
+              { backgroundColor: GOLD, shadowColor: GOLD, opacity: pressed ? 0.85 : 1 },
             ]}
             onPress={() => router.push('/(auth)/signup')}
           >
-            <Text style={styles.primaryButtonText}>Commencer gratuitement</Text>
+            <Text style={[styles.primaryButtonText, { color: BG }]}>Commencer gratuitement</Text>
           </Pressable>
 
           <Pressable
             style={({ pressed }) => [
               styles.secondaryButton,
-              { opacity: pressed ? 0.7 : 1 },
+              { borderColor: BORDER, backgroundColor: SEC_BTN, opacity: pressed ? 0.7 : 1 },
             ]}
             onPress={() => router.push('/(auth)/signin')}
           >
-            <Text style={styles.secondaryButtonText}>
+            <Text style={[styles.secondaryButtonText, { color: LAV }]}>
               J'ai déjà un compte
             </Text>
           </Pressable>
         </View>
 
-        <Text style={styles.disclaimer}>
+        <Text style={[styles.disclaimer, { color: LAV_DIM }]}>
           En continuant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
         </Text>
       </View>
@@ -115,7 +126,6 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BG,
   },
   hero: {
     height: H * 0.50,
@@ -127,13 +137,10 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: 'rgba(201,168,76,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.20)',
-    shadowColor: GOLD,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35,
     shadowRadius: 24,
@@ -151,13 +158,11 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontFamily: 'PlayfairDisplay-Medium',
-    color: WHITE,
     fontSize: 46,
     letterSpacing: 3,
     marginBottom: 8,
   },
   tagline: {
-    color: LAV,
     fontSize: 14,
     letterSpacing: 0.5,
     textAlign: 'center',
@@ -165,7 +170,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: BORDER,
     marginHorizontal: 40,
   },
   bottomContent: {
@@ -177,13 +181,11 @@ const styles = StyleSheet.create({
   headline: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 28,
-    color: WHITE,
     lineHeight: 38,
     marginBottom: 12,
   },
   subheadline: {
     fontSize: 15,
-    color: LAV,
     lineHeight: 22,
     marginBottom: 32,
   },
@@ -195,15 +197,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
-    backgroundColor: GOLD,
-    shadowColor: GOLD,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 6,
   },
   primaryButtonText: {
-    color: BG,
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0.3,
@@ -213,18 +212,14 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: LAV,
   },
   disclaimer: {
     fontSize: 11,
     textAlign: 'center',
     lineHeight: 16,
-    color: LAV_DIM,
   },
 });

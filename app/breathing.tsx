@@ -15,6 +15,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { ScreenContainer } from '@/components/screen-container';
 import { StarField } from '@/components/star-field';
 import { useColors } from '@/hooks/use-colors';
+import { useThemeContext } from '@/lib/theme-provider';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 type BreathingTechnique = {
@@ -101,6 +102,15 @@ const TECHNIQUES: BreathingTechnique[] = [
 
 export default function BreathingScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
+
+  // Palette dynamique
+  const B_GOLD    = isDark ? '#C9A84C' : '#B8922E';
+  const B_WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const B_LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
+  const B_LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
+  const B_BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
+  const B_GLASS   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.72)';
   const [selected, setSelected] = useState<BreathingTechnique | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [phaseIndex, setPhaseIndex] = useState(0);
@@ -237,27 +247,27 @@ export default function BreathingScreen() {
             >
               <IconSymbol name="chevron.left" size={20} color="#FFFFFF" />
             </Pressable>
-            <Text style={styles.topTitle}>{selected.name}</Text>
+            <Text style={[styles.topTitle, { color: '#FFFFFF' }]}>{selected.name}</Text>
             <View style={{ width: 40 }} />
           </View>
 
           <ScrollView contentContainerStyle={styles.exerciseContent} showsVerticalScrollIndicator={false}>
             {/* Cycle counter */}
-            <Text style={[styles.cycleText, { color: 'rgba(255,255,255,0.7)' }]}>
+            <Text style={[styles.cycleText, { color: 'rgba(255,255,255,0.8)' }]}>
               {isComplete ? '✨ Terminé !' : `Cycle ${Math.min(cycleCount + 1, selected.cycles)} / ${selected.cycles}`}
             </Text>
 
             {/* Animated circle */}
             <View style={styles.circleWrapper}>
-              <Animated.View style={[styles.circleOuter, { borderColor: 'rgba(255,255,255,0.2)' }, circleStyle]}>
+              <Animated.View style={[styles.circleOuter, { borderColor: 'rgba(255,255,255,0.25)' }, circleStyle]}>
                 <View style={[styles.circleInner, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
                   <View style={[styles.circleCore, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
                     {isComplete ? (
                       <Text style={styles.circleEmoji}>🎉</Text>
                     ) : isRunning && currentPhase ? (
                       <>
-                        <Text style={styles.circlePhaseLabel}>{currentPhase.label}</Text>
-                        <Text style={styles.circleTimer}>{timeLeft}</Text>
+                        <Text style={[styles.circlePhaseLabel, { color: '#FFD580' }]}>{currentPhase.label}</Text>
+                        <Text style={[styles.circleTimer, { color: '#FFFFFF' }]}>{timeLeft}</Text>
                       </>
                     ) : (
                       <Text style={styles.circleEmoji}>{selected.emoji}</Text>
@@ -269,15 +279,15 @@ export default function BreathingScreen() {
 
             {/* Instruction */}
             {isRunning && currentPhase && (
-              <Text style={styles.instruction}>{currentPhase.instruction}</Text>
+              <Text style={[styles.instruction, { color: 'rgba(255,255,255,0.8)' }]}>{currentPhase.instruction}</Text>
             )}
             {isComplete && (
-              <Text style={styles.instruction}>
+              <Text style={[styles.instruction, { color: 'rgba(255,255,255,0.8)' }]}>
                 Bravo ! Vous avez complété {selected.cycles} cycles de {selected.name}.
               </Text>
             )}
             {!isRunning && !isComplete && (
-              <Text style={styles.instruction}>{selected.description}</Text>
+              <Text style={[styles.instruction, { color: 'rgba(255,255,255,0.75)' }]}>{selected.description}</Text>
             )}
 
             {/* Phase indicators */}
@@ -304,7 +314,7 @@ export default function BreathingScreen() {
             <View style={styles.exerciseControls}>
               {!isRunning && !isComplete && (
                 <Pressable
-                  style={({ pressed }) => [styles.mainBtn, { opacity: pressed ? 0.85 : 1 }]}
+                  style={({ pressed }) => [styles.mainBtn, { backgroundColor: '#C9A84C', opacity: pressed ? 0.85 : 1 }]}
                   onPress={handleStart}
                 >
                   <Text style={styles.mainBtnText}>Commencer</Text>
@@ -312,7 +322,7 @@ export default function BreathingScreen() {
               )}
               {isRunning && (
                 <Pressable
-                  style={({ pressed }) => [styles.mainBtn, styles.stopBtn, { opacity: pressed ? 0.85 : 1 }]}
+                  style={({ pressed }) => [styles.mainBtn, styles.stopBtn, { backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.25)', opacity: pressed ? 0.85 : 1 }]}
                   onPress={handleStop}
                 >
                   <Text style={styles.mainBtnText}>Pause</Text>
@@ -323,12 +333,12 @@ export default function BreathingScreen() {
                   style={({ pressed }) => [styles.secondaryBtn, { opacity: pressed ? 0.7 : 1 }]}
                   onPress={isComplete ? handleReset : handleStart}
                 >
-                  <Text style={styles.secondaryBtnText}>{isComplete ? 'Recommencer' : 'Reprendre'}</Text>
+                  <Text style={[styles.secondaryBtnText, { color: 'rgba(255,255,255,0.6)' }]}>{isComplete ? 'Recommencer' : 'Reprendre'}</Text>
                 </Pressable>
               )}
             </View>
 
-            <Text style={styles.durationHint}>Durée estimée : {totalDurationMin} min</Text>
+            <Text style={[styles.durationHint, { color: 'rgba(255,255,255,0.45)' }]}>Durée estimée : {totalDurationMin} min</Text>
           </ScrollView>
         </ScreenContainer>
       </View>
@@ -337,7 +347,7 @@ export default function BreathingScreen() {
 
   // Technique selection screen
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {/* Header */}
@@ -349,8 +359,8 @@ export default function BreathingScreen() {
             <IconSymbol name="chevron.left" size={22} color={colors.foreground} />
           </Pressable>
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={[styles.listTitle, { color: colors.foreground }]}>Exercices de respiration</Text>
-            <Text style={[styles.listSubtitle, { color: colors.muted }]}>Choisissez votre technique</Text>
+            <Text style={[styles.listTitle, { color: B_WHITE }]}>Exercices de respiration</Text>
+            <Text style={[styles.listSubtitle, { color: B_LAV }]}>Choisissez votre technique</Text>
           </View>
         </View>
 
@@ -363,20 +373,20 @@ export default function BreathingScreen() {
           >
             <LinearGradient
               colors={technique.gradient as any}
-              style={styles.techniqueCard}
+              style={[styles.techniqueCard, { borderColor: B_BORDER }]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.techniqueLeft}>
                 <Text style={styles.techniqueEmoji}>{technique.emoji}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.techniqueName}>{technique.name}</Text>
-                  <Text style={styles.techniqueDesc} numberOfLines={2}>{technique.description}</Text>
+                  <Text style={[styles.techniqueName, { color: '#FFFFFF' }]}>{technique.name}</Text>
+                  <Text style={[styles.techniqueDesc, { color: 'rgba(255,255,255,0.75)' }]} numberOfLines={2}>{technique.description}</Text>
                   <View style={styles.techniqueMeta}>
-                    <View style={styles.benefitBadge}>
-                      <Text style={styles.benefitText}>{technique.benefit}</Text>
+                    <View style={[styles.benefitBadge, { backgroundColor: 'rgba(201,168,76,0.15)', borderColor: 'rgba(201,168,76,0.25)' }]}>
+                      <Text style={[styles.benefitText, { color: '#C9A84C' }]}>{technique.benefit}</Text>
                     </View>
-                    <Text style={styles.cyclesText}>{technique.cycles} cycles</Text>
+                    <Text style={[styles.cyclesText, { color: 'rgba(255,255,255,0.5)' }]}>{technique.cycles} cycles</Text>
                   </View>
                 </View>
               </View>
@@ -389,52 +399,44 @@ export default function BreathingScreen() {
   );
 }
 
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const B_GOLD    = '#C9A84C';
-const B_WHITE   = '#EDE9FF';
-const B_LAV     = 'rgba(184,174,255,0.55)';
-const B_LAV_DIM = 'rgba(184,174,255,0.35)';
-const B_BORDER  = 'rgba(180,160,255,0.12)';
-const B_GLASS   = 'rgba(255,255,255,0.04)';
-
 const styles = StyleSheet.create({
   headerGradient: { position: 'absolute', top: 0, left: 0, right: 0, height: 420 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 16 },
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  topTitle: { fontFamily: 'PlayfairDisplay-Medium', color: B_WHITE, fontSize: 17 },
+  topTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 17 },
   exerciseContent: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 60 },
-  cycleText: { fontSize: 14, fontWeight: '600', marginBottom: 32, letterSpacing: 0.5, color: B_GOLD },
+  cycleText: { fontSize: 14, fontWeight: '600', marginBottom: 32, letterSpacing: 0.5 },
   circleWrapper: { width: 260, height: 260, alignItems: 'center', justifyContent: 'center', marginBottom: 32 },
-  circleOuter: { width: 240, height: 240, borderRadius: 120, borderWidth: 1, borderColor: 'rgba(201,168,76,0.3)', alignItems: 'center', justifyContent: 'center' },
+  circleOuter: { width: 240, height: 240, borderRadius: 120, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   circleInner: { width: 200, height: 200, borderRadius: 100, alignItems: 'center', justifyContent: 'center' },
   circleCore: { width: 160, height: 160, borderRadius: 80, alignItems: 'center', justifyContent: 'center' },
   circleEmoji: { fontSize: 48 },
-  circlePhaseLabel: { color: B_GOLD, fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  circleTimer: { fontFamily: 'PlayfairDisplay-Medium', color: B_WHITE, fontSize: 42 },
-  instruction: { color: B_LAV, fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 28, paddingHorizontal: 16 },
+  circlePhaseLabel: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  circleTimer: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 42 },
+  instruction: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 28, paddingHorizontal: 16 },
   phaseIndicators: { flexDirection: 'row', gap: 16, marginBottom: 36, flexWrap: 'wrap', justifyContent: 'center' },
   phaseItem: { alignItems: 'center', gap: 6 },
-  phaseDot: { height: 8, borderRadius: 4, backgroundColor: B_BORDER },
-  phaseLabel: { color: B_LAV_DIM, fontSize: 11 },
+  phaseDot: { height: 8, borderRadius: 4 },
+  phaseLabel: { fontSize: 11 },
   exerciseControls: { gap: 12, width: '100%', alignItems: 'center' },
-  mainBtn: { backgroundColor: B_GOLD, borderRadius: 999, paddingVertical: 16, paddingHorizontal: 48 },
-  stopBtn: { backgroundColor: B_GLASS, borderWidth: 1, borderColor: B_BORDER },
+  mainBtn: { borderRadius: 999, paddingVertical: 16, paddingHorizontal: 48 },
+  stopBtn: { borderWidth: 1 },
   mainBtnText: { color: '#03020F', fontSize: 16, fontWeight: '800' },
   secondaryBtn: { paddingVertical: 10 },
-  secondaryBtnText: { color: B_LAV_DIM, fontSize: 14 },
-  durationHint: { color: B_LAV_DIM, fontSize: 12, marginTop: 20 },
+  secondaryBtnText: { fontSize: 14 },
+  durationHint: { fontSize: 12, marginTop: 20 },
   // List styles
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
   listHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 24 },
-  listTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22, color: B_WHITE },
-  listSubtitle: { fontSize: 14, marginTop: 2, color: B_LAV },
-  techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', backgroundColor: B_GLASS, borderWidth: 1, borderColor: B_BORDER },
+  listTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22 },
+  listSubtitle: { fontSize: 14, marginTop: 2 },
+  techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', borderWidth: 1 },
   techniqueLeft: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   techniqueEmoji: { fontSize: 32, marginTop: 2 },
-  techniqueName: { color: B_WHITE, fontSize: 17, fontWeight: '700', marginBottom: 4 },
-  techniqueDesc: { color: B_LAV, fontSize: 13, lineHeight: 18, marginBottom: 10 },
+  techniqueName: { fontSize: 17, fontWeight: '700', marginBottom: 4 },
+  techniqueDesc: { fontSize: 13, lineHeight: 18, marginBottom: 10 },
   techniqueMeta: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  benefitBadge: { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(201,168,76,0.2)' },
-  benefitText: { color: B_GOLD, fontSize: 11, fontWeight: '600' },
-  cyclesText: { color: B_LAV_DIM, fontSize: 11 },
+  benefitBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1 },
+  benefitText: { fontSize: 11, fontWeight: '600' },
+  cyclesText: { fontSize: 11 },
 });

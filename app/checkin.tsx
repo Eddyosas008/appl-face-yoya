@@ -9,6 +9,7 @@ import type { MoodState } from '@/shared/wellness-types';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
+import { useThemeContext } from '@/lib/theme-provider';
 
 const MOODS: MoodState[] = ['calm', 'happy', 'grateful', 'neutral', 'tired', 'anxious', 'sad', 'overwhelmed'];
 
@@ -16,16 +17,22 @@ function ScaleSelector({
   value,
   onChange,
   label,
-  colors,
+  gold,
+  glass,
+  border,
+  lav,
 }: {
   value: number;
   onChange: (v: number) => void;
   label: string;
-  colors: ReturnType<typeof useColors>;
+  gold: string;
+  glass: string;
+  border: string;
+  lav: string;
 }) {
   return (
     <View style={styles.scaleContainer}>
-      <Text style={[styles.scaleLabel, { color: colors.foreground }]}>{label}</Text>
+      <Text style={[styles.scaleLabel, { color: lav }]}>{label}</Text>
       <View style={styles.scaleButtons}>
         {[1, 2, 3, 4, 5].map((v) => (
           <Pressable
@@ -33,14 +40,14 @@ function ScaleSelector({
             style={({ pressed }) => [
               styles.scaleButton,
               {
-                backgroundColor: value >= v ? colors.primary : colors.surface,
-                borderColor: value >= v ? colors.primary : colors.border,
+                backgroundColor: value >= v ? gold : glass,
+                borderColor: value >= v ? gold : border,
                 opacity: pressed ? 0.7 : 1,
               },
             ]}
             onPress={() => onChange(v)}
           >
-            <Text style={[styles.scaleButtonText, { color: value >= v ? '#FFF' : colors.muted }]}>
+            <Text style={[styles.scaleButtonText, { color: value >= v ? '#FFF' : lav }]}>
               {v}
             </Text>
           </Pressable>
@@ -59,7 +66,15 @@ const MOOD_MAP: Partial<Record<MoodState, DbMood>> = {
 
 export default function CheckInScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
   const { isAuthenticated } = useAuth();
+
+  // Palette dynamique
+  const CI_GOLD    = isDark ? '#C9A84C' : '#B8922E';
+  const CI_WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const CI_LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
+  const CI_BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
+  const CI_GLASS   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
   const [mood, setMood] = useState<MoodState | null>(null);
   const [stress, setStress] = useState(3);
   const [energy, setEnergy] = useState(3);
@@ -140,7 +155,7 @@ export default function CheckInScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Header */}
@@ -151,13 +166,13 @@ export default function CheckInScreen() {
           >
             <IconSymbol name="xmark" size={22} color={colors.foreground} />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Check-in émotionnel</Text>
+          <Text style={[styles.headerTitle, { color: CI_WHITE }]}>Check-in émotionnel</Text>
           <View style={{ width: 22 }} />
         </View>
 
         {/* Mood selector */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          <Text style={[styles.sectionTitle, { color: CI_WHITE }]}>
             Comment vous sentez-vous en ce moment ?
           </Text>
           <View style={styles.moodGrid}>
@@ -167,15 +182,15 @@ export default function CheckInScreen() {
                 style={({ pressed }) => [
                   styles.moodItem,
                   {
-                    backgroundColor: mood === m ? `${colors.primary}20` : colors.surface,
-                    borderColor: mood === m ? colors.primary : colors.border,
+                    backgroundColor: mood === m ? `${CI_GOLD}20` : CI_GLASS,
+                    borderColor: mood === m ? CI_GOLD : CI_BORDER,
                     opacity: pressed ? 0.7 : 1,
                   },
                 ]}
                 onPress={() => setMood(m)}
               >
                 <Text style={styles.moodEmoji}>{MOOD_EMOJIS[m]}</Text>
-                <Text style={[styles.moodLabel, { color: mood === m ? colors.primary : colors.muted }]}>
+                <Text style={[styles.moodLabel, { color: mood === m ? CI_GOLD : CI_LAV }]}>
                   {MOOD_LABELS[m]}
                 </Text>
               </Pressable>
@@ -189,31 +204,31 @@ export default function CheckInScreen() {
             value={stress}
             onChange={setStress}
             label="Niveau de stress (1 = très bas, 5 = très élevé)"
-            colors={colors}
+            gold={CI_GOLD} glass={CI_GLASS} border={CI_BORDER} lav={CI_LAV}
           />
           <ScaleSelector
             value={energy}
             onChange={setEnergy}
             label="Niveau d'énergie (1 = épuisée, 5 = pleine d'énergie)"
-            colors={colors}
+            gold={CI_GOLD} glass={CI_GLASS} border={CI_BORDER} lav={CI_LAV}
           />
           <ScaleSelector
             value={sleep}
             onChange={setSleep}
             label="Qualité du sommeil (1 = très mauvaise, 5 = excellente)"
-            colors={colors}
+            gold={CI_GOLD} glass={CI_GLASS} border={CI_BORDER} lav={CI_LAV}
           />
         </View>
 
         {/* Note */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+          <Text style={[styles.sectionTitle, { color: CI_WHITE }]}>
             Une note (optionnel)
           </Text>
           <TextInput
             style={[
               styles.noteInput,
-              { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground },
+              { backgroundColor: CI_GLASS, borderColor: CI_BORDER, color: CI_WHITE },
             ]}
             placeholder="Comment vous sentez-vous vraiment ?"
             placeholderTextColor={colors.muted}
@@ -230,7 +245,8 @@ export default function CheckInScreen() {
           style={({ pressed }) => [
             styles.submitButton,
             {
-              backgroundColor: mood ? colors.primary : colors.border,
+              backgroundColor: mood ? CI_GOLD : CI_BORDER,
+            shadowColor: CI_GOLD,
               opacity: pressed || createCheckIn.isPending ? 0.8 : 1,
             },
           ]}
@@ -248,14 +264,6 @@ export default function CheckInScreen() {
   );
 }
 
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const CI_GOLD    = '#C9A84C';
-const CI_WHITE   = '#EDE9FF';
-const CI_LAV     = 'rgba(184,174,255,0.55)';
-const CI_LAV_DIM = 'rgba(184,174,255,0.35)';
-const CI_BORDER  = 'rgba(180,160,255,0.12)';
-const CI_GLASS   = 'rgba(255,255,255,0.04)';
-
 const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 20,
@@ -271,7 +279,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 16,
-    color: CI_WHITE,
   },
   section: {
     marginBottom: 28,
@@ -279,7 +286,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 16,
-    color: CI_WHITE,
     lineHeight: 22,
     marginBottom: 14,
   },
@@ -292,8 +298,6 @@ const styles = StyleSheet.create({
     width: '22%',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: CI_BORDER,
-    backgroundColor: CI_GLASS,
     padding: 10,
     alignItems: 'center',
     gap: 4,
@@ -305,7 +309,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     textAlign: 'center',
-    color: CI_LAV,
   },
   scaleContainer: {
     marginBottom: 20,
@@ -314,7 +317,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 10,
-    color: CI_LAV,
   },
   scaleButtons: {
     flexDirection: 'row',
@@ -325,33 +327,25 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: CI_BORDER,
-    backgroundColor: CI_GLASS,
     alignItems: 'center',
     justifyContent: 'center',
   },
   scaleButtonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: CI_LAV,
   },
   noteInput: {
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: CI_BORDER,
-    backgroundColor: CI_GLASS,
     padding: 14,
     fontSize: 14,
     lineHeight: 20,
     minHeight: 100,
-    color: CI_WHITE,
   },
   submitButton: {
     borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
-    backgroundColor: CI_GOLD,
-    shadowColor: CI_GOLD,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -376,7 +370,6 @@ const styles = StyleSheet.create({
   doneTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 26,
-    color: CI_WHITE,
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -385,15 +378,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     textAlign: 'center',
     marginBottom: 32,
-    color: CI_LAV,
   },
   recommendCard: {
     width: '100%',
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: CI_BORDER,
-    backgroundColor: CI_GLASS,
     marginBottom: 16,
   },
   recommendLabel: {
@@ -402,25 +392,21 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
-    color: CI_GOLD,
   },
   recommendTitle: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 18,
-    color: CI_WHITE,
     marginBottom: 4,
   },
   recommendSub: {
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 14,
-    color: CI_LAV,
   },
   recommendButton: {
     borderRadius: 999,
     paddingVertical: 13,
     alignItems: 'center',
-    backgroundColor: CI_GOLD,
   },
   recommendButtonText: {
     color: '#03020F',
@@ -432,12 +418,9 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 32,
     borderWidth: 1,
-    borderColor: CI_BORDER,
-    backgroundColor: CI_GLASS,
   },
   closeButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: CI_LAV,
   },
 });

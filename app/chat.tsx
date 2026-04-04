@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, Pressable, TextInput,
   FlatList, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Animated,
@@ -8,12 +8,8 @@ import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { useAuth } from '@/hooks/use-auth';
-import Svg, { Circle, Ellipse } from 'react-native-svg';
 import { useThemeContext } from '@/lib/theme-provider';
 import { StarField } from '@/components/star-field';
-
-// ── Palette statique (pour les styles non dynamiques) ────────────────────────
-const GOLD_BORDER_STATIC = 'rgba(201,168,76,0.35)';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type LocalMessage = {
@@ -23,10 +19,28 @@ type LocalMessage = {
 };
 
 // ── Bulle de message ─────────────────────────────────────────────────────────
-function ChatBubble({ message, index }: { message: LocalMessage; index: number }) {
+function ChatBubble({
+  message,
+  index,
+  isDark,
+}: {
+  message: LocalMessage;
+  index: number;
+  isDark: boolean;
+}) {
   const isUser = message.role === 'user';
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(12)).current;
+
+  // Couleurs dynamiques
+  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
+  const TEXT_USER   = isDark ? '#EDE9FF' : '#1A1240';
+  const TEXT_AI     = isDark ? 'rgba(237,233,255,0.70)' : 'rgba(60,40,120,0.80)';
+  const BUBBLE_USER_BG     = isDark ? 'rgba(201,168,76,0.18)' : 'rgba(184,146,46,0.14)';
+  const BUBBLE_AI_BG       = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const BUBBLE_AI_BORDER   = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
+  const AVATAR_BG          = isDark ? 'rgba(201,168,76,0.15)' : 'rgba(184,146,46,0.12)';
 
   useEffect(() => {
     Animated.parallel([
@@ -54,12 +68,24 @@ function ChatBubble({ message, index }: { message: LocalMessage; index: number }
       ]}
     >
       {!isUser && (
-        <View style={styles.aiAvatar}>
-          <Text style={styles.aiAvatarEmoji}>✦</Text>
+        <View style={[styles.aiAvatar, { backgroundColor: AVATAR_BG, borderColor: GOLD_BORDER }]}>
+          <Text style={[styles.aiAvatarEmoji, { color: GOLD }]}>✦</Text>
         </View>
       )}
-      <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAI]}>
-        <Text style={[styles.bubbleText, isUser ? styles.bubbleTextUser : styles.bubbleTextAI]}>
+      <View
+        style={[
+          styles.bubble,
+          isUser
+            ? [styles.bubbleUser, { backgroundColor: BUBBLE_USER_BG, borderColor: GOLD_BORDER }]
+            : [styles.bubbleAI, { backgroundColor: BUBBLE_AI_BG, borderColor: BUBBLE_AI_BORDER }],
+        ]}
+      >
+        <Text
+          style={[
+            styles.bubbleText,
+            isUser ? { color: TEXT_USER, fontWeight: '500' } : { color: TEXT_AI },
+          ]}
+        >
           {message.content}
         </Text>
       </View>
@@ -68,7 +94,13 @@ function ChatBubble({ message, index }: { message: LocalMessage; index: number }
 }
 
 // ── Indicateur de frappe ─────────────────────────────────────────────────────
-function TypingIndicator() {
+function TypingIndicator({ isDark }: { isDark: boolean }) {
+  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
+  const AVATAR_BG   = isDark ? 'rgba(201,168,76,0.15)' : 'rgba(184,146,46,0.12)';
+  const BUBBLE_AI_BG     = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.70)';
+  const BUBBLE_AI_BORDER = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
+
   const dot1 = useRef(new Animated.Value(0.3)).current;
   const dot2 = useRef(new Animated.Value(0.3)).current;
   const dot3 = useRef(new Animated.Value(0.3)).current;
@@ -89,13 +121,13 @@ function TypingIndicator() {
 
   return (
     <View style={styles.bubbleRow}>
-      <View style={styles.aiAvatar}>
-        <Text style={styles.aiAvatarEmoji}>✦</Text>
+      <View style={[styles.aiAvatar, { backgroundColor: AVATAR_BG, borderColor: GOLD_BORDER }]}>
+        <Text style={[styles.aiAvatarEmoji, { color: GOLD }]}>✦</Text>
       </View>
-      <View style={[styles.bubble, styles.bubbleAI, styles.typingBubble]}>
+      <View style={[styles.bubble, styles.typingBubble, { backgroundColor: BUBBLE_AI_BG, borderColor: BUBBLE_AI_BORDER, borderWidth: 1 }]}>
         <View style={styles.typingDots}>
           {[dot1, dot2, dot3].map((dot, i) => (
-            <Animated.View key={i} style={[styles.typingDot, { opacity: dot }]} />
+            <Animated.View key={i} style={[styles.typingDot, { opacity: dot, backgroundColor: GOLD }]} />
           ))}
         </View>
       </View>
@@ -115,9 +147,22 @@ const QUICK_PROMPTS = [
 export default function ChatScreen() {
   const { isAuthenticated } = useAuth();
   const { isDark } = useThemeContext();
-  const GOLD = isDark ? '#C9A84C' : '#B8922E';
-  const TEXT_MAIN = isDark ? '#EDE9FF' : '#1A1240';
-  const TEXT_MUTED = isDark ? 'rgba(237,233,255,0.50)' : 'rgba(100,80,140,0.70)';
+
+  // ── Palette dynamique ──────────────────────────────────────────────────────
+  const GOLD        = isDark ? '#C9A84C' : '#B8922E';
+  const GOLD_BORDER = isDark ? 'rgba(201,168,76,0.35)' : 'rgba(184,146,46,0.35)';
+  const TEXT_MAIN   = isDark ? '#EDE9FF' : '#1A1240';
+  const TEXT_MUTED  = isDark ? 'rgba(237,233,255,0.50)' : 'rgba(100,80,140,0.60)';
+  const AVATAR_BG   = isDark ? 'rgba(201,168,76,0.20)' : 'rgba(184,146,46,0.15)';
+  const AVATAR_HALO = isDark ? 'rgba(201,168,76,0.12)' : 'rgba(184,146,46,0.10)';
+  const INPUT_BG    = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.80)';
+  const WRAP_BG     = isDark ? 'rgba(3,2,15,0.95)' : 'rgba(240,237,248,0.97)';
+  const PROMPT_BG   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.65)';
+  const PROMPT_BORDER = isDark ? 'rgba(180,168,220,0.30)' : 'rgba(120,100,180,0.25)';
+  const SEND_ACTIVE = isDark ? '#C9A84C' : '#B8922E';
+  const SEND_ICON_COLOR = isDark ? '#03020F' : '#F5F2EC';
+  const SEND_DISABLED_BG = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
   const flatListRef = useRef<FlatList>(null);
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<LocalMessage[]>([]);
@@ -211,7 +256,10 @@ export default function ChatScreen() {
   const canSend = input.trim().length > 0 && !isTyping;
 
   return (
-    <ScreenContainer edges={['top', 'left', 'right']} containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F5F2EC]'}>
+    <ScreenContainer
+      edges={['top', 'left', 'right']}
+      containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}
+    >
       {/* Fond étoilé */}
       <StarField />
 
@@ -226,22 +274,22 @@ export default function ChatScreen() {
             style={({ pressed }) => [styles.headerBtn, { opacity: pressed ? 0.6 : 1 }]}
             onPress={() => router.back()}
           >
-            <IconSymbol name="chevron.left" size={22} color={TEXT_MAIN as string} />
+            <IconSymbol name="chevron.left" size={22} color={TEXT_MAIN} />
           </Pressable>
 
           <View style={styles.headerCenter}>
             {/* Avatar IA avec halo doré */}
             <View style={styles.headerAvatarWrap}>
-              <View style={styles.headerAvatarHalo} />
-              <View style={styles.headerAvatar}>
-                <Text style={styles.headerAvatarEmoji}>✦</Text>
+              <View style={[styles.headerAvatarHalo, { backgroundColor: AVATAR_HALO, borderColor: GOLD_BORDER }]} />
+              <View style={[styles.headerAvatar, { backgroundColor: AVATAR_BG, borderColor: GOLD_BORDER }]}>
+                <Text style={[styles.headerAvatarEmoji, { color: GOLD }]}>✦</Text>
               </View>
             </View>
             <View>
-              <Text style={styles.headerTitle}>Yoya</Text>
+              <Text style={[styles.headerTitle, { color: TEXT_MAIN }]}>Yoya</Text>
               <View style={styles.statusRow}>
-                <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#4ADE80' : GOLD as string }]} />
-                <Text style={styles.statusText}>
+                <View style={[styles.statusDot, { backgroundColor: isAuthenticated ? '#4ADE80' : GOLD }]} />
+                <Text style={[styles.statusText, { color: TEXT_MUTED }]}>
                   {isAuthenticated ? 'IA connectée' : 'Mode hors ligne'}
                 </Text>
               </View>
@@ -257,13 +305,13 @@ export default function ChatScreen() {
         </View>
 
         {/* Séparateur doré */}
-        <View style={styles.headerDivider} />
+        <View style={[styles.headerDivider, { backgroundColor: GOLD_BORDER }]} />
 
         {/* ── Chargement historique ── */}
         {historyLoading && (
           <View style={styles.loadingRow}>
-            <ActivityIndicator size="small" color={GOLD as string} />
-            <Text style={styles.loadingText}>Chargement de l'historique…</Text>
+            <ActivityIndicator size="small" color={GOLD} />
+            <Text style={[styles.loadingText, { color: TEXT_MUTED }]}>Chargement de l'historique…</Text>
           </View>
         )}
 
@@ -272,11 +320,11 @@ export default function ChatScreen() {
           ref={flatListRef}
           data={localMessages}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => <ChatBubble message={item} index={index} />}
+          renderItem={({ item, index }) => <ChatBubble message={item} index={index} isDark={isDark} />}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          ListFooterComponent={isTyping ? <TypingIndicator /> : null}
+          ListFooterComponent={isTyping ? <TypingIndicator isDark={isDark} /> : null}
         />
 
         {/* ── Suggestions rapides ── */}
@@ -290,10 +338,13 @@ export default function ChatScreen() {
               contentContainerStyle={styles.quickPromptsList}
               renderItem={({ item }) => (
                 <Pressable
-                  style={({ pressed }) => [styles.quickPrompt, { opacity: pressed ? 0.7 : 1 }]}
+                  style={({ pressed }) => [
+                    styles.quickPrompt,
+                    { backgroundColor: PROMPT_BG, borderColor: PROMPT_BORDER, opacity: pressed ? 0.7 : 1 },
+                  ]}
                   onPress={() => sendMessage(item)}
                 >
-                  <Text style={styles.quickPromptText}>{item}</Text>
+                  <Text style={[styles.quickPromptText, { color: TEXT_MUTED }]}>{item}</Text>
                 </Pressable>
               )}
             />
@@ -301,10 +352,10 @@ export default function ChatScreen() {
         )}
 
         {/* ── Zone de saisie ── */}
-        <View style={styles.inputWrap}>
-          <View style={styles.inputContainer}>
+        <View style={[styles.inputWrap, { backgroundColor: WRAP_BG, borderTopColor: GOLD_BORDER }]}>
+          <View style={[styles.inputContainer, { backgroundColor: INPUT_BG, borderColor: GOLD_BORDER }]}>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { color: TEXT_MAIN }]}
               placeholder="Exprimez-vous librement…"
               placeholderTextColor={TEXT_MUTED}
               value={input}
@@ -317,15 +368,14 @@ export default function ChatScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.sendButton,
-                canSend ? styles.sendButtonActive : styles.sendButtonDisabled,
-                { opacity: pressed ? 0.8 : 1 },
+                { backgroundColor: canSend ? SEND_ACTIVE : SEND_DISABLED_BG, opacity: pressed ? 0.8 : 1 },
               ]}
               onPress={() => sendMessage(input)}
               disabled={!canSend}
             >
               {isTyping
                 ? <ActivityIndicator size="small" color="#FFFFFF" />
-                : <IconSymbol name="paperplane.fill" size={17} color={canSend ? (isDark ? '#03020F' : '#F5F2EC') : TEXT_MUTED as string} />
+                : <IconSymbol name="paperplane.fill" size={17} color={canSend ? SEND_ICON_COLOR : TEXT_MUTED} />
               }
             </Pressable>
           </View>
@@ -335,7 +385,7 @@ export default function ChatScreen() {
   );
 }
 
-// ── Styles ───────────────────────────────────────────────────────────────────
+// ── Styles (layout uniquement) ───────────────────────────────────────────────
 const styles = StyleSheet.create({
   // En-tête
   header: {
@@ -368,28 +418,20 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: 'rgba(201,168,76,0.12)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER_STATIC,
   },
   headerAvatar: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: 'rgba(201,168,76,0.20)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: GOLD_BORDER_STATIC,
   },
-  headerAvatarEmoji: {
-    fontSize: 16,
-    color: '#C9A84C',
-  },
+  headerAvatarEmoji: { fontSize: 16 },
   headerTitle: {
     fontSize: 17,
     fontFamily: 'PlayfairDisplay_700Bold',
-    color: '#EDE9FF',
     letterSpacing: 0.3,
   },
   statusRow: {
@@ -403,14 +445,9 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  statusText: {
-    fontSize: 11,
-    color: 'rgba(237,233,255,0.50)',
-    letterSpacing: 0.3,
-  },
+  statusText: { fontSize: 11, letterSpacing: 0.3 },
   headerDivider: {
     height: 0.5,
-    backgroundColor: GOLD_BORDER_STATIC,
     marginHorizontal: 16,
   },
 
@@ -422,10 +459,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 10,
   },
-  loadingText: {
-    fontSize: 13,
-    color: 'rgba(237,233,255,0.50)',
-  },
+  loadingText: { fontSize: 13 },
 
   // Messages
   messagesList: {
@@ -439,25 +473,18 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
   },
-  bubbleRowUser: {
-    justifyContent: 'flex-end',
-  },
+  bubbleRowUser: { justifyContent: 'flex-end' },
 
   // Avatar IA
   aiAvatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(201,168,76,0.15)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER_STATIC,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  aiAvatarEmoji: {
-    fontSize: 14,
-    color: '#C9A84C',
-  },
+  aiAvatarEmoji: { fontSize: 14 },
 
   // Bulles
   bubble: {
@@ -467,27 +494,16 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
   },
   bubbleUser: {
-    backgroundColor: 'rgba(201,168,76,0.18)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER_STATIC,
     borderBottomRightRadius: 4,
   },
   bubbleAI: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: 'rgba(180,168,220,0.30)',
     borderBottomLeftRadius: 4,
   },
   bubbleText: {
     fontSize: 14,
     lineHeight: 21,
-  },
-  bubbleTextUser: {
-    color: '#EDE9FF',
-    fontWeight: '500',
-  },
-  bubbleTextAI: {
-    color: 'rgba(237,233,255,0.55)',
   },
 
   // Indicateur de frappe
@@ -504,47 +520,31 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#C9A84C',
   },
 
   // Suggestions rapides
-  quickPromptsWrap: {
-    paddingVertical: 10,
-  },
-  quickPromptsList: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
+  quickPromptsWrap: { paddingVertical: 10 },
+  quickPromptsList: { paddingHorizontal: 16, gap: 8 },
   quickPrompt: {
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: 'rgba(180,168,220,0.30)',
   },
-  quickPromptText: {
-    fontSize: 13,
-    color: 'rgba(237,233,255,0.55)',
-    fontWeight: '500',
-  },
+  quickPromptText: { fontSize: 13, fontWeight: '500' },
 
   // Zone de saisie
   inputWrap: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingBottom: 24,
-    backgroundColor: 'rgba(3,2,15,0.95)',
     borderTopWidth: 0.5,
-    borderTopColor: GOLD_BORDER_STATIC,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 10,
-    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: GOLD_BORDER_STATIC,
     borderRadius: 24,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -552,7 +552,6 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: '#EDE9FF',
     maxHeight: 100,
     paddingVertical: 4,
   },
@@ -563,11 +562,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 1,
-  },
-  sendButtonActive: {
-    backgroundColor: '#C9A84C',
-  },
-  sendButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
   },
 });

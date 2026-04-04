@@ -4,23 +4,25 @@ import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { StarField } from '@/components/star-field';
 import { useUser } from '@/lib/user-context';
-
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const BG      = '#03020F';
-const GOLD    = '#C9A84C';
-const WHITE   = '#EDE9FF';
-const LAV     = 'rgba(184,174,255,0.55)';
-const LAV_DIM = 'rgba(184,174,255,0.35)';
-const BORDER  = 'rgba(180,160,255,0.12)';
-const GLASS   = 'rgba(255,255,255,0.04)';
+import { useThemeContext } from '@/lib/theme-provider';
 
 export default function SignUpScreen() {
   const { signup } = useUser();
+  const { isDark } = useThemeContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Palette dynamique
+  const BG      = isDark ? '#03020F' : '#F0EDF8';
+  const GOLD    = isDark ? '#C9A84C' : '#B8922E';
+  const WHITE   = isDark ? '#EDE9FF' : '#1A1240';
+  const LAV     = isDark ? 'rgba(184,174,255,0.55)' : 'rgba(80,60,140,0.70)';
+  const LAV_DIM = isDark ? 'rgba(184,174,255,0.35)' : 'rgba(80,60,140,0.45)';
+  const BORDER  = isDark ? 'rgba(180,160,255,0.12)' : 'rgba(120,100,180,0.18)';
+  const GLASS   = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.75)';
 
   async function handleSignUp() {
     setError('');
@@ -48,24 +50,27 @@ export default function SignUpScreen() {
   }
 
   return (
-    <ScreenContainer containerClassName="bg-[#03020F]">
+    <ScreenContainer containerClassName={isDark ? 'bg-[#03020F]' : 'bg-[#F0EDF8]'}>
       <StarField />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { backgroundColor: BG }]}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Back button */}
           <Pressable
             style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
             onPress={() => router.back()}
           >
-            <Text style={styles.backArrow}>←</Text>
+            <Text style={[styles.backArrow, { color: LAV }]}>←</Text>
           </Pressable>
 
           <View style={styles.header}>
-            <Text style={styles.title}>Créer un compte</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: WHITE }]}>Créer un compte</Text>
+            <Text style={[styles.subtitle, { color: LAV }]}>
               Rejoignez Yoya et commencez votre voyage vers le bien-être.
             </Text>
           </View>
@@ -73,9 +78,9 @@ export default function SignUpScreen() {
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Adresse e-mail</Text>
+              <Text style={[styles.label, { color: GOLD }]}>Adresse e-mail</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: BORDER, backgroundColor: GLASS, color: WHITE }]}
                 placeholder="votre@email.com"
                 placeholderTextColor={LAV_DIM}
                 value={email}
@@ -88,9 +93,9 @@ export default function SignUpScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Mot de passe</Text>
+              <Text style={[styles.label, { color: GOLD }]}>Mot de passe</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: BORDER, backgroundColor: GLASS, color: WHITE }]}
                 placeholder="Au moins 6 caractères"
                 placeholderTextColor={LAV_DIM}
                 value={password}
@@ -101,9 +106,9 @@ export default function SignUpScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Confirmer le mot de passe</Text>
+              <Text style={[styles.label, { color: GOLD }]}>Confirmer le mot de passe</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { borderColor: BORDER, backgroundColor: GLASS, color: WHITE }]}
                 placeholder="Répétez votre mot de passe"
                 placeholderTextColor={LAV_DIM}
                 value={confirmPassword}
@@ -121,12 +126,12 @@ export default function SignUpScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.submitButton,
-                { opacity: pressed || isLoading ? 0.8 : 1 },
+                { backgroundColor: GOLD, shadowColor: GOLD, opacity: pressed || isLoading ? 0.8 : 1 },
               ]}
               onPress={handleSignUp}
               disabled={isLoading}
             >
-              <Text style={styles.submitButtonText}>
+              <Text style={[styles.submitButtonText, { color: BG }]}>
                 {isLoading ? 'Création en cours...' : 'Créer mon compte'}
               </Text>
             </Pressable>
@@ -134,9 +139,9 @@ export default function SignUpScreen() {
 
           {/* Sign in link */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Vous avez déjà un compte ? </Text>
+            <Text style={[styles.footerText, { color: LAV_DIM }]}>Vous avez déjà un compte ? </Text>
             <Pressable onPress={() => router.push('/(auth)/signin' as never)}>
-              <Text style={styles.footerLink}>Se connecter</Text>
+              <Text style={[styles.footerLink, { color: GOLD }]}>Se connecter</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -150,7 +155,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingBottom: 40,
-    backgroundColor: BG,
   },
   backButton: {
     marginTop: 16,
@@ -159,7 +163,7 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
   },
-  backArrow: { fontSize: 22, color: LAV },
+  backArrow: { fontSize: 22 },
   header: {
     marginBottom: 32,
     marginTop: 8,
@@ -167,35 +171,27 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 30,
-    color: WHITE,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 22,
-    color: LAV,
   },
   form: {
     gap: 16,
     marginBottom: 32,
   },
-  field: {
-    gap: 6,
-  },
+  field: { gap: 6 },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: GOLD,
   },
   input: {
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: GLASS,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
-    color: WHITE,
   },
   errorText: {
     fontSize: 13,
@@ -207,15 +203,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 8,
-    backgroundColor: GOLD,
-    shadowColor: GOLD,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 6,
   },
   submitButtonText: {
-    color: BG,
     fontSize: 16,
     fontWeight: '800',
   },
@@ -224,13 +217,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  footerText: {
-    fontSize: 14,
-    color: LAV_DIM,
-  },
+  footerText: { fontSize: 14 },
   footerLink: {
     fontSize: 14,
     fontWeight: '700',
-    color: GOLD,
   },
 });

@@ -380,3 +380,13 @@
 - [x] Ajouter le toggle clair/sombre dans les Paramètres du Profil (Switch)
 - [x] Corriger toutes les références GOLD/GLASS_BORDER non définies dans les styles statiques
 - [x] Persister le choix de thème dans AsyncStorage (clé somniopax_color_scheme)
+
+## Phase 36 : Mode clair sur les écrans secondaires
+
+- [x] Adapter le lecteur de méditation (meditation/[id].tsx) au mode clair/sombre
+- [x] Adapter le chat IA (chat.tsx) au mode clair/sombre (fond, bulles, saisie)
+- [x] Adapter l'écran check-in (checkin.tsx) au mode clair/sombre
+- [x] Adapter l'écran ambient (ambient.tsx) au mode clair/sombre
+- [x] Adapter les écrans auth (welcome, signin, signup) au mode clair/sombre
+- [x] Adapter l'écran stats (stats.tsx) au mode clair/sombre
+- [x] Vérifier l'absence d'erreurs Metro après toutes les adaptations
