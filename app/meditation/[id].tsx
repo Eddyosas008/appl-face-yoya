@@ -469,6 +469,37 @@ export default function MeditationPlayerScreen() {
             </View>
           )}
 
+          {/* ── Infos enrichies ──────────────────────────────────────────── */}
+          <View style={[styles.infoCard, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
+            <View style={styles.infoRow}>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoEmoji}>⏱</Text>
+                <Text style={[styles.infoValue, { color: WHITE_SOFT }]}>
+                  {Math.round(meditation.audioDurationSeconds / 60)} min
+                </Text>
+                <Text style={[styles.infoLabel, { color: LAVENDER }]}>Durée</Text>
+              </View>
+              <View style={[styles.infoSep, { backgroundColor: GLASS_BORDER }]} />
+              <View style={styles.infoItem}>
+                <Text style={styles.infoEmoji}>
+                  {meditation.level === 'beginner' ? '🌱' : meditation.level === 'intermediate' ? '🌿' : meditation.level === 'advanced' ? '🌳' : '✨'}
+                </Text>
+                <Text style={[styles.infoValue, { color: WHITE_SOFT }]}>
+                  {meditation.level === 'beginner' ? 'Débutant' : meditation.level === 'intermediate' ? 'Intermédiaire' : meditation.level === 'advanced' ? 'Avancé' : 'Tous niveaux'}
+                </Text>
+                <Text style={[styles.infoLabel, { color: LAVENDER }]}>Niveau</Text>
+              </View>
+              <View style={[styles.infoSep, { backgroundColor: GLASS_BORDER }]} />
+              <View style={styles.infoItem}>
+                <Text style={styles.infoEmoji}>{categoryInfo?.emoji ?? '🧘'}</Text>
+                <Text style={[styles.infoValue, { color: WHITE_SOFT }]} numberOfLines={1}>
+                  {categoryInfo?.name ?? meditation.categorySlug}
+                </Text>
+                <Text style={[styles.infoLabel, { color: LAVENDER }]}>Catégorie</Text>
+              </View>
+            </View>
+          </View>
+
           {/* ── Script de méditation ─────────────────────────────────────── */}
           {meditation.scriptText && (
             <View style={[styles.scriptContainer, { backgroundColor: GLASS_BG, borderColor: GLASS_BORDER }]}>
@@ -696,5 +727,18 @@ function makeStyles(isDark: boolean) {
   simCatLabel: { fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 },
   simCardTitle: { fontSize: 12, fontWeight: '500', lineHeight: 16, marginBottom: 4 },
   simDuration: { fontSize: 10 },
+
+  // Infos enrichies
+  infoCard: {
+    borderRadius: 18, padding: 18, marginBottom: 20, borderWidth: 0.5,
+  },
+  infoRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
+  },
+  infoItem: { flex: 1, alignItems: 'center', gap: 4 },
+  infoEmoji: { fontSize: 22 },
+  infoValue: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  infoLabel: { fontSize: 10, textAlign: 'center', letterSpacing: 0.3 },
+  infoSep: { width: 0.5, height: 48, opacity: 0.5 },
   });
 }

@@ -484,3 +484,12 @@
 - [ ] Citation nocturne personnalisée selon l'humeur du dernier check-in
 - [ ] Écran de détail méditation enrichi (durée, niveau, description longue)
 - [ ] Bouton "Ajouter aux favoris" visible directement sur les cartes de méditation
+
+## Phase 46 : Refonte écran Check-in + améliorations Explore
+
+- [x] Refondre checkin.tsx : design premium, sliders natifs fonctionnels (boutons 1-5 avec animation)
+- [x] Sélection humeur avec animation de sélection (scale + glow couleur par humeur)
+- [x] Sliders stress/énergie/sommeil avec valeurs visuelles et labels min/max
+- [x] Animation de confirmation après enregistrement (récap humeur + scores)
+- [x] Bouton favori sur les cartes de méditation dans Explore (fond rose quand actif)
+- [x] Section infos enrichies dans le lecteur méditation (durée, niveau, catégorie)

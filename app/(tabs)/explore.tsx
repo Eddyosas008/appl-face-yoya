@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   hCard: { borderRadius: 16, overflow: 'hidden', width: 150, backgroundColor: '#2A2540', borderWidth: 1, borderColor: 'rgba(200,169,110,0.40)' },
   hCover: { height: 90, justifyContent: 'center', alignItems: 'center', position: 'relative' as const },
   hCoverEmoji: { fontSize: 30 },
-  hFavBtn: { position: 'absolute' as const, top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 999, padding: 5 },
+  hFavBtn: { position: 'absolute' as const, top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 999, padding: 7, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
   hInfo: { padding: 8 },
   hCategory: { fontSize: 9, fontWeight: '600' as const, textTransform: 'uppercase' as const, letterSpacing: 0.8, color: '#C8A96E', marginBottom: 2 },
   hTitle: { fontSize: 12, fontWeight: '500' as const, color: '#EDE8DC', lineHeight: 16, marginBottom: 3 },
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   featuredBadge: { position: 'absolute' as const, top: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 999, padding: 5 },
   featuredText: { fontSize: 10 },
   lockBadge: { position: 'absolute' as const, top: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 999, padding: 5 },
-  favButton: { position: 'absolute' as const, top: 8, right: 8, borderRadius: 999, padding: 6 },
+  favButton: { position: 'absolute' as const, top: 8, right: 8, borderRadius: 999, padding: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
   cardInfo: { padding: 10 },
   cardCategory: { fontSize: 9, fontWeight: '600' as const, textTransform: 'uppercase' as const, letterSpacing: 0.8, color: '#C8A96E', marginBottom: 2 },
   cardTitle: { fontSize: 12, fontWeight: '600' as const, color: '#EDE8DC', lineHeight: 17, marginBottom: 4 },
@@ -70,8 +70,8 @@ function MeditationCardHorizontal({
             <IconSymbol name="lock.fill" size={10} color="#FFF" />
           </View>
         )}
-        <Pressable style={styles.hFavBtn} onPress={onFav}>
-          <IconSymbol name={isFav ? 'heart.fill' : 'heart'} size={13} color={isFav ? '#F9A8D4' : '#FFF'} />
+        <Pressable style={[styles.hFavBtn, isFav && { backgroundColor: 'rgba(249,168,212,0.30)', borderColor: 'rgba(249,168,212,0.50)' }]} onPress={onFav}>
+          <IconSymbol name={isFav ? 'heart.fill' : 'heart'} size={13} color={isFav ? '#F9A8D4' : 'rgba(255,255,255,0.85)'} />
         </Pressable>
       </LinearGradient>
       <View style={styles.hInfo}>
@@ -110,8 +110,8 @@ function MeditationCardGrid({
             <IconSymbol name="lock.fill" size={12} color="#FFF" />
           </View>
         )}
-        <Pressable style={[styles.favButton, { backgroundColor: 'rgba(0,0,0,0.3)' }]} onPress={onFav}>
-          <IconSymbol name={isFav ? 'heart.fill' : 'heart'} size={14} color={isFav ? '#F9A8D4' : '#FFF'} />
+        <Pressable style={[styles.favButton, { backgroundColor: isFav ? 'rgba(249,168,212,0.30)' : 'rgba(0,0,0,0.40)', borderColor: isFav ? 'rgba(249,168,212,0.50)' : 'rgba(255,255,255,0.15)' }]} onPress={onFav}>
+          <IconSymbol name={isFav ? 'heart.fill' : 'heart'} size={14} color={isFav ? '#F9A8D4' : 'rgba(255,255,255,0.85)'} />
         </Pressable>
       </LinearGradient>
       <View style={styles.cardInfo}>
