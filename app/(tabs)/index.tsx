@@ -300,6 +300,84 @@ export default function HomeScreen() {
         {/* ── DIVIDER ────────────────────────────────────────────────────── */}
         <View style={styles.divider} />
 
+        {/* ── POUR VOUS AUJOURD'HUI ──────────────────────────────────────── */}
+        {profile?.mainGoal && (() => {
+          const GOAL_LABEL: Record<string, string> = {
+            sleep: 'Mieux dormir', stress_relief: 'Réduire le stress',
+            emotional_balance: 'Équilibre émotionnel', confidence: 'Confiance en soi',
+            focus: 'Concentration', recovery: 'Récupération',
+          };
+          const RECS: Record<string, { emoji: string; title: string; desc: string; route: string; color: string }[]> = {
+            sleep: [
+              { emoji: '🌙', title: 'Méditation du sommeil', desc: 'Endormissement profond · 15 min', route: '/explore', color: '#1E1B4B' },
+              { emoji: '🎵', title: 'Sons d\'ambiance', desc: 'Pluie douce + Bol tibétain', route: '/ambient', color: '#1E3A5F' },
+              { emoji: '🌬️', title: 'Respiration 4-7-8', desc: 'Technique anti-insomnie · 5 min', route: '/breathing', color: '#1A0533' },
+            ],
+            stress_relief: [
+              { emoji: '🌿', title: 'Méditation anti-stress', desc: 'Relâchement profond · 10 min', route: '/explore', color: '#14532D' },
+              { emoji: '🌬️', title: 'Cohérence cardiaque', desc: 'Équilibre nerveux · 5 min', route: '/breathing', color: '#064E3B' },
+              { emoji: '🎵', title: 'Sons de nature', desc: 'Forêt + Ruisseau', route: '/ambient', color: '#1A3A2A' },
+            ],
+            emotional_balance: [
+              { emoji: '💜', title: 'Équilibre émotionnel', desc: 'Ancrage et sérénité · 12 min', route: '/explore', color: '#2D1B69' },
+              { emoji: '📓', title: 'Journal du soir', desc: 'Notez vos émotions du jour', route: '/(tabs)/journal', color: '#1E1B4B' },
+              { emoji: '🌬️', title: 'Respiration apaisante', desc: 'Nadi Shodhana · 8 min', route: '/breathing', color: '#312E81' },
+            ],
+            confidence: [
+              { emoji: '✨', title: 'Confiance en soi', desc: 'Visualisation positive · 10 min', route: '/explore', color: '#78350F' },
+              { emoji: '📓', title: 'Affirmations du matin', desc: 'Notez vos forces du jour', route: '/(tabs)/journal', color: '#92400E' },
+              { emoji: '🌬️', title: 'Activation énergétique', desc: 'Wim Hof · 10 min', route: '/breathing', color: '#7C2D12' },
+            ],
+            focus: [
+              { emoji: '🎯', title: 'Méditation de concentration', desc: 'Clarté mentale · 10 min', route: '/explore', color: '#1E3A5F' },
+              { emoji: '🌬️', title: 'Respiration boîte', desc: 'Box breathing · 5 min', route: '/breathing', color: '#1E40AF' },
+              { emoji: '🎵', title: 'Sons de concentration', desc: 'Bol tibétain + Cosmos', route: '/ambient', color: '#1E1B4B' },
+            ],
+            recovery: [
+              { emoji: '🌸', title: 'Guérison émotionnelle', desc: 'Douceur et compassion · 15 min', route: '/explore', color: '#831843' },
+              { emoji: '📓', title: 'Journal de gratitude', desc: '3 choses positives du jour', route: '/(tabs)/journal', color: '#9D174D' },
+              { emoji: '🎵', title: 'Sons apaisants', desc: 'Océan + Oiseaux', route: '/ambient', color: '#701A75' },
+            ],
+          };
+          const recs = RECS[profile.mainGoal] ?? [];
+          if (!recs.length) return null;
+          return (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>✨ Pour vous aujourd'hui</Text>
+              <Text style={styles.sectionSub}>Basé sur votre objectif : {GOAL_LABEL[profile.mainGoal] ?? profile.mainGoal}</Text>
+              <View style={{ gap: 10, marginTop: 12 }}>
+                {recs.map((item, idx) => (
+                  <Pressable
+                    key={idx}
+                    style={({ pressed }) => [{
+                      flexDirection: 'row', alignItems: 'center',
+                      borderRadius: 16, padding: 14, gap: 12,
+                      backgroundColor: CARD_BG, borderWidth: 1, borderColor: CARD_BORDER,
+                      opacity: pressed ? 0.85 : 1,
+                      shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.08, shadowRadius: 6, elevation: 2,
+                    }]}
+                    onPress={() => router.push(item.route as never)}
+                  >
+                    <View style={[{
+                      width: 48, height: 48, borderRadius: 14,
+                      backgroundColor: item.color,
+                      justifyContent: 'center', alignItems: 'center',
+                    }]}>
+                      <Text style={{ fontSize: 22 }}>{item.emoji}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 2 }]}>{item.title}</Text>
+                      <Text style={[styles.sectionSub, { fontSize: 12 }]}>{item.desc}</Text>
+                    </View>
+                    <Text style={{ color: GOLD, fontSize: 16 }}>→</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          );
+        })()}
+
         {/* ── SUIVI DU SOMMEIL ───────────────────────────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>

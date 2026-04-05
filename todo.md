@@ -677,3 +677,23 @@
 - [x] Bannière mix actif avec bouton "Tout arrêter"
 - [x] Section combinaisons recommandées (Pluie+Feu, Océan+Oiseaux, Bol+Forêt)
 - [x] Vérifier TypeScript : 0 erreur dans ambient.tsx
+
+## Phase 61 : Écran d'onboarding interactif
+
+- [x] Analyser la structure de navigation et le stockage AsyncStorage existant
+- [x] Créer app/onboarding.tsx avec 6 étapes animées (Bienvenue, Prénom, Objectif, Niveau, Durée, Ton, Résumé)
+- [x] Étape Bienvenue : logo animé, titre SomnioPax, promesses (privé, 2 min, personnalisé)
+- [x] Étape Objectif : 6 cartes en grille (Sommeil, Stress, Équilibre, Confiance, Focus, Récupération)
+- [x] Étape Niveau : 3 choix en liste avec description (Débutant, Intermédiaire, Avancé)
+- [x] Étape Durée : 5 choix en liste avec description (5/10/15/20/30 min)
+- [x] Étape Ton : 4 cartes en grille (Doux, Motivant, Neutre, Spirituel)
+- [x] Étape Résumé : carte de bienvenue + récapitulatif des choix + 4 features de l'app
+- [x] Barre de progression animée avec Reanimated (withTiming)
+- [x] Transitions FadeIn entre étapes
+- [x] Auto-avancement après sélection d'une option (280ms)
+- [x] Bouton "Passer la configuration" sur l'écran de bienvenue
+- [x] Logique de navigation : app/index.tsx vérifie isOnboarded et redirige
+- [x] Sauvegarder les préférences via completeOnboarding() dans user-context
+- [x] Section "Pour vous aujourd'hui" dans le Dashboard (recommandations basées sur mainGoal)
+- [x] Recommandations adaptées par objectif : 3 actions ciblées (méditation, sons, respiration)
+- [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
