@@ -98,7 +98,7 @@ export default function ProfileScreen() {
   const { isDark, themeMode, setThemeMode } = useThemeContext();
   const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const { profile, checkIns, logout, updateProfile } = useUser();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
   const [showPremium, setShowPremium] = useState(false);
   const [showEditName, setShowEditName] = useState(false);
@@ -558,6 +558,13 @@ export default function ProfileScreen() {
           <SettingRow
             icon="✏️" label="Modifier le prénom" value={firstName}
             onPress={() => { setEditNameValue(firstName); setShowEditName(true); }}
+            isDark={isDark} colors={colors}
+          />
+          <SettingRow
+            icon="🔑"
+            label={user?.loginMethod === 'email' ? 'Changer le mot de passe' : 'Créer un mot de passe'}
+            description={user?.loginMethod === 'email' ? 'Modifier votre mot de passe actuel' : 'Ajouter un mot de passe à votre compte'}
+            onPress={() => router.push('/(auth)/change-password' as never)}
             isDark={isDark} colors={colors}
           />
           <SettingRow icon="🔒" label="Confidentialité" onPress={() => {}} isDark={isDark} colors={colors} />

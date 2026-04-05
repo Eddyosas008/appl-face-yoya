@@ -14,6 +14,7 @@ import type { Express, Request, Response } from "express";
 import {
   createEmailUser,
   getEmailAuthByEmail,
+  getEmailAuthByUserId,
   getUserById,
   updateUserLastSignedIn,
   createPasswordResetToken,
@@ -394,6 +395,98 @@ export function registerEmailAuthRoutes(app: Express) {
     } catch (err) {
       console.error("[EmailAuth] Reset password error:", err);
       res.status(500).json({ error: "Erreur serveur lors de la réinitialisation." });
+    }
+  });
+
+  // POST /api/auth/change-password — change password for authenticated users
+  app.post("/api/auth/change-password", async (req: Request, res: Response) => {
+    try {
+      // Authenticate the request (cookie or Bearer token)
+      let user;
+      try {
+        user = await sdk.authenticateRequest(req);
+      } catch {
+        res.status(401).json({ error: "Vous devez être connecté pour changer votre mot de passe." });
+        return;
+      }
+
+      const { currentPassword, newPassword } = req.body as {
+        currentPassword?: string;
+        newPassword?: string;
+      };
+
+      if (!newPassword) {
+        res.status(400).json({ error: "Le nouveau mot de passe est requis." });
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        res.status(400).json({ error: "Le mot de passe doit contenir au moins 8 caractères." });
+        return;
+      }
+
+      // Get the user's DB record
+      const dbUser = await getUserById(user.id);
+      if (!dbUser) {
+        res.status(404).json({ error: "Compte introuvable." });
+        return;
+      }
+
+      // Check if user has an email auth record
+      const authRecord = await getEmailAuthByUserId(dbUser.id);
+
+      if (authRecord) {
+        // User has email/password — verify current password
+        if (!currentPassword) {
+          res.status(400).json({ error: "Le mot de passe actuel est requis." });
+          return;
+        }
+        const isValid = await bcrypt.compare(currentPassword, authRecord.passwordHash);
+        if (!isValid) {
+          res.status(401).json({ error: "Mot de passe actuel incorrect." });
+          return;
+        }
+      } else {
+        // User signed up via Google/OAuth — no current password needed
+        // They can set a password for the first time
+        // Create an emailAuth record for them
+        if (!dbUser.email) {
+          res.status(400).json({ error: "Aucun email associé à ce compte." });
+          return;
+        }
+        // Check if email is already used by another account
+        const existingEmailAuth = await getEmailAuthByEmail(dbUser.email);
+        if (existingEmailAuth && existingEmailAuth.userId !== dbUser.id) {
+          res.status(409).json({ error: "Cet email est déjà utilisé par un autre compte." });
+          return;
+        }
+      }
+
+      // Hash new password
+      const newHash = await bcrypt.hash(newPassword, 12);
+
+      if (authRecord) {
+        // Update existing password
+        await updateEmailPassword(dbUser.id, newHash);
+      } else {
+        // Create new email auth record for OAuth user
+        await createEmailUser({
+          email: dbUser.email!,
+          passwordHash: newHash,
+          name: dbUser.name || dbUser.email!.split("@")[0],
+        });
+      }
+
+      res.json({
+        success: true,
+        message: authRecord
+          ? "Mot de passe modifié avec succès."
+          : "Mot de passe créé avec succès. Vous pouvez maintenant vous connecter avec votre email.",
+        isFirstPassword: !authRecord,
+      });
+    } catch (err) {
+      console.error("[EmailAuth] Change password error:", err);
+      res.status(500).json({ error: "Erreur serveur lors du changement de mot de passe." });
     }
   });
 }

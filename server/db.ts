@@ -869,6 +869,22 @@ export async function getEmailAuthByEmail(email: string) {
   return rows[0] ?? null;
 }
 
+export async function getEmailAuthByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select({
+      id: emailAuth.id,
+      userId: emailAuth.userId,
+      email: emailAuth.email,
+      passwordHash: emailAuth.passwordHash,
+      emailVerified: emailAuth.emailVerified,
+    })
+    .from(emailAuth)
+    .where(eq(emailAuth.userId, userId))
+    .limit(1);
+  return rows[0] ?? null;
+}
 export async function getUserById(id: number) {
   const db = await getDb();
   if (!db) return null;

@@ -603,3 +603,13 @@
 - [x] Template email HTML : design SomnioPax avec gradient doré, bouton CTA et lien de secours
 - [x] Gestion des erreurs : token expiré, token déjà utilisé, email inconnu
 - [x] Flux complet testé de bout en bout (forgot → email Resend → validate → reset → session JWT)
+
+## Phase 56 : Modification du mot de passe depuis le profil
+
+- [x] Backend : route POST /api/auth/change-password (vérif ancien mdp + nouveau hash bcrypt)
+- [x] Frontend service : fonction changePassword dans email-auth-service.ts
+- [x] Écran change-password.tsx (ancien mdp + nouveau mdp + confirmation + jauge force)
+- [x] Route dans le layout auth
+- [x] Bouton "Changer le mot de passe" dans le profil (section Compte)
+- [x] Gestion des cas : utilisateur sans mdp (connexion Google uniquement) — création premier mdp
+- [x] Test flux complet (changement + vérification ancien/nouveau mdp)

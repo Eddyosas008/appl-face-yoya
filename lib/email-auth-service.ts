@@ -111,3 +111,26 @@ export async function resetPassword(
   });
   return result;
 }
+
+export async function changePassword(
+  currentPassword: string | null,
+  newPassword: string,
+): Promise<{ success: boolean; message: string; isFirstPassword?: boolean }> {
+  // Include Bearer token for native app auth
+  const sessionToken = await Auth.getSessionToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (sessionToken) headers["Authorization"] = `Bearer ${sessionToken}`;
+
+  const body: Record<string, string> = { newPassword };
+  if (currentPassword) body.currentPassword = currentPassword;
+
+  const res = await fetch(apiUrl("/api/auth/change-password"), {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Erreur lors du changement de mot de passe.");
+  return { success: true, message: data.message, isFirstPassword: data.isFirstPassword };
+}
