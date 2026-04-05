@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  Animated, Dimensions, Platform, Modal, TextInput, Image,
+  Animated, Dimensions, Platform, Modal, TextInput,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useThemeContext } from '@/lib/theme-provider';
 import { getThemeColors } from '@/lib/theme-constants';
 import { router } from 'expo-router';
@@ -254,8 +255,10 @@ export default function HomeScreen() {
             {/* Image nocturne en fond — visible en mode clair ET sombre */}
             <Image
               source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/hero-dashboard_c_d97d6c54.jpg' }}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: isDark ? 0.65 : 0.50 }}
-              resizeMode="cover"
+              style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.65 : 0.50 }]}
+              contentFit="cover"
+              transition={400}
+              cachePolicy="memory-disk"
             />
             <StarField />
 
@@ -793,8 +796,8 @@ function makeStyles(isDark: boolean) {
   const NIGHT  = isDark ? '#0D0B1A' : '#FAF7F2';
   return StyleSheet.create({
   // Hero SomnioPax v3
-  heroWrapper: { overflow: 'hidden' },
-  hero: { paddingTop: 28, paddingBottom: 40, paddingHorizontal: 24, position: 'relative', minHeight: 320 },
+  heroWrapper: { overflow: 'hidden', borderRadius: 0 },
+  hero: { paddingTop: 28, paddingBottom: 40, paddingHorizontal: 24, position: 'relative', minHeight: 320, overflow: 'hidden' },
   moonContainer: { alignItems: 'center', marginBottom: 18 },
   moonRing: {
     width: 68, height: 68, borderRadius: 34,

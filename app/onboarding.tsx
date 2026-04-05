@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  TextInput, Dimensions, Platform, Image,
+  TextInput, Dimensions, Platform,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import Animated, {
   useSharedValue, useAnimatedStyle,
@@ -172,7 +173,9 @@ function ChoiceCard({
           <Image
             source={{ uri: imageUri }}
             style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.65 : 0.55 }]}
-            resizeMode="cover"
+            contentFit="cover"
+            transition={300}
+            cachePolicy="memory-disk"
           />
         ) : null}
         {/* Overlay de couleur */}
@@ -400,7 +403,9 @@ export default function OnboardingScreen() {
           <Image
             source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/onboarding-hero_c_708dd0cf.jpg' }}
             style={welcomeSt.heroImage}
-            resizeMode="cover"
+            contentFit="cover"
+            transition={400}
+            cachePolicy="memory-disk"
           />
           <LinearGradient
             colors={['transparent', isDark ? BG_D : BG_L]}

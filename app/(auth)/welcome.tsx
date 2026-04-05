@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import Svg, { Circle, Ellipse } from 'react-native-svg';
 import { useThemeContext } from '@/lib/theme-provider';
@@ -71,7 +72,8 @@ export default function WelcomeScreen() {
             <Image
               source={require('@/assets/images/icon.png')}
               style={styles.logo}
-              resizeMode="contain"
+              contentFit="contain"
+              cachePolicy="memory-disk"
             />
           </View>
         </View>

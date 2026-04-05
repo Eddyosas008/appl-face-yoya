@@ -3,8 +3,9 @@ import React, {
 } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView, Platform,
-  Dimensions, PanResponder, Image,
+  Dimensions, PanResponder,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import type { AudioPlayer } from 'expo-audio';
@@ -64,11 +65,11 @@ const SOUND_GRADIENTS: Record<string, readonly [string, string, ...string[]]> = 
   river:         ['#0A2E3A', '#0891B2', '#0E7490'],
   thunder:       ['#0F0B2E', '#4338CA', '#3730A3'],
   whale:         ['#0A1E3D', '#1D4ED8', '#1E40AF'],
-  tibetan_bowl:  ['#3D1A05', '#D97706', '#B45309'],
-  white_noise:   ['#1A1A2E', '#374151', '#4B5563'],
-  brown_noise:   ['#2D1A0A', '#92400E', '#78350F'],
-  night_insects: ['#0D2010', '#166534', '#14532D'],
-  cave:          ['#111827', '#1F2937', '#374151'],
+  'tibetan-bowl':  ['#3D1A05', '#D97706', '#B45309'],
+  'white-noise':   ['#1A1A2E', '#374151', '#4B5563'],
+  'brown-noise':   ['#2D1A0A', '#92400E', '#78350F'],
+  'night-insects': ['#0D2010', '#166534', '#14532D'],
+  cave:            ['#111827', '#1F2937', '#374151'],
   default:       ['#1A1A2E', '#374151', '#4B5563'],
 };
 
@@ -79,7 +80,7 @@ const SOUND_IMAGES: Record<string, { uri: string }> = {
   ocean:        { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-ocean_c_42763065.jpg' },
   fire:         { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-fire_c_a2c24143.jpg' },
   birds:        { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-birds_c_ffcb2c52.jpg' },
-  tibetan_bowl: { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-tibetan-bowl_c_d998628f.jpg' },
+  'tibetan-bowl': { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-tibetan-bowl_c_d998628f.jpg' },
   cosmos:       { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-cosmos_c_534a037e.jpg' },
 };
 
@@ -93,10 +94,10 @@ const SOUND_BIG_EMOJI: Record<string, string> = {
   river:         '🏞️',
   thunder:       '⛈️',
   whale:         '🐋',
-  tibetan_bowl:  '🪘',
-  white_noise:   '🌫️',
-  brown_noise:   '📻',
-  night_insects: '🦗',
+  'tibetan-bowl':  '🪘',
+  'white-noise':   '🌫️',
+  'brown-noise':   '📻',
+  'night-insects': '🦗',
   cave:          '🕳️',
 };
 
@@ -232,8 +233,10 @@ function SoundCard({
           {soundImage && (
             <Image
               source={soundImage}
-              style={cardSt.bgImage}
-              resizeMode="cover"
+              style={StyleSheet.absoluteFillObject}
+              contentFit="cover"
+              transition={300}
+              cachePolicy="memory-disk"
             />
           )}
           {/* Overlay pour lisibilité du texte - adapté mode clair/sombre */}
@@ -286,10 +289,6 @@ const cardSt = StyleSheet.create({
     borderRadius: 20, padding: 14, minHeight: 145,
     justifyContent: 'flex-end', overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
-  },
-  bgImage: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    width: '100%', height: '100%', borderRadius: 20,
   },
   glowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 20 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },

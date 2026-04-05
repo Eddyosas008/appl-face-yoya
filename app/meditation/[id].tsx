@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  Platform, ActivityIndicator, Dimensions, Share, TouchableOpacity, Image,
+  Platform, ActivityIndicator, Dimensions, Share, TouchableOpacity,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
@@ -433,11 +434,10 @@ export default function MeditationPlayerScreen() {
       {/* Image thématique en fond semi-transparent */}
       <Image
         source={{ uri: bgImageUri }}
-        style={[
-          StyleSheet.absoluteFillObject,
-          { opacity: isDark ? 0.45 : 0.38 },
-        ]}
-        resizeMode="cover"
+        style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.45 : 0.38 }]}
+        contentFit="cover"
+        transition={400}
+        cachePolicy="memory-disk"
         blurRadius={Platform.OS === 'web' ? 0 : 2}
       />
       {/* Overlay gradient sombre pour la lisibilité */}

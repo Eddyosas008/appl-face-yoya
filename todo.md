@@ -766,3 +766,14 @@
 - [x] Sons d'ambiance : overlay réduit à rgba(0,0,0,0.35)
 - [x] Lecteur audio : opacité 0.45 (dark) / 0.38 (light) + overlay réduit
 - [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
+
+## Phase 68 : Correction problèmes visuels (screenshots réels)
+
+- [x] Dashboard : image hero contenue dans le cadre arrondi (overflow hidden + borderRadius)
+- [x] Sons d'ambiance : renommer tous les sons en français (Calmness → Pluie douce, etc.)
+- [x] Sons d'ambiance : corriger erreur "Text strings must be rendered within a <Text>" (expo-image migration)
+- [x] Sons d'ambiance : titres tronqués correctement dans les cartes (numberOfLines)
+- [x] Explorer/Bibliothèque : corriger erreur "Text strings must be rendered within a <Text>" (expo-image migration)
+- [x] Explorer : améliorer le cadrage des images dans les cartes (expo-image + StyleSheet.absoluteFillObject)
+- [x] Migrer tous les imports Image (react-native) → Image (expo-image) dans 6 fichiers
+- [x] Vérifier TypeScript et sauvegarder le checkpoint

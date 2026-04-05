@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { ScrollView as HScrollView, Image } from 'react-native';
+import { ScrollView as HScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, withSpring,
@@ -84,9 +85,12 @@ function HeroMeditationCard({ item, categories, isFav, isLocked, onPress, onFav 
         {/* Image thématique en fond */}
         <Image
           source={{ uri: imgUri }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.70 }}
-          resizeMode="cover"
+          style={StyleSheet.absoluteFillObject}
+          contentFit="cover"
+          transition={300}
+          cachePolicy="memory-disk"
         />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
         {/* Badge catégorie */}
         <View style={heroStyles.catBadge}>
           <Text style={heroStyles.catEmoji}>{cat?.emoji ?? '🧘'}</Text>
@@ -161,9 +165,12 @@ function MeditationCardHorizontal({ item, categories, isFav, isLocked, onPress, 
       <LinearGradient colors={[g1, g2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={hStyles.cover}>
         <Image
           source={{ uri: imgUri }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.75 }}
-          resizeMode="cover"
+          style={StyleSheet.absoluteFillObject}
+          contentFit="cover"
+          transition={300}
+          cachePolicy="memory-disk"
         />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.25)' }]} />
         <Text style={hStyles.emoji}>{item.emoji ?? cat?.emoji ?? '🧘'}</Text>
         {isLocked && (
           <View style={hStyles.lockBadge}>
@@ -228,9 +235,12 @@ function MeditationCardGrid({ item, categories, isFav, isLocked, onPress, onFav 
       <LinearGradient colors={[g1, g2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={gStyles.cover}>
         <Image
           source={{ uri: imgUri }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.75 }}
-          resizeMode="cover"
+          style={StyleSheet.absoluteFillObject}
+          contentFit="cover"
+          transition={300}
+          cachePolicy="memory-disk"
         />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.25)' }]} />
         <Text style={gStyles.emoji}>{item.emoji ?? cat?.emoji ?? '🧘'}</Text>
         {isLocked && (
           <View style={gStyles.lockBadge}><Text style={{ fontSize: 10 }}>🔒</Text></View>

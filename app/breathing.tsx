@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo} from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import Animated, {
   useSharedValue,
@@ -396,8 +397,10 @@ export default function BreathingScreen() {
         <View style={[styles.introCard, { borderColor: B_BORDER, overflow: 'hidden' }]}>
           <Image
             source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/breathing-hero_c_66be2e89.jpg' }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: isDark ? 0.60 : 0.50 }}
-            resizeMode="cover"
+            style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.60 : 0.50 }]}
+            contentFit="cover"
+            transition={400}
+            cachePolicy="memory-disk"
           />
           <LinearGradient
             colors={isDark ? ['rgba(26,18,64,0.55)', 'rgba(42,24,112,0.68)'] : ['rgba(200,190,240,0.45)', 'rgba(180,170,230,0.55)']}
