@@ -415,11 +415,22 @@ export default function StatsScreen() {
       <StarField />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.background }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={[styles.backArrow, { color: colors.primary }]}>←</Text>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={[styles.backBtn, {
+              backgroundColor: isDark ? '#2A2540' : '#F0EBE0',
+              borderWidth: 1,
+              borderColor: isDark ? 'rgba(200,169,110,0.35)' : 'rgba(139,105,20,0.22)',
+              borderRadius: 12,
+            }]}
+          >
+            <Text style={[styles.backArrow, { color: isDark ? '#C8A96E' : '#8B6914' }]}>←</Text>
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Statistiques</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={[styles.headerTitle, { color: isDark ? '#F0EBE0' : '#1C1410' }]}>Statistiques</Text>
+            <Text style={{ fontSize: 11, color: isDark ? 'rgba(240,235,224,0.55)' : 'rgba(60,40,20,0.55)', marginTop: 2 }}>Votre progression</Text>
+          </View>
           <View style={{ width: 40 }} />
         </View>
 
@@ -684,8 +695,8 @@ function makeStyles(isDark: boolean) {
     paddingTop: 8,
     paddingBottom: 12,
   },
-  backBtn: { width: 40, height: 40, justifyContent: 'center' },
-  backArrow: { fontSize: 24 },
+  backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  backArrow: { fontSize: 20, fontWeight: '600' },
   headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18 },
   card: {
     borderRadius: 20,

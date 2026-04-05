@@ -98,6 +98,34 @@ const TECHNIQUES: BreathingTechnique[] = [
       { label: 'Expirez', duration: 8, instruction: 'Expirez lentement par la bouche' },
     ],
   },
+  {
+    id: 'wim-hof',
+    name: 'Respiration Wim Hof',
+    description: 'Technique de respiration profonde pour booster l\'énergie et la vitalité.',
+    emoji: '❄️',
+    gradient: ['#0C4A6E', '#0284C7'],
+    benefit: 'Vitalité & Immunité',
+    cycles: 3,
+    phases: [
+      { label: 'Inspirez', duration: 2, instruction: 'Inspiration profonde et rapide par le nez' },
+      { label: 'Expirez', duration: 2, instruction: 'Expiration passive, sans forcer' },
+      { label: 'Retenez', duration: 15, instruction: 'Rétention poumons vides — restez calme' },
+    ],
+  },
+  {
+    id: 'nadi-shodhana',
+    name: 'Nadi Shodhana',
+    description: 'Respiration alternée des narines pour équilibrer les hémisphères cérébraux.',
+    emoji: '🌸',
+    gradient: ['#4A044E', '#A21CAF'],
+    benefit: 'Équilibre & Clarté',
+    cycles: 5,
+    phases: [
+      { label: 'Inspirez', duration: 4, instruction: 'Inspirez par la narine gauche' },
+      { label: 'Retenez', duration: 4, instruction: 'Retenez, les deux narines fermées' },
+      { label: 'Expirez', duration: 4, instruction: 'Expirez par la narine droite' },
+    ],
+  },
 ];
 
 export default function BreathingScreen() {
@@ -357,13 +385,26 @@ export default function BreathingScreen() {
             style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
             onPress={() => router.back()}
           >
-            <IconSymbol name="chevron.left" size={22} color={colors.foreground} />
+            <IconSymbol name="chevron.left" size={22} color={B_WHITE} />
           </Pressable>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={[styles.listTitle, { color: B_WHITE }]}>Exercices de respiration</Text>
-            <Text style={[styles.listSubtitle, { color: B_LAV }]}>Choisissez votre technique</Text>
+            <Text style={[styles.listSubtitle, { color: B_LAV }]}>{TECHNIQUES.length} techniques disponibles</Text>
           </View>
         </View>
+        {/* Intro card */}
+        <LinearGradient
+          colors={isDark ? ['#1A1240', '#2A1870'] : ['#EDE8DC', '#E8E0FF']}
+          style={[styles.introCard, { borderColor: B_BORDER }]}
+        >
+          <Text style={styles.introEmoji}>🌬️</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.introTitle, { color: B_WHITE }]}>La respiration consciente</Text>
+            <Text style={[styles.introText, { color: B_LAV }]}>
+              Quelques minutes de respiration guidée suffisent pour calmer le système nerveux et retrouver la sérénité.
+            </Text>
+          </View>
+        </LinearGradient>
 
         {/* Technique cards */}
         {TECHNIQUES.map((technique) => (
@@ -437,9 +478,13 @@ function makeStyles(isDark: boolean) {
   durationHint: { fontSize: 12, marginTop: 20 },
   // List styles
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
-  listHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 24 },
+  listHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
   listTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 22 },
   listSubtitle: { fontSize: 14, marginTop: 2 },
+  introCard: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, borderWidth: 1, padding: 16, marginBottom: 24 },
+  introEmoji: { fontSize: 32 },
+  introTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 15, marginBottom: 4 },
+  introText: { fontSize: 12, lineHeight: 18 },
   techniqueCard: { borderRadius: 18, padding: 18, flexDirection: 'row', alignItems: 'center', borderWidth: 1 , shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10, shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4 },
   techniqueLeft: { flex: 1, flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   techniqueEmoji: { fontSize: 32, marginTop: 2 },

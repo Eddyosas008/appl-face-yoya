@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 
 async function main() {
   const db = await getDb();
+  if (!db) throw new Error('Database not available');
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS \`ambientSounds\` (

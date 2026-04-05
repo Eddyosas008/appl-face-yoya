@@ -784,7 +784,8 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
             const endDt = new Date(record.endDate);
             const wakeHour = endDt.getHours();
             const wakeMin = endDt.getMinutes();
-            await db.createSleepLog(userId, {
+            await db.createSleepLog({
+              userId,
               sleepDate: sleepDateStr,
               bedtime: `${String(bedtimeHour).padStart(2, '0')}:${String(bedtimeMin).padStart(2, '0')}`,
               wakeTime: `${String(wakeHour).padStart(2, '0')}:${String(wakeMin).padStart(2, '0')}`,

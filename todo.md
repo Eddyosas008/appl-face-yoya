@@ -643,3 +643,21 @@
 - [x] Support iOS (Apple Health / HealthKit)
 - [x] Support Android (Google Health Connect)
 - [x] Test flux complet
+
+## Phase 59 : Refonte complète de toutes les pages
+
+- [x] Auditer toutes les pages existantes
+- [x] Journal : éditeur enrichi avec humeur, tags, sélection d'humeur
+- [x] Journal : vue calendrier avec points de couleur par humeur
+- [x] Journal : statistiques et tendances émotionnelles
+- [x] Journal : barre de recherche et filtres par humeur
+- [x] Journal : modal de lecture d'entrée avec gradient par humeur
+- [x] Respiration : 2 nouvelles techniques (Wim Hof, Nadi Shodhana)
+- [x] Respiration : carte intro visuelle en haut de la liste
+- [x] Respiration : 7 techniques disponibles au total
+- [x] Stats : header amélioré avec bouton retour stylisé et sous-titre
+- [ ] Sons d'ambiance : grille premium avec images, lecteur audio flottant, mixage multi-sons
+- [ ] Sons d'ambiance : filtres par catégorie (Nature, Ville, Cosmos, Méditation)
+- [ ] Dashboard : section "Pour vous aujourd'hui" personnalisée
+- [ ] Favoris : organisation par collections
+- [ ] Cohérence visuelle : palette de couleurs unifiée sur toutes les pages

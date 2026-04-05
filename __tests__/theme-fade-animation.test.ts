@@ -48,15 +48,17 @@ describe('ThemeProvider — animation de fondu', () => {
   });
 
   it('le toggle bascule de dark vers light', () => {
-    const current: ColorScheme = 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    expect(next).toBe('light');
+    function toggleTheme(scheme: ColorScheme): ColorScheme {
+      return scheme === 'dark' ? 'light' : 'dark';
+    }
+    expect(toggleTheme('dark')).toBe('light');
   });
 
   it('le toggle bascule de light vers dark', () => {
-    const current: ColorScheme = 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    expect(next).toBe('dark');
+    function toggleTheme(scheme: ColorScheme): ColorScheme {
+      return scheme === 'dark' ? 'light' : 'dark';
+    }
+    expect(toggleTheme('light')).toBe('dark');
   });
 
   it('isDark est vrai uniquement en mode sombre', () => {
