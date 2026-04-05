@@ -10,10 +10,8 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
+import { useThemeContext } from '@/lib/theme-provider';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-
-// Styles statiques pour les sous-composants
-const styles = {} as ReturnType<typeof makeStyles>;
 
 import {
   loadNotificationSettings,
@@ -33,6 +31,8 @@ const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
 export default function NotificationsSettingsScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'undetermined'>('undetermined');
   const [isLoading, setIsLoading] = useState(true);

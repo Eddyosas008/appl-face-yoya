@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient as SvgGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,9 +11,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { MoodChart30Days } from '@/components/mood-chart-30days';
 import { useAuth } from '@/hooks/use-auth';
-
-// Styles statiques pour les sous-composants (avant le composant principal)
-const styles = {} as ReturnType<typeof makeStyles>;
+import { useThemeContext } from '@/lib/theme-provider';
 
 
 const MOOD_SCORE: Record<string, number> = {
@@ -39,7 +37,8 @@ const MOOD_COLOR: Record<string, string> = {
 };
 
 function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
-  const width = 320;
+  const screenW = Dimensions.get('window').width;
+  const width = screenW - 72; // 16px padding*2 + 14px card padding*2 + 12px extra
   const height = 140;
   const padding = { top: 16, right: 16, bottom: 32, left: 28 };
 
@@ -154,6 +153,8 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
 
 export default function ProgressScreen() {
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const { isAuthenticated } = useAuth();
   const { profile, checkIns, sessionHistory, journalEntries } = useUser();
 
@@ -402,27 +403,27 @@ function makeStyles(isDark: boolean) {
   const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
   const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
   return StyleSheet.create({
-  scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+  scroll: { paddingHorizontal: 16, paddingBottom: 100 },
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
   title: { fontSize: 22, fontWeight: '800' },
   subtitle: { fontSize: 14, marginTop: 2 },
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16, flexWrap: 'wrap' },
-  statCard: { flex: 1, minWidth: '22%', borderRadius: 14, padding: 12, alignItems: 'center', gap: 4 },
+  statsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  statCard: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4, minWidth: 0 },
   statEmoji: { fontSize: 20 },
   statValue: { fontSize: 20, fontWeight: '800' },
-  statLabel: { fontSize: 10, textAlign: 'center' },
-  card: { borderRadius: 18, padding: 16, marginBottom: 14 },
+  statLabel: { fontSize: 10, textAlign: 'center', lineHeight: 13 },
+  card: { borderRadius: 18, padding: 14, marginBottom: 14 },
   cardTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
   cardSubtitle: { fontSize: 12, marginBottom: 12 },
   barChart: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 110, paddingTop: 16 },
   barItem: { flex: 1, alignItems: 'center', gap: 4 },
   barValue: { fontSize: 9, height: 14 },
-  barBg: { width: 20, height: 80, borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
+  barBg: { width: 18, height: 80, borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
   barFill: { width: '100%', borderRadius: 6 },
   barLabel: { fontSize: 11 },
   moodRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   moodEmoji: { fontSize: 18, width: 24 },
-  moodLabel: { width: 90, fontSize: 13 },
+  moodLabel: { width: 80, fontSize: 12 },
   moodBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden' },
   moodBarFill: { height: '100%', borderRadius: 3 },
   moodPct: { width: 32, fontSize: 11, textAlign: 'right' },

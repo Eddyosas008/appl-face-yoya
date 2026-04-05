@@ -777,3 +777,17 @@
 - [x] Explorer : améliorer le cadrage des images dans les cartes (expo-image + StyleSheet.absoluteFillObject)
 - [x] Migrer tous les imports Image (react-native) → Image (expo-image) dans 6 fichiers
 - [x] Vérifier TypeScript et sauvegarder le checkpoint
+
+## Phase 69 : Correction affichage pages (rapport utilisateur)
+
+- [x] progress.tsx : bug critique styles = {} jamais calculés → useMemo + useThemeContext
+- [x] progress.tsx : paddingBottom 60 → 100 pour éviter que le tab bar cache le contenu
+- [x] progress.tsx : statCard padding 10 → 12, statValue fontSize 18 → 20
+- [x] journey/[id].tsx : bug critique styles = {} jamais calculés → useMemo + useThemeContext
+- [x] notifications-settings.tsx : bug critique styles = {} jamais calculés → useMemo + useThemeContext
+- [x] journal/[id].tsx : bug critique styles = {} jamais calculés → useMemo + useThemeContext
+- [x] mood-chart-30days.tsx : statValue numberOfLines={2} pour textes longs (Reconnaissante)
+- [x] mood-chart-30days.tsx : MoodCurve W = screenW - 60 (calcul responsive correct)
+- [x] mood-chart-30days.tsx : MoodHeatmap responsive avec Dimensions.get
+- [x] ambient.tsx : CARD_W cohérent avec padding scroll + paddingBottom pour FloatingPlayer
+- [x] Sauvegarder checkpoint

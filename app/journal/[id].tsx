@@ -2,7 +2,7 @@
  * Écran Détail Journal — /journal/[id]
  * Affiche une entrée de journal en plein écran avec possibilité d'édition.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,10 +19,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useThemeContext } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc";
-
-// Styles statiques pour les sous-composants
-const styles = {} as ReturnType<typeof makeStyles>;
 
 
 const MOOD_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
@@ -53,6 +51,8 @@ export default function JournalDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");

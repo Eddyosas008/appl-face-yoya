@@ -4,13 +4,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
+import { useThemeContext } from '@/lib/theme-provider';
 import { useUser } from '@/lib/user-context';
 import { ADAPTIVE_JOURNEYS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PremiumBadge } from '@/components/ui/premium-badge';
-
-// Styles statiques pour les sous-composants
-const styles = {} as ReturnType<typeof makeStyles>;
 
 
 const STEP_ICONS: Record<string, string> = {
@@ -32,6 +30,8 @@ const STEP_COLORS: Record<string, string> = {
 export default function JourneyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useColors();
+  const { isDark } = useThemeContext();
+  const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const { profile, addSessionHistory } = useUser();
   const [currentStep, setCurrentStep] = useState<number | null>(null);
   const [isComplete, setIsComplete] = useState(false);

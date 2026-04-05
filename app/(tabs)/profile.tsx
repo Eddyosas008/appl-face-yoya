@@ -706,7 +706,7 @@ function makeStyles(isDark: boolean) {
     avatarText: { fontSize: 30, fontFamily: 'PlayfairDisplay-Medium', color: GOLD_P },
     levelBadge: { position: 'absolute', bottom: -4, right: -4, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
     headerInfo: { flex: 1, gap: 5, paddingTop: 4 },
-    profileName: { fontSize: 22, fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT_P },
+    profileName: { fontSize: 20, fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT_P, flexShrink: 1 },
     levelLabel: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3 },
     upgradeBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', backgroundColor: isDark ? 'rgba(200,169,110,0.12)' : 'rgba(139,105,20,0.08)', borderWidth: 0.5, borderColor: GOLD_C + '40' },
     upgradeBadgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.3 },
@@ -718,10 +718,10 @@ function makeStyles(isDark: boolean) {
     // Stats
     sectionTitle: { fontSize: 17, fontFamily: 'PlayfairDisplay-Medium', color: WHITE_SOFT_P, marginBottom: 10, marginTop: 6 },
     statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
-    statCard: { flex: 1, minWidth: '44%', borderRadius: 16, borderWidth: 1, padding: 14, alignItems: 'center', gap: 4, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 2 }, shadowOpacity: isDark ? 0.20 : 0.07, shadowRadius: 8, elevation: 3 },
-    statIcon: { fontSize: 22 },
-    statValue: { fontSize: 22, fontFamily: 'PlayfairDisplay-Medium' },
-    statLabel: { fontSize: 10, letterSpacing: 0.3, textAlign: 'center' },
+    statCard: { flex: 1, minWidth: '44%', borderRadius: 16, borderWidth: 1, padding: 12, alignItems: 'center', gap: 3, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 2 }, shadowOpacity: isDark ? 0.20 : 0.07, shadowRadius: 8, elevation: 3 },
+    statIcon: { fontSize: 20 },
+    statValue: { fontSize: 20, fontFamily: 'PlayfairDisplay-Medium' },
+    statLabel: { fontSize: 9, letterSpacing: 0.2, textAlign: 'center', lineHeight: 13 },
 
     // Wellness
     wellnessCard: { borderRadius: 20, borderWidth: 1, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 12, shadowColor: isDark ? '#000' : '#1C1410', shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.22 : 0.08, shadowRadius: 10, elevation: 4 },

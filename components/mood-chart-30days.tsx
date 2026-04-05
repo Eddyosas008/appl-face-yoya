@@ -85,7 +85,7 @@ function getTrend(entries: MoodEntry[]): 'up' | 'down' | 'stable' {
 /** Courbe SVG sur 30 jours */
 function MoodCurve({ entries, colors }: { entries: MoodEntry[]; colors: any }) {
   const screenW = Dimensions.get('window').width;
-  const W = screenW - 56; // padding 20*2 + card padding 8*2
+  const W = screenW - 60; // 16px scroll padding*2 + 14px card padding*2
   const H = 160;
   const pad = { top: 16, right: 12, bottom: 32, left: 32 };
   const chartW = W - pad.left - pad.right;
@@ -217,11 +217,13 @@ function MoodHeatmap({ entries, colors }: { entries: MoodEntry[]; colors: any })
     return map;
   }, [entries]);
 
-  // 5 rows × 6 cols = 30 cells
+  // Responsive: calcule la taille des cellules selon l'écran
+  const screenW = Dimensions.get('window').width;
   const COLS = 6;
-  const CELL = 36;
-  const GAP = 6;
-  const totalW = COLS * (CELL + GAP) - GAP;
+  const GAP = 5;
+  const availW = screenW - 60 - GAP * (COLS - 1); // 16px scroll padding*2 + 14px card padding*2
+  const CELL = Math.floor(availW / COLS);
+  const totalW = COLS * CELL + GAP * (COLS - 1);
 
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GAP, width: totalW, alignSelf: 'center' }}>
@@ -263,24 +265,24 @@ function MoodStats({ entries, colors }: { entries: MoodEntry[]; colors: any }) {
     <View style={styles.statsRow}>
       <View style={[styles.statBox, { backgroundColor: `${colors.primary}15` }]}>
         <Text style={styles.statEmoji}>{dominant ? MOOD_EMOJI[dominant] : '—'}</Text>
-        <Text style={[styles.statValue, { color: colors.foreground }]}>
+        <Text style={[styles.statValue, { color: colors.foreground }]} numberOfLines={2}>
           {dominant ? MOOD_LABEL[dominant] : '—'}
         </Text>
         <Text style={[styles.statLabel, { color: colors.muted }]}>Humeur dominante</Text>
       </View>
       <View style={[styles.statBox, { backgroundColor: `${colors.primary}15` }]}>
         <Text style={styles.statEmoji}>{trendIcon}</Text>
-        <Text style={[styles.statValue, { color: colors.foreground }]}>{trendLabel}</Text>
+        <Text style={[styles.statValue, { color: colors.foreground }]} numberOfLines={1}>{trendLabel}</Text>
         <Text style={[styles.statLabel, { color: colors.muted }]}>Tendance</Text>
       </View>
       <View style={[styles.statBox, { backgroundColor: `${colors.primary}15` }]}>
         <Text style={styles.statEmoji}>📊</Text>
-        <Text style={[styles.statValue, { color: colors.foreground }]}>{tracked}/30</Text>
+        <Text style={[styles.statValue, { color: colors.foreground }]} numberOfLines={1}>{tracked}/30</Text>
         <Text style={[styles.statLabel, { color: colors.muted }]}>Jours trackés</Text>
       </View>
       <View style={[styles.statBox, { backgroundColor: `${colors.primary}15` }]}>
         <Text style={styles.statEmoji}>⭐</Text>
-        <Text style={[styles.statValue, { color: colors.foreground }]}>{avgScore}</Text>
+        <Text style={[styles.statValue, { color: colors.foreground }]} numberOfLines={1}>{avgScore}</Text>
         <Text style={[styles.statLabel, { color: colors.muted }]}>Score moyen</Text>
       </View>
     </View>
@@ -401,14 +403,14 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    minWidth: '22%',
+    minWidth: '44%', // 2 colonnes sur petits écrans
     borderRadius: 12,
     padding: 10,
     alignItems: 'center',
     gap: 3,
   },
   statEmoji: { fontSize: 18 },
-  statValue: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  statValue: { fontSize: 11, fontWeight: '700', textAlign: 'center', lineHeight: 15 },
   statLabel: { fontSize: 9, textAlign: 'center', lineHeight: 12 },
   tabRow: {
     flexDirection: 'row',

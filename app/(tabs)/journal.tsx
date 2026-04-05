@@ -777,7 +777,7 @@ function makeStyles(isDark: boolean) {
     titleInput: { fontSize: 16, fontWeight: '500', paddingVertical: 14, borderBottomWidth: 0.5, marginBottom: 20 },
     moodLabel: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 17, marginBottom: 12 },
     moodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-    moodChip: { borderRadius: 12, borderWidth: 0.5, paddingHorizontal: 10, paddingVertical: 8, alignItems: 'center', width: '22%' },
+    moodChip: { borderRadius: 12, borderWidth: 0.5, paddingHorizontal: 8, paddingVertical: 8, alignItems: 'center', flex: 1, minWidth: '28%' },
     moodChipEmoji: { fontSize: 20, marginBottom: 2 },
     moodChipLabel: { fontSize: 9, fontWeight: '500', textAlign: 'center' },
     contentInput: { borderRadius: 14, borderWidth: 0.5, padding: 14, fontSize: 14, lineHeight: 22, minHeight: 200 },

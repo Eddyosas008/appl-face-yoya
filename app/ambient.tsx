@@ -44,7 +44,7 @@ type SoundState = {
 
 // ─── Constantes visuelles ─────────────────────────────────────────────────────
 const { width: SCREEN_W } = Dimensions.get('window');
-const CARD_W = (SCREEN_W - 48 - 12) / 2;
+const CARD_W = (SCREEN_W - 40 - 12) / 2; // 20px padding * 2 + 12px gap
 
 const CATEGORIES = [
   { id: 'all',        label: 'Tous',        emoji: '✨' },
@@ -871,7 +871,7 @@ function makeStyles(isDark: boolean) {
   const AM_CARD = isDark ? '#201C38' : '#FFFFFF';
   const AM_BORD = isDark ? 'rgba(200,169,110,0.38)' : 'rgba(139,105,20,0.22)';
   return StyleSheet.create({
-    scroll: { paddingHorizontal: 20, paddingTop: 8 },
+    scroll: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 160 },
     header: { flexDirection: 'row', alignItems: 'center', paddingBottom: 16, paddingTop: 4 },
     backBtn: {
       width: 40, height: 40, borderRadius: 12,
