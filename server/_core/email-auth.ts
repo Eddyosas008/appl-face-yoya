@@ -5,11 +5,11 @@
  * Password hashing: bcryptjs (cost factor 12)
  * Session: same JWT mechanism as OAuth (sdk.createSessionToken)
  * Reset tokens: 64-byte random hex, 1-hour TTL, single-use
- * Email: nodemailer (SMTP via env vars, or console fallback in dev)
+ * Email: Resend SDK (RESEND_API_KEY env var)
  */
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import type { Express, Request, Response } from "express";
 import {
   createEmailUser,
@@ -25,71 +25,118 @@ import { sdk } from "./sdk";
 import { getSessionCookieOptions } from "./cookies";
 import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
 
-// ─── Email transport ──────────────────────────────────────────────────────────
+// ─── Resend client ────────────────────────────────────────────────────────────
 
-function createTransport() {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT ?? "587", 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (host && user && pass) {
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
-  }
-
-  // Dev fallback: log emails to console
-  return nodemailer.createTransport({
-    streamTransport: true,
-    newline: "unix",
-    buffer: true,
-  });
+function getResendClient(): Resend | null {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return null;
+  return new Resend(key);
 }
 
-async function sendResetEmail(to: string, token: string, baseUrl: string) {
+// ─── Email HTML template ──────────────────────────────────────────────────────
+
+function buildResetEmailHtml(resetLink: string): string {
+  const year = new Date().getFullYear();
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Réinitialisation de mot de passe — SomnioPax</title>
+</head>
+<body style="margin:0;padding:0;background:#0D0B1A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0D0B1A;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:linear-gradient(135deg,#1A1630 0%,#0D0B1A 100%);border-radius:20px;border:1px solid rgba(200,169,110,0.25);overflow:hidden;">
+          <tr>
+            <td style="padding:36px 40px 28px;text-align:center;border-bottom:1px solid rgba(200,169,110,0.15);">
+              <div style="font-size:36px;margin-bottom:12px;">🌙</div>
+              <h1 style="margin:0;color:#C8A96E;font-size:26px;font-weight:700;letter-spacing:-0.5px;">SomnioPax</h1>
+              <p style="margin:6px 0 0;color:rgba(237,232,220,0.5);font-size:13px;letter-spacing:1px;text-transform:uppercase;">Votre sanctuaire du bien-être</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:36px 40px;">
+              <h2 style="margin:0 0 16px;color:#EDE8DC;font-size:20px;font-weight:600;">Réinitialisation de mot de passe</h2>
+              <p style="margin:0 0 12px;color:rgba(237,232,220,0.75);font-size:15px;line-height:1.7;">
+                Nous avons reçu une demande de réinitialisation du mot de passe associé à votre compte SomnioPax.
+              </p>
+              <p style="margin:0 0 28px;color:rgba(237,232,220,0.75);font-size:15px;line-height:1.7;">
+                Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe. Ce lien est valable <strong style="color:#C8A96E;">1 heure</strong> et ne peut être utilisé qu'une seule fois.
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:4px 0 32px;">
+                    <a href="${resetLink}" style="display:inline-block;background:linear-gradient(135deg,#C8A96E,#D4B97E);color:#0D0B1A;padding:16px 36px;border-radius:999px;font-weight:700;text-decoration:none;font-size:16px;letter-spacing:0.3px;">
+                      Réinitialiser mon mot de passe
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <div style="background:rgba(200,169,110,0.08);border:1px solid rgba(200,169,110,0.2);border-radius:12px;padding:16px 20px;">
+                <p style="margin:0;color:rgba(237,232,220,0.6);font-size:13px;line-height:1.6;">
+                  🔒 <strong style="color:rgba(237,232,220,0.8);">Vous n'avez pas fait cette demande ?</strong><br/>
+                  Ignorez simplement cet email. Votre mot de passe restera inchangé.
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 32px;border-top:1px solid rgba(200,169,110,0.1);">
+              <p style="margin:0 0 8px;color:rgba(237,232,220,0.35);font-size:12px;line-height:1.6;text-align:center;">
+                Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :
+              </p>
+              <p style="margin:0;word-break:break-all;text-align:center;">
+                <a href="${resetLink}" style="color:#C8A96E;font-size:11px;text-decoration:none;">${resetLink}</a>
+              </p>
+              <p style="margin:20px 0 0;color:rgba(237,232,220,0.25);font-size:11px;text-align:center;">
+                © ${year} SomnioPax · Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildResetEmailText(resetLink: string): string {
+  return `SomnioPax — Réinitialisation de mot de passe\n\nNous avons reçu une demande de réinitialisation du mot de passe de votre compte SomnioPax.\n\nCliquez sur ce lien pour réinitialiser votre mot de passe (valable 1 heure, usage unique) :\n${resetLink}\n\nSi vous n'avez pas fait cette demande, ignorez cet email. Votre mot de passe restera inchangé.\n\n© ${new Date().getFullYear()} SomnioPax`;
+}
+
+// ─── Send reset email via Resend ──────────────────────────────────────────────
+
+async function sendResetEmail(to: string, token: string, baseUrl: string): Promise<void> {
   const resetLink = `${baseUrl}/reset-password?token=${token}`;
-  const transport = createTransport();
+  const resend = getResendClient();
+  const from = process.env.RESEND_FROM_EMAIL ?? "SomnioPax <noreply@somniopax.fr>";
 
-  const mailOptions = {
-    from: process.env.SMTP_FROM ?? "SomnioPax <noreply@somniopax.app>",
-    to,
-    subject: "Réinitialisation de votre mot de passe SomnioPax",
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0D0B1A; color: #EDE8DC; border-radius: 16px;">
-        <h1 style="color: #C8A96E; font-size: 24px; margin-bottom: 8px;">SomnioPax 🌙</h1>
-        <h2 style="font-size: 18px; margin-bottom: 16px;">Réinitialisation de mot de passe</h2>
-        <p style="color: rgba(237,232,220,0.75); line-height: 1.6; margin-bottom: 24px;">
-          Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.
-          Ce lien est valable <strong>1 heure</strong>.
-        </p>
-        <a href="${resetLink}" style="display: inline-block; background: #C8A96E; color: #0D0B1A; padding: 14px 28px; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: 16px;">
-          Réinitialiser mon mot de passe
-        </a>
-        <p style="color: rgba(237,232,220,0.45); font-size: 12px; margin-top: 24px; line-height: 1.5;">
-          Si vous n'avez pas demandé cette réinitialisation, ignorez cet email. Votre mot de passe ne sera pas modifié.
-          <br/>Lien direct : ${resetLink}
-        </p>
-      </div>
-    `,
-    text: `SomnioPax — Réinitialisation de mot de passe\n\nCliquez sur ce lien pour réinitialiser votre mot de passe (valable 1 heure) :\n${resetLink}\n\nSi vous n'avez pas demandé cette réinitialisation, ignorez cet email.`,
-  };
-
-  try {
-    const info = await transport.sendMail(mailOptions);
-    // In dev (streamTransport), log the email content
-    if ((info as any).message) {
-      const msg = (info as any).message.toString();
-      console.log("[EmailAuth] DEV MODE — Reset email content:\n", msg);
-      console.log(`[EmailAuth] DEV MODE — Reset link: ${resetLink}`);
+  if (resend) {
+    try {
+      const { data, error } = await resend.emails.send({
+        from,
+        to: [to],
+        subject: "Réinitialisation de votre mot de passe SomnioPax",
+        html: buildResetEmailHtml(resetLink),
+        text: buildResetEmailText(resetLink),
+      });
+      if (error) {
+        console.error("[EmailAuth] Resend error:", error);
+        console.log(`[EmailAuth] Reset link (fallback): ${resetLink}`);
+      } else {
+        console.log(`[EmailAuth] Reset email sent via Resend. ID: ${data?.id}`);
+      }
+    } catch (err) {
+      console.error("[EmailAuth] Failed to send via Resend:", err);
+      console.log(`[EmailAuth] Reset link (fallback): ${resetLink}`);
     }
-  } catch (err) {
-    console.error("[EmailAuth] Failed to send email:", err);
-    // Log the reset link so dev can still test
-    console.log(`[EmailAuth] DEV MODE — Reset link (fallback): ${resetLink}`);
+  } else {
+    // Dev fallback: log to console
+    console.log("[EmailAuth] DEV MODE — RESEND_API_KEY not set.");
+    console.log(`[EmailAuth] Reset link: ${resetLink}`);
   }
 }
 

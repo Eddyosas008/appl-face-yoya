@@ -591,3 +591,15 @@
 - [x] Frontend : bouton "Continuer avec Google" sur welcome.tsx
 - [x] Flux web : ouverture navigateur + callback + redirection app
 - [x] Flux natif : expo-auth-session + Google idToken
+
+## Phase 55 : Réinitialisation de mot de passe par e-mail
+
+- [x] Configurer Resend SDK (remplace nodemailer) avec domaine somniopax.fr vérifié
+- [x] Backend : route POST /api/auth/forgot-password (email Resend avec template HTML premium)
+- [x] Backend : route POST /api/auth/reset-password (validation token + nouveau mdp + session JWT)
+- [x] Backend : route GET /api/auth/reset-password/validate (vérification token avant affichage formulaire)
+- [x] Écran forgot-password : UX améliorée avec animations, bouton renvoi, icône cercle
+- [x] Écran reset-password : jauge force mdp, toggle visibilité, compteur redirection 3s
+- [x] Template email HTML : design SomnioPax avec gradient doré, bouton CTA et lien de secours
+- [x] Gestion des erreurs : token expiré, token déjà utilisé, email inconnu
+- [x] Flux complet testé de bout en bout (forgot → email Resend → validate → reset → session JWT)
