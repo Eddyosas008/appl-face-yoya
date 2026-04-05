@@ -732,3 +732,15 @@
 - [x] Effet blur natif (blurRadius=3) sur iOS/Android, désactivé sur web
 - [x] Image positionnée entre le gradient de base et le StarField
 - [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
+
+## Phase 65 : Images thématiques dans les cartes objectifs de l'onboarding
+
+- [x] Analyser la structure des cartes d'objectifs dans onboarding.tsx (composant ChoiceCard)
+- [x] Générer les 2 images manquantes : Équilibre (émotion/lotus violet) et Récupération (prairie printanière)
+- [x] Uploader les 6 images d'objectifs sur CDN (manuscdn.com)
+- [x] Ajouter le mapping GOAL_IMAGES dans onboarding.tsx (6 objectifs)
+- [x] Modifier ChoiceCard pour accepter imageUri et afficher l'image en fond
+- [x] Overlay semi-transparent adapté à la sélection (doré si sélectionné, sombre sinon)
+- [x] Texte blanc avec ombre portée pour la lisibilité sur toutes les images
+- [x] imageUri passé uniquement pour l'étape mainGoal (step.field === 'mainGoal')
+- [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end

@@ -22,11 +22,21 @@ import type { UserProfile } from '@/shared/wellness-types';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-// ─── Palette SomnioPax ────────────────────────────────────────────────────────
+// ─── Palette SomnioPax ─────────────────────────────────────────────────────────────────────────────────
 const GOLD_D = '#C8A96E';
 const GOLD_L = '#8B6914';
 const BG_D   = '#0D0B1A';
 const BG_L   = '#FAF7F2';
+
+// ─── Images thématiques par objectif (CDN) ──────────────────────────────────────────────────────────────────────────────
+const GOAL_IMAGES: Record<string, string> = {
+  sleep:             'https://files.manuscdn.com/user_upload_by_module/session_file/91776583/aCfuZoRaAGDOuFOr.png',
+  stress_relief:     'https://files.manuscdn.com/user_upload_by_module/session_file/91776583/AgfmdcGmHLCHGgiF.png',
+  emotional_balance: 'https://files.manuscdn.com/user_upload_by_module/session_file/91776583/YHIWRUZmEQUWGdhI.png',
+  confidence:        'https://files.manuscdn.com/user_upload_by_module/session_file/91776583/rdxEytswvmxEcltP.png',
+  focus:             'https://files.manuscdn.com/user_upload_by_module/session_file/91776583/pbHMlWGhyseNGTNS.png',
+  recovery:          'https://files.manuscdn.com/user_upload_by_module/session_file/91776583/wBzXuFffEEBgKiNL.png',
+};
 
 // ─── Définition des étapes ────────────────────────────────────────────────────
 type StepType = 'welcome' | 'text' | 'choice-grid' | 'choice-list' | 'summary';
@@ -129,10 +139,10 @@ const TONE_LABELS: Record<string, string> = {
 
 // ─── Composant carte de choix (grille) ───────────────────────────────────────
 function ChoiceCard({
-  emoji, label, desc, selected, onPress, isDark, GOLD,
+  emoji, label, desc, selected, onPress, isDark, GOLD, imageUri,
 }: {
   emoji: string; label: string; desc?: string; selected: boolean;
-  onPress: () => void; isDark: boolean; GOLD: string;
+  onPress: () => void; isDark: boolean; GOLD: string; imageUri?: string;
 }) {
   const scale = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
@@ -143,12 +153,10 @@ function ChoiceCard({
         style={({ pressed }) => [
           choiceSt.card,
           {
-            backgroundColor: selected
-              ? (isDark ? `${GOLD}22` : `${GOLD}18`)
-              : (isDark ? '#2A2540' : '#FFFFFF'),
             borderColor: selected ? GOLD : (isDark ? 'rgba(200,169,110,0.25)' : 'rgba(139,105,20,0.18)'),
-            borderWidth: selected ? 1.5 : 1,
+            borderWidth: selected ? 2 : 1,
             opacity: pressed ? 0.88 : 1,
+            overflow: 'hidden',
           },
         ]}
         onPress={() => {
@@ -159,14 +167,36 @@ function ChoiceCard({
           onPress();
         }}
       >
-        {selected && (
-          <View style={[choiceSt.checkDot, { backgroundColor: GOLD }]}>
-            <Text style={{ fontSize: 9, color: isDark ? '#0D0B1A' : '#FFFFFF', fontWeight: '800' }}>✓</Text>
-          </View>
-        )}
-        <Text style={choiceSt.emoji}>{emoji}</Text>
-        <Text style={[choiceSt.label, { color: isDark ? '#EDE8DC' : '#1C1410' }]}>{label}</Text>
-        {desc && <Text style={[choiceSt.desc, { color: isDark ? 'rgba(240,235,224,0.55)' : 'rgba(60,40,20,0.55)' }]}>{desc}</Text>}
+        {/* Image de fond thématique */}
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.45 : 0.38 }]}
+            resizeMode="cover"
+          />
+        ) : null}
+        {/* Overlay de couleur */}
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              backgroundColor: selected
+                ? (isDark ? 'rgba(200,169,110,0.35)' : 'rgba(200,169,110,0.28)')
+                : (isDark ? 'rgba(13,11,26,0.58)' : 'rgba(250,247,242,0.52)'),
+            },
+          ]}
+        />
+        {/* Contenu de la carte */}
+        <View style={{ position: 'relative', zIndex: 1 }}>
+          {selected && (
+            <View style={[choiceSt.checkDot, { backgroundColor: GOLD }]}>
+              <Text style={{ fontSize: 9, color: isDark ? '#0D0B1A' : '#FFFFFF', fontWeight: '800' }}>✓</Text>
+            </View>
+          )}
+          <Text style={choiceSt.emoji}>{emoji}</Text>
+          <Text style={[choiceSt.label, { color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }]}>{label}</Text>
+          {desc && <Text style={[choiceSt.desc, { color: 'rgba(255,255,255,0.80)' }]}>{desc}</Text>}
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -529,6 +559,7 @@ export default function OnboardingScreen() {
                 onPress={() => handleChoice(opt.value)}
                 isDark={isDark}
                 GOLD={GOLD}
+                imageUri={step.field === 'mainGoal' ? GOAL_IMAGES[String(opt.value)] : undefined}
               />
             ))}
           </Animated.View>
