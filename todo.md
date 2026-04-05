@@ -661,3 +661,19 @@
 - [ ] Dashboard : section "Pour vous aujourd'hui" personnalisée
 - [ ] Favoris : organisation par collections
 - [ ] Cohérence visuelle : palette de couleurs unifiée sur toutes les pages
+
+## Phase 60 : Refonte Sons d'ambiance — Grille premium + lecteur flottant
+
+- [x] Analyser l'état actuel de ambient.tsx et la DB des sons
+- [x] Grille premium 2 colonnes avec visuels par son (emoji + gradient 3 couleurs par catégorie)
+- [x] Filtres catégories horizontaux (Tous, Nature, Eau, Feu, Méditation, Cosmos)
+- [x] Lecteur audio flottant persistant en bas de l'écran (sons actifs + contrôles)
+- [x] Mixage multi-sons simultanés (sons indépendants, appui multiple)
+- [x] Contrôle de volume individuel par son actif (slider dans le lecteur flottant)
+- [x] Minuteur de sommeil avec options 15/30/45/60 min
+- [x] Animation de pulsation sur les cartes actives (scale + glow overlay)
+- [x] Barres d'onde animées sur les cartes actives
+- [x] Indicateur visuel du nombre de sons actifs (dot pulsant dans le header)
+- [x] Bannière mix actif avec bouton "Tout arrêter"
+- [x] Section combinaisons recommandées (Pluie+Feu, Océan+Oiseaux, Bol+Forêt)
+- [x] Vérifier TypeScript : 0 erreur dans ambient.tsx
