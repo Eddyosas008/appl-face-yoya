@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Pressable, Image, Dimensions } from 'react-nati
 import { router } from 'expo-router';
 import Svg, { Circle, Ellipse } from 'react-native-svg';
 import { useThemeContext } from '@/lib/theme-provider';
+import { GoogleSignInButton } from '@/components/google-sign-in-button';
+import type { User } from '@/lib/_core/auth';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -114,6 +116,17 @@ export default function WelcomeScreen() {
               J'ai déjà un compte
             </Text>
           </Pressable>
+          {/* Séparateur */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
+            <Text style={[styles.dividerText, { color: LAV_DIM }]}>ou</Text>
+            <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
+          </View>
+          {/* Bouton Google */}
+          <GoogleSignInButton
+            label="Continuer avec Google"
+            onSuccess={(_user: User) => router.replace('/(tabs)')}
+          />
         </View>
 
         <Text style={[styles.disclaimer, { color: LAV_DIM }]}>
@@ -232,5 +245,12 @@ function makeStyles(isDark: boolean) {
     textAlign: 'center',
     lineHeight: 16,
   },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 13, fontWeight: '500' },
   });
 }

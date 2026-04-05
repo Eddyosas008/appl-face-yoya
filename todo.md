@@ -579,3 +579,15 @@
 - [x] Écran forgot-password.tsx : formulaire + état succès
 - [x] Écran reset-password.tsx : validation token + formulaire + redirection auto
 - [x] Layout auth mis à jour avec les nouvelles routes
+
+## Phase 54 : Connexion avec Google (Gmail)
+
+- [x] Obtenir les credentials Google OAuth (Client ID + Secret)
+- [x] Backend : route GET /api/auth/google (redirection vers Google)
+- [x] Backend : route GET /api/auth/google/callback (échange code → token → session JWT)
+- [x] Backend : route POST /api/auth/google/token (flux natif avec idToken)
+- [x] Frontend : bouton "Continuer avec Google" sur signin.tsx
+- [x] Frontend : bouton "S'inscrire avec Google" sur signup.tsx
+- [x] Frontend : bouton "Continuer avec Google" sur welcome.tsx
+- [x] Flux web : ouverture navigateur + callback + redirection app
+- [x] Flux natif : expo-auth-session + Google idToken

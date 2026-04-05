@@ -6,6 +6,8 @@ import { StarField } from '@/components/star-field';
 import { useUser } from '@/lib/user-context';
 import { useThemeContext } from '@/lib/theme-provider';
 import { registerWithEmail } from '@/lib/email-auth-service';
+import { GoogleSignInButton } from '@/components/google-sign-in-button';
+import type { User } from '@/lib/_core/auth';
 
 export default function SignUpScreen() {
   const { signup } = useUser();
@@ -180,6 +182,19 @@ export default function SignUpScreen() {
             </Pressable>
           </View>
 
+          {/* Séparateur */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
+            <Text style={[styles.dividerText, { color: LAV_DIM }]}>ou</Text>
+            <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
+          </View>
+          {/* Bouton Google */}
+          <GoogleSignInButton
+            label="S'inscrire avec Google"
+            onSuccess={(_user: User) => router.replace('/onboarding' as never)}
+            onError={(err) => setError(err)}
+          />
+          <View style={{ height: 24 }} />
           {/* Sign in link */}
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: LAV_DIM }]}>Vous avez déjà un compte ? </Text>
@@ -288,6 +303,14 @@ function makeStyles(isDark: boolean) {
     fontSize: 16,
     fontWeight: '800',
   },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 12,
+  },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 13, fontWeight: '500' },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',

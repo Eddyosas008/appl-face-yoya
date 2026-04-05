@@ -9,6 +9,8 @@ import { StarField } from '@/components/star-field';
 import { useThemeContext } from '@/lib/theme-provider';
 import { loginWithEmail } from '@/lib/email-auth-service';
 import { useUser } from '@/lib/user-context';
+import { GoogleSignInButton } from '@/components/google-sign-in-button';
+import type { User } from '@/lib/_core/auth';
 
 export default function SignInScreen() {
   const { isDark } = useThemeContext();
@@ -38,7 +40,6 @@ export default function SignInScreen() {
     setIsLoading(true);
     try {
       const result = await loginWithEmail(email.trim(), password);
-      // Sync local context with real user data
       await login(result.user.email ?? email, password);
       router.replace('/(tabs)');
     } catch (e: any) {
@@ -46,6 +47,10 @@ export default function SignInScreen() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function handleGoogleSuccess(_user: User) {
+    router.replace('/(tabs)');
   }
 
   return (
@@ -128,6 +133,22 @@ export default function SignInScreen() {
             </Pressable>
           </View>
 
+          {/* Séparateur */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
+            <Text style={[styles.dividerText, { color: LAV_DIM }]}>ou</Text>
+            <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
+          </View>
+
+          {/* Bouton Google */}
+          <GoogleSignInButton
+            label="Continuer avec Google"
+            onSuccess={handleGoogleSuccess}
+            onError={(err) => setError(err)}
+          />
+
+          <View style={{ height: 24 }} />
+
           {/* Sign up link */}
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: LAV_DIM }]}>Pas encore de compte ? </Text>
@@ -171,7 +192,7 @@ function makeStyles(isDark: boolean) {
     },
     form: {
       gap: 16,
-      marginBottom: 32,
+      marginBottom: 24,
     },
     field: { gap: 6 },
     labelRow: {
@@ -216,6 +237,14 @@ function makeStyles(isDark: boolean) {
       fontSize: 16,
       fontWeight: '800',
     },
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+      gap: 12,
+    },
+    dividerLine: { flex: 1, height: 1 },
+    dividerText: { fontSize: 13, fontWeight: '500' },
     footer: {
       flexDirection: 'row',
       justifyContent: 'center',
