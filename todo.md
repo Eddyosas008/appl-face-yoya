@@ -744,3 +744,13 @@
 - [x] Texte blanc avec ombre portée pour la lisibilité sur toutes les images
 - [x] imageUri passé uniquement pour l'étape mainGoal (step.field === 'mainGoal')
 - [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
+
+## Phase 66 : Correction compatibilité Expo Go
+
+- [x] Identifier la cause : expo-crypto v55 inclut ExpoCryptoAES (module natif absent de Expo Go)
+- [x] Rétrograder expo-crypto de v55 à v14.0.2 (compatible SDK 54 + Expo Go)
+- [x] Rétrograder expo-linear-gradient de v55 à v14.0.2 (compatible SDK 54 + Expo Go)
+- [x] Rétrograder expo-auth-session de v55 à v6.0.3 (compatible SDK 54 + Expo Go)
+- [x] Supprimer les plugins react-native-health et react-native-health-connect de app.config.ts
+- [x] Vérifier que les imports de react-native-health sont dynamiques (await import) dans health-sync.ts
+- [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end

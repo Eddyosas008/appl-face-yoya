@@ -117,15 +117,7 @@ const config: ExpoConfig = {
         },
       },
     ],
-    [
-      "react-native-health-connect",
-    ],
-    [
-      "react-native-health",
-      {
-        iCloudContainerEnvironment: "Production",
-      },
-    ],
+
     [
       "expo-build-properties",
       {
