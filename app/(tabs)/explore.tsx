@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { ScrollView as HScrollView } from 'react-native';
+import { ScrollView as HScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, withSpring,
@@ -27,6 +27,23 @@ function formatDuration(seconds: number): string {
   return m < 1 ? '< 1 min' : `${m} min`;
 }
 
+// Images thématiques par catégorie (Nano Banana, CDN)
+const CAT_IMAGES: Record<string, string> = {
+  'sommeil':           'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-sommeil-2xtgKdoszLPAkyryegHGNJ.webp',
+  'stress-anxiete':    'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-stress-aCzt2NLpbohrtRC9aJRwHx.webp',
+  'matin':             'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-matin-nfvroBuTKzv7WnQDTY4RmX.webp',
+  'nature-connexion':  'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-nature-ahWR6HVmuAExPjryi7UYNe.webp',
+  'confiance':         'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-confiance-YMnAaKsT3K2qGkjMoUAhrs.webp',
+  'pleine-conscience': 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-conscience-izmdkm2xSuBZXruVcztYvH.webp',
+  'creativite':        'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-creativite-P6h8EXozAfg7AiZdRUmERQ.webp',
+  'default':           'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-default-24onGunpmyvq5RFFx94Z5U.webp',
+};
+function getCatImage(slug?: string): string {
+  if (!slug) return CAT_IMAGES.default;
+  const key = Object.keys(CAT_IMAGES).find(k => k !== 'default' && slug.includes(k));
+  return key ? CAT_IMAGES[key] : CAT_IMAGES.default;
+}
+
 // Couleur de gradient par catégorie
 const CAT_GRADIENTS: Record<string, [string, string]> = {
   'sommeil':          ['#1E3A5F', '#2563EB'],
@@ -49,11 +66,11 @@ function getCatGradient(slug?: string): [string, string] {
 const LEVEL_LABELS: Record<string, string> = {
   beginner: 'Débutant', intermediate: 'Intermédiaire', advanced: 'Avancé',
 };
-
-// ─── Carte hero (méditation du moment) ────────────────────────────────────────
+// ─── Carte hero (méditation du moment) ────────────────────────────────────────────
 function HeroMeditationCard({ item, categories, isFav, isLocked, onPress, onFav }: any) {
   const cat = categories.find((c: any) => c.slug === item.categorySlug);
   const [g1, g2] = getCatGradient(item.categorySlug);
+  const imgUri = getCatImage(item.categorySlug);
   return (
     <Pressable
       style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1, marginBottom: 20 }]}
@@ -64,6 +81,12 @@ function HeroMeditationCard({ item, categories, isFav, isLocked, onPress, onFav 
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={heroStyles.card}
       >
+        {/* Image thématique en fond */}
+        <Image
+          source={{ uri: imgUri }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.38 }}
+          resizeMode="cover"
+        />
         {/* Badge catégorie */}
         <View style={heroStyles.catBadge}>
           <Text style={heroStyles.catEmoji}>{cat?.emoji ?? '🧘'}</Text>
@@ -71,9 +94,7 @@ function HeroMeditationCard({ item, categories, isFav, isLocked, onPress, onFav 
         </View>
 
         {/* Emoji central */}
-        <Text style={heroStyles.emoji}>{item.emoji ?? '🌙'}</Text>
-
-        {/* Infos */}
+        <Text style={heroStyles.emoji}>{item.emoji ?? '🌙'}</Text>       {/* Infos */}
         <View style={heroStyles.info}>
           <Text style={heroStyles.label}>✨ Méditation du moment</Text>
           <Text style={heroStyles.title} numberOfLines={2}>{item.title}</Text>
@@ -126,17 +147,23 @@ const heroStyles = StyleSheet.create({
   favBtn: { position: 'absolute', top: 14, right: 14, backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 999, padding: 8 },
 });
 
-// ─── Carte horizontale enrichie ────────────────────────────────────────────────
+// ─── Carte horizontale enrichie ──────────────────────────────────────────
 function MeditationCardHorizontal({ item, categories, isFav, isLocked, onPress, onFav }: any) {
   const cat = categories.find((c: any) => c.slug === item.categorySlug);
   const [g1, g2] = getCatGradient(item.categorySlug);
+  const imgUri = getCatImage(item.categorySlug);
   return (
     <Pressable
       style={({ pressed }) => [hStyles.card, { opacity: pressed ? 0.88 : 1 }]}
       onPress={onPress}
     >
-      {/* Cover avec gradient */}
+      {/* Cover avec image + gradient overlay */}
       <LinearGradient colors={[g1, g2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={hStyles.cover}>
+        <Image
+          source={{ uri: imgUri }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.45 }}
+          resizeMode="cover"
+        />
         <Text style={hStyles.emoji}>{item.emoji ?? cat?.emoji ?? '🧘'}</Text>
         {isLocked && (
           <View style={hStyles.lockBadge}>
@@ -192,12 +219,18 @@ const hStyles = StyleSheet.create({
 function MeditationCardGrid({ item, categories, isFav, isLocked, onPress, onFav }: any) {
   const cat = categories.find((c: any) => c.slug === item.categorySlug);
   const [g1, g2] = getCatGradient(item.categorySlug);
+  const imgUri = getCatImage(item.categorySlug);
   return (
     <Pressable
       style={({ pressed }) => [gStyles.card, { opacity: pressed ? 0.88 : 1 }]}
       onPress={onPress}
     >
       <LinearGradient colors={[g1, g2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={gStyles.cover}>
+        <Image
+          source={{ uri: imgUri }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.45 }}
+          resizeMode="cover"
+        />
         <Text style={gStyles.emoji}>{item.emoji ?? cat?.emoji ?? '🧘'}</Text>
         {isLocked && (
           <View style={gStyles.lockBadge}><Text style={{ fontSize: 10 }}>🔒</Text></View>
