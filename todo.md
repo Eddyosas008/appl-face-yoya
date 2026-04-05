@@ -722,3 +722,13 @@
 - [x] Intégrer les images dans les cartes grille (MeditationCardGrid) avec opacity 0.45
 - [x] Corriger les doublons JSX introduits lors de l'édition
 - [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
+
+## Phase 64 : Image thématique dans le lecteur audio
+
+- [x] Analyser la structure du lecteur audio (meditation/[id].tsx)
+- [x] Ajouter le mapping CAT_IMAGES_PLAYER dans le lecteur (11 catégories + default)
+- [x] Intégrer l'image en fond plein écran avec opacity 0.18 (dark) / 0.12 (light)
+- [x] Ajouter un overlay gradient sombre pour la lisibilité (3 stops)
+- [x] Effet blur natif (blurRadius=3) sur iOS/Android, désactivé sur web
+- [x] Image positionnée entre le gradient de base et le StarField
+- [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  Platform, ActivityIndicator, Dimensions, Share, TouchableOpacity,
+  Platform, ActivityIndicator, Dimensions, Share, TouchableOpacity, Image,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,7 +25,27 @@ import { StarField } from '@/components/star-field';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-// ─── Couleurs de catégories ──────────────────────────────────────────────────
+// ─// ─── Images thématiques par catégorie (Nano Banana, CDN) ─────────────────────
+const CAT_IMAGES_PLAYER: Record<string, string> = {
+  'sommeil':           'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-sommeil-2xtgKdoszLPAkyryegHGNJ.webp',
+  'stress-anxiete':    'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-stress-aCzt2NLpbohrtRC9aJRwHx.webp',
+  'stress':            'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-stress-aCzt2NLpbohrtRC9aJRwHx.webp',
+  'matin':             'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-matin-nfvroBuTKzv7WnQDTY4RmX.webp',
+  'morning':           'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-matin-nfvroBuTKzv7WnQDTY4RmX.webp',
+  'nature-connexion':  'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-nature-ahWR6HVmuAExPjryi7UYNe.webp',
+  'confiance':         'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-confiance-YMnAaKsT3K2qGkjMoUAhrs.webp',
+  'self-love':         'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-confiance-YMnAaKsT3K2qGkjMoUAhrs.webp',
+  'pleine-conscience': 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-conscience-izmdkm2xSuBZXruVcztYvH.webp',
+  'creativite':        'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-creativite-P6h8EXozAfg7AiZdRUmERQ.webp',
+  'default':           'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/med-default-24onGunpmyvq5RFFx94Z5U.webp',
+};
+function getPlayerImage(slug?: string): string {
+  if (!slug) return CAT_IMAGES_PLAYER.default;
+  const key = Object.keys(CAT_IMAGES_PLAYER).find(k => k !== 'default' && slug.toLowerCase().includes(k));
+  return key ? CAT_IMAGES_PLAYER[key] : CAT_IMAGES_PLAYER.default;
+}
+
+// ─── Couleurs de catégories ────────────────────────────────────────────
 const CATEGORY_COLORS_DARK: Record<string, [string, string]> = {
   stress:      ['#2D1B69', '#4C1D95'],
   sleep:       ['#0F0C29', '#302B63'],
@@ -399,7 +419,8 @@ export default function MeditationPlayerScreen() {
     );
   }
 
-  // ── Rendu principal ───────────────────────────────────────────────────────
+  // ── Rendu principal ───────────────────────────────────────────────────────────────────
+  const bgImageUri = getPlayerImage(meditation?.categorySlug);
   return (
     <View style={[styles.root, { backgroundColor: NIGHT_BG }]}>
       {/* Fond dégradé immersif */}
@@ -407,6 +428,23 @@ export default function MeditationPlayerScreen() {
         colors={isDark
           ? [NIGHT_BG, NIGHT_MID, '#0F0B2E']
           : [NIGHT_BG, NIGHT_MID, '#EDE8F8']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      {/* Image thématique en fond semi-transparent */}
+      <Image
+        source={{ uri: bgImageUri }}
+        style={[
+          StyleSheet.absoluteFillObject,
+          { opacity: isDark ? 0.18 : 0.12 },
+        ]}
+        resizeMode="cover"
+        blurRadius={Platform.OS === 'web' ? 0 : 3}
+      />
+      {/* Overlay gradient sombre pour la lisibilité */}
+      <LinearGradient
+        colors={isDark
+          ? ['rgba(7,5,28,0.55)', 'rgba(12,8,48,0.40)', 'rgba(15,11,46,0.70)']
+          : ['rgba(250,247,242,0.60)', 'rgba(232,227,245,0.45)', 'rgba(237,232,248,0.75)']}
         style={StyleSheet.absoluteFillObject}
       />
       <StarField />
