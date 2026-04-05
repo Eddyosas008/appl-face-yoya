@@ -16,6 +16,7 @@ import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
+import { HealthSyncCard } from "@/components/health-sync-card";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
 import Svg, {
@@ -489,36 +490,30 @@ export default function SleepTrackerScreen() {
               </View>
             )}
 
-            {/* Montre connectée */}
+            {/* Montre connectée — Apple Health / Google Health Connect */}
             <View style={s.section}>
               <Text style={s.sectionTitle}>⌚ Montre connectée</Text>
-              <View style={s.watchCard}>
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
-                  <Text style={{ fontSize: 26 }}>⌚</Text>
-                  <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={s.watchTitle}>Synchronisation automatique</Text>
-                    <Text style={s.watchSub}>Importez vos données de sommeil</Text>
-                  </View>
-                </View>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
-                  {[
-                    { name: "Apple Health", emoji: "🍎" },
-                    { name: "Google Fit",   emoji: "🏃" },
-                    { name: "Garmin",       emoji: "⌚" },
-                    { name: "Fitbit",       emoji: "📊" },
-                  ].map(opt => (
-                    <TouchableOpacity key={opt.name}
-                      onPress={() => Alert.alert("Bientôt disponible", `L'intégration avec ${opt.name} sera disponible dans une prochaine mise à jour.`)}
-                      style={s.watchOption}>
-                      <Text style={{ fontSize: 16 }}>{opt.emoji}</Text>
-                      <Text style={s.watchOptionText}>{opt.name}</Text>
-                      <Text style={s.watchBadge}>Bientôt</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <Text style={{ fontSize: 11, color: "rgba(200,169,110,0.45)", lineHeight: 16 }}>
-                  La synchronisation automatique importera vos données de sommeil directement depuis votre montre connectée.
-                </Text>
+              <HealthSyncCard
+                onSyncComplete={() => {
+                  invalidate();
+                }}
+              />
+              {/* Autres appareils — bientôt disponibles */}
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                {[
+                  { name: "Garmin",    emoji: "⌚" },
+                  { name: "Fitbit",    emoji: "📊" },
+                  { name: "Withings",  emoji: "💤" },
+                  { name: "Oura Ring", emoji: "💍" },
+                ].map(opt => (
+                  <TouchableOpacity key={opt.name}
+                    onPress={() => Alert.alert("Bientôt disponible", `L'intégration avec ${opt.name} sera disponible dans une prochaine mise à jour.`)}
+                    style={s.watchOption}>
+                    <Text style={{ fontSize: 16 }}>{opt.emoji}</Text>
+                    <Text style={s.watchOptionText}>{opt.name}</Text>
+                    <Text style={s.watchBadge}>Bientôt</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
 

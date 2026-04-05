@@ -50,9 +50,15 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+      NSHealthShareUsageDescription: "SomnioPax lit vos données de sommeil depuis Apple Santé pour analyser et améliorer la qualité de votre repos.",
+      NSHealthUpdateUsageDescription: "SomnioPax peut enregistrer vos données de sommeil dans Apple Santé.",
+    },
+    entitlements: {
+      "com.apple.developer.healthkit": true,
+      "com.apple.developer.healthkit.access": [],
+    },
   },
   android: {
     adaptiveIcon: {
@@ -112,11 +118,20 @@ const config: ExpoConfig = {
       },
     ],
     [
+      "react-native-health-connect",
+    ],
+    [
+      "react-native-health",
+      {
+        iCloudContainerEnvironment: "Production",
+      },
+    ],
+    [
       "expo-build-properties",
       {
         android: {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
-          minSdkVersion: 24,
+          minSdkVersion: 26,
         },
       },
     ],

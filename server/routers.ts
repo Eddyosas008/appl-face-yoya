@@ -752,6 +752,54 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
           breathingMeditations: breathingMeds.slice(0, 3),
         };
       }),
+
+    // Import depuis Apple Health / Google Health Connect
+    importFromHealth: protectedProcedure
+      .input(z.object({
+        records: z.array(z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          durationMinutes: z.number(),
+          quality: z.number().optional(),
+          source: z.enum(['apple_health', 'google_fit']),
+          sourceId: z.string().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const userId = ctx.user.id;
+        let imported = 0;
+        let skipped = 0;
+        for (const record of input.records) {
+          try {
+            const startDt = new Date(record.startDate);
+            const sleepDate = new Date(startDt);
+            if (sleepDate.getHours() < 12) {
+              sleepDate.setDate(sleepDate.getDate() - 1);
+            }
+            const sleepDateStr = sleepDate.toISOString().split('T')[0];
+            const existing = await db.getSleepLogByDate(userId, sleepDateStr);
+            if (existing) { skipped++; continue; }
+            const bedtimeHour = startDt.getHours();
+            const bedtimeMin = startDt.getMinutes();
+            const endDt = new Date(record.endDate);
+            const wakeHour = endDt.getHours();
+            const wakeMin = endDt.getMinutes();
+            await db.createSleepLog(userId, {
+              sleepDate: sleepDateStr,
+              bedtime: `${String(bedtimeHour).padStart(2, '0')}:${String(bedtimeMin).padStart(2, '0')}`,
+              wakeTime: `${String(wakeHour).padStart(2, '0')}:${String(wakeMin).padStart(2, '0')}`,
+              durationMinutes: record.durationMinutes,
+              quality: record.quality ?? null,
+              notes: `Importé depuis ${record.source === 'apple_health' ? 'Apple Santé' : 'Google Health Connect'}`,
+            });
+            imported++;
+          } catch (e) {
+            console.warn('[sleep.importFromHealth] Error:', e);
+            skipped++;
+          }
+        }
+        return { imported, skipped, total: input.records.length };
+      }),
   }),  // ─── Sons ambiants ───────────────────────────────────────────────────────────────
   ambient: router({
     // Public: liste tous les sons actifs

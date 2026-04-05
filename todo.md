@@ -629,3 +629,17 @@
 - [x] Modal d'enregistrement enrichi (horaires, qualité, humeur, pratiques, réveils, notes)
 - [x] Routine du soir recommandée (timeline visuelle) + conseils scientifiques
 - [x] Statistiques enrichies (total nuits, durée moy., qualité moy., meilleure nuit)
+
+## Phase 58 : Synchronisation Apple Health & Google Fit
+
+- [x] Lire la documentation expo-health (HealthKit iOS + Health Connect Android)
+- [x] Installer react-native-health (iOS) + react-native-health-connect (Android)
+- [x] Service health-sync.ts : demande de permissions, lecture données sommeil
+- [x] Fonction parseSleepData : convertir données HealthKit/Google Fit → SleepLog
+- [x] Route tRPC sleep.importFromHealth : import en masse avec déduplication
+- [x] Écran sleep-tracker : composant HealthSyncCard intégré dans la section Montre
+- [x] Affichage état de connexion (connecté, dernière sync, nb nuits importées)
+- [x] Gestion des erreurs (permission refusée, pas de données, doublon)
+- [x] Support iOS (Apple Health / HealthKit)
+- [x] Support Android (Google Health Connect)
+- [x] Test flux complet
