@@ -700,6 +700,58 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
           })),
         };
       }),
+    // Recommandations personnalisées basées sur la qualité du sommeil
+    recommendations: protectedProcedure
+      .query(async ({ ctx }) => {
+        const logs = await db.getSleepLogs(ctx.user.id, 7);
+        const avgQuality = logs.length
+          ? logs.reduce((s, l) => s + (l.quality ?? 3), 0) / logs.length
+          : 3;
+        const avgDuration = logs.length
+          ? logs.reduce((s, l) => s + (l.durationMinutes ?? 420), 0) / logs.length
+          : 420;
+        // Catégories recommandées selon la qualité
+        const primaryCat = avgQuality < 2.5 ? 'stress' : avgQuality < 3.5 ? 'sleep' : 'morning';
+        // Analyse textuelle
+        let analysis = '';
+        let tip = '';
+        if (avgQuality >= 4) {
+          analysis = 'Votre sommeil est excellent cette semaine. Continuez sur cette lancée !';
+          tip = 'Une méditation matinale peut amplifier votre énergie naturelle.';
+        } else if (avgQuality >= 3) {
+          analysis = 'Votre sommeil est correct mais peut encore s’améliorer.';
+          tip = 'Essayez un scan corporel avant de dormir pour approfondir votre repos.';
+        } else if (avgQuality >= 2) {
+          analysis = 'Votre sommeil est perturbé. Des techniques de relaxation peuvent aider.';
+          tip = 'La respiration 4-7-8 avant le coucher réduit l’anxiété et favorise l’endormissement.';
+        } else {
+          analysis = 'Votre sommeil est très perturbé. Une routine du soir est essentielle.';
+          tip = 'Commencez par éteindre les écrans 1h avant le coucher et pratiquez une méditation courte.';
+        }
+        const durationStatus = avgDuration < 360
+          ? 'Vous dormez moins de 6h en moyenne. Essayez de vous coucher 30 min plus tôt.'
+          : avgDuration > 540
+          ? 'Vous dormez plus de 9h. Un sommeil trop long peut aussi fatiguer.'
+          : null;
+        const sleepScore = Math.min(100, Math.round((avgQuality / 5) * 70 + (Math.min(avgDuration, 480) / 480) * 30));
+        // Récupérer les méditations recommandées
+        const [meditations, morningMeds, breathingMeds] = await Promise.all([
+          db.getMeditations({ categorySlug: primaryCat, limit: 4 }),
+          db.getMeditations({ categorySlug: 'morning', limit: 3 }),
+          db.getMeditations({ categorySlug: 'breathing', limit: 3 }),
+        ]);
+        return {
+          avgQuality: Math.round(avgQuality * 10) / 10,
+          avgDurationMinutes: Math.round(avgDuration),
+          analysis,
+          tip,
+          durationStatus,
+          sleepScore,
+          meditations: meditations.slice(0, 4),
+          morningMeditations: morningMeds.slice(0, 3),
+          breathingMeditations: breathingMeds.slice(0, 3),
+        };
+      }),
   }),  // ─── Sons ambiants ───────────────────────────────────────────────────────────────
   ambient: router({
     // Public: liste tous les sons actifs

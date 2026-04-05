@@ -315,7 +315,7 @@ export default function HomeScreen() {
           {/* Carte sommeil glassmorphisme */}
           <Pressable
             style={({ pressed }) => [styles.sleepCard, { opacity: pressed ? 0.88 : 1 }]}
-            onPress={() => isAuthenticated ? setShowSleepModal(true) : router.push('/(auth)/signin' as never)}
+            onPress={() => router.push('/sleep-tracker' as never)}
           >
             <View style={styles.sleepCardLeft}>
               <View style={styles.sleepCardIcon}>

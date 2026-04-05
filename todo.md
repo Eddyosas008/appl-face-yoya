@@ -613,3 +613,19 @@
 - [x] Bouton "Changer le mot de passe" dans le profil (section Compte)
 - [x] Gestion des cas : utilisateur sans mdp (connexion Google uniquement) — création premier mdp
 - [x] Test flux complet (changement + vérification ancien/nouveau mdp)
+
+## Phase 57 : Suivi du sommeil enrichi
+
+- [x] Corriger la navigation "Suivi du sommeil" depuis le dashboard (tap sur la carte)
+- [x] Corriger le bouton "Voir tout" à côté de "Suivi du sommeil"
+- [x] Refonte complète de l'écran sleep-tracker avec onglets (Aperçu, Historique, Recommandations)
+- [x] Graphique SVG durée + qualité (7j / 14j) avec barres colorées et courbe
+- [x] Score circulaire de qualité du sommeil (0-100) avec analyse personnalisée
+- [x] Rapport hebdomadaire (cette semaine vs semaine dernière) avec tendances
+- [x] Recommandations personnalisées : méditations guidées selon qualité de sommeil
+- [x] Sons de relaxation (pluie, forêt, océan, bruit blanc, brun, feu)
+- [x] Méditations matinales et exercices de respiration recommandés
+- [x] Section intégration montre connectée (Apple Health, Google Fit, Garmin, Fitbit)
+- [x] Modal d'enregistrement enrichi (horaires, qualité, humeur, pratiques, réveils, notes)
+- [x] Routine du soir recommandée (timeline visuelle) + conseils scientifiques
+- [x] Statistiques enrichies (total nuits, durée moy., qualité moy., meilleure nuit)

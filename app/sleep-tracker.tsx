@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo} from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,32 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { StarField } from "@/components/star-field";
 import { trpc } from "@/lib/trpc";
 import { useUser } from "@/lib/user-context";
-import Svg, { Path, Circle, Line, Text as SvgText, Rect } from "react-native-svg";
+import Svg, {
+  Path, Circle, Line, Text as SvgText, Rect,
+  Defs, LinearGradient as SvgGradient, Stop,
+} from "react-native-svg";
 
-// Styles statiques pour les sous-composants
-const styles = {} as ReturnType<typeof makeStyles>;
+const { width: SCREEN_W } = Dimensions.get("window");
 
+// ─── Palette ──────────────────────────────────────────────────────────────────
+const GOLD   = "#C8A96E";
+const NIGHT  = "#0D0B1A";
+const PURPLE = "#2D1A6E";
+const CARD   = "#1A1530";
+const BORDER = "rgba(200,169,110,0.30)";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
 type MoodKey = "anxious" | "sad" | "neutral" | "calm" | "happy" | "energetic" | "grateful";
+type TabKey  = "overview" | "history" | "recommendations";
 
 interface SleepFormData {
   bedtime: string;
@@ -39,679 +50,771 @@ interface SleepFormData {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function getTodayDate(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-
 function formatDuration(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
-
-function formatDate(dateStr: string): string {
-  const days = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
-  const d = new Date(dateStr + "T12:00:00");
-  return days[d.getDay()];
-}
-
 function getQualityLabel(q: number): string {
-  const labels = ["", "Très mauvais", "Mauvais", "Moyen", "Bon", "Excellent"];
-  return labels[q] ?? "";
+  return ["", "Très mauvais", "Mauvais", "Moyen", "Bon", "Excellent"][q] ?? "";
 }
-
 function getQualityColor(q: number): string {
-  const colors = ["", "#EF4444", "#F97316", "#EAB308", "#22C55E", "#8B5CF6"];
-  return colors[q] ?? "#6B7280";
+  return ["", "#EF4444", "#F97316", "#EAB308", "#22C55E", "#8B5CF6"][q] ?? "#6B7280";
+}
+function getQualityEmoji(q: number): string {
+  return ["", "😫", "😔", "😐", "😊", "✨"][q] ?? "😐";
+}
+function getSleepScoreColor(s: number): string {
+  if (s >= 80) return "#22C55E";
+  if (s >= 60) return GOLD;
+  if (s >= 40) return "#F97316";
+  return "#EF4444";
+}
+function getSleepScoreLabel(s: number): string {
+  if (s >= 80) return "Excellent";
+  if (s >= 60) return "Bon";
+  if (s >= 40) return "Moyen";
+  return "À améliorer";
 }
 
 const MOOD_OPTIONS: { key: MoodKey; emoji: string; label: string }[] = [
-  { key: "anxious", emoji: "😰", label: "Anxieuse" },
-  { key: "sad", emoji: "😔", label: "Triste" },
-  { key: "neutral", emoji: "😐", label: "Neutre" },
-  { key: "calm", emoji: "😌", label: "Calme" },
-  { key: "happy", emoji: "😊", label: "Heureuse" },
+  { key: "anxious",   emoji: "😰", label: "Anxieux" },
+  { key: "sad",       emoji: "😔", label: "Triste" },
+  { key: "neutral",   emoji: "😐", label: "Neutre" },
+  { key: "calm",      emoji: "😌", label: "Calme" },
+  { key: "happy",     emoji: "😊", label: "Heureux" },
   { key: "energetic", emoji: "⚡", label: "Énergique" },
-  { key: "grateful", emoji: "🙏", label: "Reconnaissante" },
+  { key: "grateful",  emoji: "🙏", label: "Reconnaissant" },
 ];
 
-// ─── Graphique SVG ────────────────────────────────────────────────────────────
+const SLEEP_TIPS = [
+  { emoji: "📵", title: "Écrans éteints", desc: "Évitez les écrans 1h avant le coucher. La lumière bleue perturbe la mélatonine." },
+  { emoji: "🌡️", title: "Chambre fraîche", desc: "La température idéale pour dormir est entre 16 et 19°C." },
+  { emoji: "⏰", title: "Horaires fixes", desc: "Se coucher et se lever à la même heure renforce votre horloge biologique." },
+  { emoji: "☕", title: "Caféine avant 14h", desc: "La caféine reste active 6 à 8h. Évitez-la l'après-midi." },
+  { emoji: "🛁", title: "Bain chaud", desc: "Un bain chaud 1h avant le coucher favorise l'endormissement." },
+  { emoji: "📖", title: "Routine du soir", desc: "Un rituel régulier signale à votre cerveau qu'il est temps de dormir." },
+];
 
-interface SleepChartProps {
-  logs: Array<{ sleepDate: string; durationMinutes: number | null; quality: number | null }>;
+const AMBIENT_SOUNDS = [
+  { slug: "rain",        name: "Pluie douce",     emoji: "🌧️", color: "#1E3A5F" },
+  { slug: "forest",      name: "Forêt",           emoji: "🌲", color: "#1A3A2A" },
+  { slug: "ocean",       name: "Océan",           emoji: "🌊", color: "#0F3460" },
+  { slug: "white-noise", name: "Bruit blanc",     emoji: "🔊", color: "#2D1B69" },
+  { slug: "brown-noise", name: "Bruit brun",      emoji: "🎵", color: "#3D2B1F" },
+  { slug: "fire",        name: "Feu de cheminée", emoji: "🔥", color: "#4A1A0A" },
+];
+
+// ─── Score circulaire ──────────────────────────────────────────────────────────
+function SleepScoreCircle({ score }: { score: number }) {
+  const SIZE   = 110;
+  const RADIUS = 44;
+  const STROKE = 7;
+  const CIRC   = 2 * Math.PI * RADIUS;
+  const dash   = (score / 100) * CIRC;
+  const color  = getSleepScoreColor(score);
+  return (
+    <View style={{ width: SIZE, height: SIZE, alignItems: "center", justifyContent: "center" }}>
+      <Svg width={SIZE} height={SIZE}>
+        <Circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="rgba(200,169,110,0.15)" strokeWidth={STROKE} />
+        <Circle
+          cx={SIZE / 2} cy={SIZE / 2} r={RADIUS}
+          fill="none" stroke={color} strokeWidth={STROKE}
+          strokeDasharray={`${dash} ${CIRC - dash}`}
+          strokeDashoffset={CIRC / 4} strokeLinecap="round"
+        />
+      </Svg>
+      <View style={StyleSheet.absoluteFillObject as any} pointerEvents="none">
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ fontSize: 26, fontWeight: "700", color }}>{score}</Text>
+          <Text style={{ fontSize: 9, color: "rgba(200,169,110,0.6)" }}>/ 100</Text>
+        </View>
+      </View>
+    </View>
+  );
 }
 
-function SleepChart({ logs }: SleepChartProps) {
-  const WIDTH = 320;
-  const HEIGHT = 160;
-  const PADDING = { top: 16, right: 16, bottom: 32, left: 40 };
-  const chartW = WIDTH - PADDING.left - PADDING.right;
-  const chartH = HEIGHT - PADDING.top - PADDING.bottom;
+// ─── Graphique SVG ─────────────────────────────────────────────────────────────
+function SleepChart({ logs, period }: { logs: any[]; period: "week" | "month" }) {
+  const W = SCREEN_W - 48;
+  const H = 170;
+  const P = { top: 18, right: 14, bottom: 34, left: 42 };
+  const cW = W - P.left - P.right;
+  const cH = H - P.top - P.bottom;
+  const days = period === "week" ? 7 : 14;
 
-  // Préparer les 7 derniers jours
-  const last7: { date: string; duration: number; quality: number }[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const log = logs.find((l) => l.sleepDate === dateStr);
-    last7.push({
-      date: dateStr,
-      duration: log?.durationMinutes ?? 0,
-      quality: log?.quality ?? 0,
-    });
+  const data: { date: string; duration: number; quality: number }[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const log = logs.find((l: any) => l.sleepDate === ds);
+    data.push({ date: ds, duration: log?.durationMinutes ?? 0, quality: log?.quality ?? 0 });
   }
 
-  const maxDuration = Math.max(...last7.map((d) => d.duration), 600); // min 10h
-  const GOAL = 450; // 7h30
+  const maxDur = Math.max(...data.map(d => d.duration), 600);
+  const GOAL   = 450;
+  const xStep  = cW / (days - 1);
+  const goalY  = P.top + cH - (GOAL / maxDur) * cH;
 
-  const xStep = chartW / 6;
-  const points = last7.map((d, i) => ({
-    x: PADDING.left + i * xStep,
-    y: d.duration > 0 ? PADDING.top + chartH - (d.duration / maxDuration) * chartH : -1,
-    duration: d.duration,
-    quality: d.quality,
-    date: d.date,
+  const pts = data.map((d, i) => ({
+    x: P.left + i * xStep,
+    y: d.duration > 0 ? P.top + cH - (d.duration / maxDur) * cH : -1,
+    ...d,
   }));
 
-  // Ligne de l'objectif
-  const goalY = PADDING.top + chartH - (GOAL / maxDuration) * chartH;
-
-  // Construire le path SVG
-  const validPoints = points.filter((p) => p.y >= 0);
-  let pathD = "";
-  if (validPoints.length > 1) {
-    pathD = validPoints
-      .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
-      .join(" ");
-  }
+  const linePath = pts.filter(p => p.y >= 0)
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 
   return (
-    <Svg width={WIDTH} height={HEIGHT}>
-      {/* Grille horizontale */}
-      {[0, 0.25, 0.5, 0.75, 1].map((frac) => {
-        const y = PADDING.top + chartH * (1 - frac);
-        const hours = Math.round((maxDuration * frac) / 60);
+    <Svg width={W} height={H}>
+      <Defs>
+        <SvgGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor={GOLD} stopOpacity="0.8" />
+          <Stop offset="1" stopColor={PURPLE} stopOpacity="0.3" />
+        </SvgGradient>
+      </Defs>
+      {[0, 0.25, 0.5, 0.75, 1].map(r => {
+        const y = P.top + cH * r;
         return (
-          <React.Fragment key={frac}>
-            <Line
-              x1={PADDING.left}
-              y1={y}
-              x2={PADDING.left + chartW}
-              y2={y}
-              stroke="#2D2B5A"
-              strokeWidth={0.5}
-              strokeDasharray="4,4"
-            />
-            <SvgText
-              x={PADDING.left - 6}
-              y={y + 4}
-              fontSize={9}
-              fill="#6B7280"
-              textAnchor="end"
-            >
-              {hours}h
+          <React.Fragment key={r}>
+            <Line x1={P.left} y1={y} x2={P.left + cW} y2={y} stroke="rgba(200,169,110,0.1)" strokeWidth="1" />
+            <SvgText x={P.left - 5} y={y + 4} fontSize="9" fill="rgba(200,169,110,0.45)" textAnchor="end">
+              {formatDuration(Math.round(maxDur * (1 - r)))}
             </SvgText>
           </React.Fragment>
         );
       })}
-
-      {/* Ligne objectif 7h30 */}
-      <Line
-        x1={PADDING.left}
-        y1={goalY}
-        x2={PADDING.left + chartW}
-        y2={goalY}
-        stroke="#8B5CF6"
-        strokeWidth={1}
-        strokeDasharray="6,3"
-        opacity={0.6}
-      />
-      <SvgText x={PADDING.left + chartW + 2} y={goalY + 4} fontSize={8} fill="#8B5CF6">
-        7h30
-      </SvgText>
-
-      {/* Barres de durée */}
-      {points.map((p, i) => {
-        if (p.duration === 0) return null;
-        const barW = xStep * 0.5;
-        const barH = chartH - (p.y - PADDING.top);
-        const color = p.quality >= 4 ? "#8B5CF6" : p.quality >= 3 ? "#6366F1" : p.quality >= 2 ? "#F59E0B" : "#EF4444";
+      <Line x1={P.left} y1={goalY} x2={P.left + cW} y2={goalY} stroke={GOLD} strokeWidth="1" strokeDasharray="4,3" opacity="0.45" />
+      <SvgText x={P.left + cW + 2} y={goalY + 4} fontSize="8" fill={GOLD} opacity="0.6">7h30</SvgText>
+      {pts.map((p, i) => {
+        const bW = Math.max(4, xStep * 0.52);
+        const bH = p.duration > 0 ? cH - (p.y - P.top) : 3;
+        const bc = p.quality >= 4 ? "#22C55E" : p.quality >= 3 ? GOLD : p.quality > 0 ? "#F97316" : "rgba(200,169,110,0.12)";
+        const d  = new Date(p.date + "T12:00:00");
+        const lb = ["D","L","M","M","J","V","S"][d.getDay()];
         return (
-          <Rect
-            key={i}
-            x={p.x - barW / 2}
-            y={p.y}
-            width={barW}
-            height={barH}
-            fill={color}
-            opacity={0.3}
-            rx={3}
-          />
+          <React.Fragment key={i}>
+            <Rect x={p.x - bW/2} y={p.y >= 0 ? p.y : P.top + cH - 3} width={bW} height={bH} rx={3} fill={bc} opacity={0.82} />
+            <SvgText x={p.x} y={P.top + cH + 14} fontSize="9" fill="rgba(200,169,110,0.55)" textAnchor="middle">{lb}</SvgText>
+          </React.Fragment>
         );
       })}
-
-      {/* Ligne de courbe */}
-      {pathD ? (
-        <Path
-          d={pathD}
-          stroke="#8B5CF6"
-          strokeWidth={2}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ) : null}
-
-      {/* Points */}
-      {points.map((p, i) => {
-        if (p.y < 0) return null;
-        return (
-          <Circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r={4}
-            fill={p.quality > 0 ? getQualityColor(p.quality) : "#6B7280"}
-            stroke="#0F0E2A"
-            strokeWidth={1.5}
-          />
-        );
-      })}
-
-      {/* Labels jours */}
-      {points.map((p, i) => (
-        <SvgText
-          key={i}
-          x={p.x}
-          y={HEIGHT - 6}
-          fontSize={10}
-          fill={p.duration > 0 ? "#C4B5FD" : "#4B5563"}
-          textAnchor="middle"
-        >
-          {formatDate(p.date)}
-        </SvgText>
+      {linePath && <Path d={linePath} fill="none" stroke="rgba(139,92,246,0.65)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
+      {pts.filter(p => p.y >= 0).map((p, i) => (
+        <Circle key={i} cx={p.x} cy={p.y} r={3} fill={getQualityColor(p.quality)} />
       ))}
     </Svg>
   );
 }
 
-// ─── Écran principal ──────────────────────────────────────────────────────────
+// ─── Carte méditation ──────────────────────────────────────────────────────────
+function MedCard({ med, onPress }: { med: any; onPress: () => void }) {
+  const dur = med.audioDurationSeconds ? Math.round(med.audioDurationSeconds / 60) : 0;
+  const emoji = med.categorySlug === "morning" ? "☀️" : med.categorySlug === "breathing" ? "💨" : med.categorySlug === "stress" ? "🌿" : "🌙";
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}
+      style={{ width: 140, marginRight: 12, backgroundColor: CARD, borderRadius: 14, borderWidth: 1, borderColor: BORDER, overflow: "hidden" }}>
+      <LinearGradient colors={["#2D1A6E", "#1A1530"]} style={{ padding: 12, minHeight: 96 }}>
+        <Text style={{ fontSize: 22, marginBottom: 6 }}>{emoji}</Text>
+        <Text style={{ fontSize: 12, fontWeight: "600", color: "#F0EBE0", lineHeight: 16 }} numberOfLines={2}>{med.title}</Text>
+        <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.7)", marginTop: 4 }}>
+          {dur > 0 ? `${dur} min · ` : ""}{med.instructor ?? "Yoya"}
+        </Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+}
 
+// ─── Carte son ambiant ─────────────────────────────────────────────────────────
+function AmbientCard({ sound, onPress }: { sound: typeof AMBIENT_SOUNDS[0]; onPress: () => void }) {
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}
+      style={{ width: 96, marginRight: 10, backgroundColor: sound.color, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 12, alignItems: "center" }}>
+      <Text style={{ fontSize: 24, marginBottom: 6 }}>{sound.emoji}</Text>
+      <Text style={{ fontSize: 11, color: "#F0EBE0", textAlign: "center", fontWeight: "500" }} numberOfLines={2}>{sound.name}</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Écran principal ───────────────────────────────────────────────────────────
 export default function SleepTrackerScreen() {
   const { isAuthenticated } = useUser();
-  const [showModal, setShowModal] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab]     = useState<TabKey>("overview");
+  const [showModal, setShowModal]     = useState(false);
+  const [editingId, setEditingId]     = useState<number | null>(null);
+  const [chartPeriod, setChartPeriod] = useState<"week" | "month">("week");
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   const [form, setForm] = useState<SleepFormData>({
-    bedtime: "22:30",
-    wakeTime: "07:00",
-    quality: 3,
-    hadNightWaking: false,
-    nightWakings: 0,
-    eveningMood: null,
-    usedMeditation: false,
-    usedBreathing: false,
-    usedAmbient: false,
-    notes: "",
+    bedtime: "22:30", wakeTime: "07:00", quality: 3,
+    hadNightWaking: false, nightWakings: 0, eveningMood: null,
+    usedMeditation: false, usedBreathing: false, usedAmbient: false, notes: "",
   });
 
   const utils = trpc.useUtils();
+  const { data: logs = [], isLoading } = trpc.sleep.list.useQuery({ limit: 30 }, { enabled: isAuthenticated });
+  const { data: stats }         = trpc.sleep.stats.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: weeklyReport }  = trpc.sleep.weeklyReport.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: recs }          = trpc.sleep.recommendations.useQuery(undefined, { enabled: isAuthenticated });
 
-  const { data: logs = [], isLoading } = trpc.sleep.list.useQuery(
-    { limit: 30 },
-    { enabled: isAuthenticated }
-  );
-
-  const { data: stats } = trpc.sleep.stats.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-
-  const { data: weeklyReport } = trpc.sleep.weeklyReport.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
+  const invalidate = () => {
+    utils.sleep.list.invalidate();
+    utils.sleep.stats.invalidate();
+    utils.sleep.recommendations.invalidate();
+  };
 
   const createMutation = trpc.sleep.create.useMutation({
-    onSuccess: () => {
-      utils.sleep.list.invalidate();
-      utils.sleep.stats.invalidate();
-      setShowModal(false);
-      resetForm();
-    },
+    onSuccess: () => { invalidate(); setShowModal(false); resetForm(); },
     onError: (e) => Alert.alert("Erreur", e.message),
   });
-
   const updateMutation = trpc.sleep.update.useMutation({
-    onSuccess: () => {
-      utils.sleep.list.invalidate();
-      utils.sleep.stats.invalidate();
-      setShowModal(false);
-      setEditingId(null);
-      resetForm();
-    },
+    onSuccess: () => { invalidate(); setShowModal(false); setEditingId(null); resetForm(); },
     onError: (e) => Alert.alert("Erreur", e.message),
   });
-
-  const deleteMutation = trpc.sleep.delete.useMutation({
-    onSuccess: () => {
-      utils.sleep.list.invalidate();
-      utils.sleep.stats.invalidate();
-    },
-  });
+  const deleteMutation = trpc.sleep.delete.useMutation({ onSuccess: invalidate });
 
   const resetForm = useCallback(() => {
-    setForm({
-      bedtime: "22:30",
-      wakeTime: "07:00",
-      quality: 3,
-      hadNightWaking: false,
-      nightWakings: 0,
-      eveningMood: null,
-      usedMeditation: false,
-      usedBreathing: false,
-      usedAmbient: false,
-      notes: "",
-    });
+    setForm({ bedtime: "22:30", wakeTime: "07:00", quality: 3, hadNightWaking: false, nightWakings: 0, eveningMood: null, usedMeditation: false, usedBreathing: false, usedAmbient: false, notes: "" });
   }, []);
 
-  const openAddModal = useCallback(() => {
-    resetForm();
-    setEditingId(null);
-    setShowModal(true);
-  }, [resetForm]);
-
-  const openEditModal = useCallback((log: (typeof logs)[0]) => {
-    setForm({
-      bedtime: log.bedtime ?? "22:30",
-      wakeTime: log.wakeTime ?? "07:00",
-      quality: log.quality ?? 3,
-      hadNightWaking: log.hadNightWaking ?? false,
-      nightWakings: log.nightWakings ?? 0,
-      eveningMood: (log.eveningMood as MoodKey) ?? null,
-      usedMeditation: log.usedMeditation ?? false,
-      usedBreathing: log.usedBreathing ?? false,
-      usedAmbient: log.usedAmbient ?? false,
-      notes: log.notes ?? "",
-    });
+  const openEdit = useCallback((log: any) => {
     setEditingId(log.id);
+    setForm({
+      bedtime: log.bedtime ?? "22:30", wakeTime: log.wakeTime ?? "07:00", quality: log.quality ?? 3,
+      hadNightWaking: (log.nightWakings ?? 0) > 0, nightWakings: log.nightWakings ?? 0,
+      eveningMood: log.eveningMood ?? null, usedMeditation: log.usedMeditation ?? false,
+      usedBreathing: log.usedBreathing ?? false, usedAmbient: log.usedAmbient ?? false, notes: log.notes ?? "",
+    });
     setShowModal(true);
   }, []);
 
   const handleSave = useCallback(() => {
-    const today = getTodayDate();
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, ...form, eveningMood: form.eveningMood ?? undefined });
-    } else {
-      createMutation.mutate({ sleepDate: today, ...form, eveningMood: form.eveningMood ?? undefined });
-    }
-  }, [form, editingId, createMutation, updateMutation]);
+    const payload = {
+      sleepDate: editingId ? (logs as any[]).find((l: any) => l.id === editingId)?.sleepDate ?? getTodayDate() : getTodayDate(),
+      bedtime: form.bedtime, wakeTime: form.wakeTime, quality: form.quality,
+      nightWakings: form.hadNightWaking ? form.nightWakings : 0,
+      eveningMood: form.eveningMood ?? undefined,
+      usedMeditation: form.usedMeditation, usedBreathing: form.usedBreathing, usedAmbient: form.usedAmbient,
+      notes: form.notes.trim() || undefined,
+    };
+    if (editingId) updateMutation.mutate({ id: editingId, ...payload });
+    else createMutation.mutate(payload);
+  }, [form, editingId, logs, createMutation, updateMutation]);
 
-  const handleDelete = useCallback((id: number) => {
-    Alert.alert("Supprimer", "Supprimer ce log de sommeil ?", [
-      { text: "Annuler", style: "cancel" },
-      { text: "Supprimer", style: "destructive", onPress: () => deleteMutation.mutate({ id }) },
-    ]);
-  }, [deleteMutation]);
+  useEffect(() => {
+    Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+  }, []);
 
-  if (!isAuthenticated) {
-    return (
-      <ScreenContainer className="items-center justify-center p-6">
-        <Text style={styles.emptyEmoji}>🔒</Text>
-        <Text style={styles.emptyTitle}>Connexion requise</Text>
-        <Text style={styles.emptyText}>Connectez-vous pour suivre votre sommeil</Text>
-        <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push("/(auth)/welcome")}>
-          <Text style={styles.primaryBtnText}>Se connecter</Text>
-        </TouchableOpacity>
-      </ScreenContainer>
-    );
-  }
+  const todayStr = getTodayDate();
+  const todayLog = (logs as any[]).find((l: any) => l.sleepDate === todayStr);
+  const sleepScore = recs?.sleepScore ?? (stats ? Math.min(100, Math.round(((stats.avgQuality ?? 3) / 5) * 70 + 30)) : 0);
+  const isPending  = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <ScreenContainer containerClassName="bg-[#0D0B1A]">
+    <ScreenContainer containerClassName="bg-[#0D0B1A]" safeAreaClassName="bg-[#0D0B1A]">
       <StarField />
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backArrow}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Suivi du sommeil</Text>
-          <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
-            <Text style={styles.addBtnText}>+ Ajouter</Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-        {/* Stats globales */}
-        {stats && (
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>🌙</Text>
-              <Text style={styles.statValue}>{stats.totalLogs}</Text>
-              <Text style={styles.statLabel}>Nuits suivies</Text>
+        {/* HEADER */}
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <View style={s.header}>
+            <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+              <Text style={s.backIcon}>←</Text>
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={s.headerTitle}>Suivi du sommeil</Text>
+              <Text style={s.headerSub}>Analysez et améliorez votre repos</Text>
             </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>⏱️</Text>
-              <Text style={styles.statValue}>{formatDuration(stats.avgDurationMinutes)}</Text>
-              <Text style={styles.statLabel}>Durée moy.</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>⭐</Text>
-              <Text style={styles.statValue}>{stats.avgQuality.toFixed(1)}/5</Text>
-              <Text style={styles.statLabel}>Qualité moy.</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statEmoji}>🎯</Text>
-              <Text style={styles.statValue}>{stats.nightsAtGoal}</Text>
-              <Text style={styles.statLabel}>Nuits ≥ 7h30</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Rapport hebdomadaire */}
-        {weeklyReport && weeklyReport.thisWeek.nights > 0 && (
-          <View style={[styles.chartCard, { marginBottom: 12 }]}>
-            <Text style={styles.chartTitle}>📊 Bilan de la semaine</Text>
-            <Text style={styles.chartSubtitle}>7 derniers jours vs semaine précédente</Text>
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-              <View style={{ flex: 1, backgroundColor: '#8B5CF622', borderRadius: 10, padding: 10, alignItems: 'center' }}>
-                <Text style={{ fontSize: 22, fontWeight: '700', color: '#8B5CF6' }}>{weeklyReport.thisWeek.nights}</Text>
-                <Text style={{ fontSize: 11, color: '#8B5CF6', marginTop: 2 }}>Nuits</Text>
-              </View>
-              <View style={{ flex: 1, backgroundColor: '#22C55E22', borderRadius: 10, padding: 10, alignItems: 'center' }}>
-                <Text style={{ fontSize: 22, fontWeight: '700', color: '#22C55E' }}>
-                  {weeklyReport.thisWeek.avgDurationMinutes != null
-                    ? `${Math.floor(weeklyReport.thisWeek.avgDurationMinutes / 60)}h${String(weeklyReport.thisWeek.avgDurationMinutes % 60).padStart(2, '0')}`
-                    : '--'}
-                </Text>
-                <Text style={{ fontSize: 11, color: '#22C55E', marginTop: 2 }}>Durée moy.</Text>
-                {weeklyReport.trends.duration !== 'stable' && (
-                  <Text style={{ fontSize: 10, color: weeklyReport.trends.duration === 'up' ? '#22C55E' : '#EF4444', marginTop: 2 }}>
-                    {weeklyReport.trends.duration === 'up' ? '↑ Hausse' : '↓ Baisse'}
-                  </Text>
-                )}
-              </View>
-              <View style={{ flex: 1, backgroundColor: '#F59E0B22', borderRadius: 10, padding: 10, alignItems: 'center' }}>
-                <Text style={{ fontSize: 22, fontWeight: '700', color: '#F59E0B' }}>
-                  {weeklyReport.thisWeek.avgQuality != null ? `${weeklyReport.thisWeek.avgQuality}/5` : '--'}
-                </Text>
-                <Text style={{ fontSize: 11, color: '#F59E0B', marginTop: 2 }}>Qualité moy.</Text>
-                {weeklyReport.trends.quality !== 'stable' && (
-                  <Text style={{ fontSize: 10, color: weeklyReport.trends.quality === 'up' ? '#22C55E' : '#EF4444', marginTop: 2 }}>
-                    {weeklyReport.trends.quality === 'up' ? '↑ Améliorée' : '↓ Dégradée'}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-        )}
-        {/* Graphique hebdomadaire */}
-        <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Progression des 7 derniers jours</Text>
-          <Text style={styles.chartSubtitle}>Durée et qualité du sommeil</Text>
-          <View style={styles.chartWrapper}>
-            <SleepChart logs={logs as Array<{ sleepDate: string; durationMinutes: number | null; quality: number | null }>} />
-          </View>
-          {/* Légende */}
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#8B5CF6" }]} />
-              <Text style={styles.legendText}>Excellent</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#22C55E" }]} />
-              <Text style={styles.legendText}>Bon</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#F59E0B" }]} />
-              <Text style={styles.legendText}>Moyen</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#EF4444" }]} />
-              <Text style={styles.legendText}>Mauvais</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Conseils selon la qualité */}
-        {stats && stats.avgQuality < 3 && (
-          <View style={styles.tipCard}>
-            <Text style={styles.tipEmoji}>💡</Text>
-            <View style={styles.tipContent}>
-              <Text style={styles.tipTitle}>Conseil personnalisé</Text>
-              <Text style={styles.tipText}>
-                Votre qualité de sommeil est en dessous de la moyenne. Essayez la respiration 4-7-8 avant de dormir — elle réduit l'anxiété de 60% en 4 semaines.
-              </Text>
-              <TouchableOpacity onPress={() => router.push("/breathing")}>
-                <Text style={styles.tipLink}>Essayer maintenant →</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* Historique */}
-        <Text style={styles.sectionTitle}>Historique</Text>
-
-        {isLoading && (
-          <Text style={styles.loadingText}>Chargement...</Text>
-        )}
-
-        {!isLoading && logs.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🌙</Text>
-            <Text style={styles.emptyTitle}>Aucun suivi pour l'instant</Text>
-            <Text style={styles.emptyText}>Commencez à noter votre sommeil pour voir votre progression</Text>
-            <TouchableOpacity style={styles.primaryBtn} onPress={openAddModal}>
-              <Text style={styles.primaryBtnText}>Ajouter ma première nuit</Text>
+            <TouchableOpacity onPress={() => { resetForm(); setEditingId(null); setShowModal(true); }} style={s.addBtn}>
+              <Text style={s.addBtnText}>+ Nuit</Text>
             </TouchableOpacity>
           </View>
+        </Animated.View>
+
+        {/* SCORE GLOBAL */}
+        {isAuthenticated && (
+          <Animated.View style={{ opacity: fadeAnim, paddingHorizontal: 20, marginBottom: 20 }}>
+            <LinearGradient colors={["#2D1A6E", "#1A1240", "#0D0B1A"]} style={s.scoreCard}>
+              <View style={{ alignItems: "center" }}>
+                <SleepScoreCircle score={sleepScore} />
+                <Text style={[s.scoreLabel, { color: getSleepScoreColor(sleepScore) }]}>{getSleepScoreLabel(sleepScore)}</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 16 }}>
+                <Text style={s.scoreTitle}>Score de sommeil</Text>
+                <Text style={s.scoreDesc}>7 derniers jours</Text>
+                <View style={{ flexDirection: "row", gap: 14, marginTop: 10 }}>
+                  {[
+                    { val: stats?.avgQuality ? `${stats.avgQuality}/5` : "—", lbl: "Qualité" },
+                    { val: stats?.avgDurationMinutes ? formatDuration(stats.avgDurationMinutes) : "—", lbl: "Durée" },
+                    { val: String(stats?.totalLogs ?? 0), lbl: "Nuits" },
+                  ].map(m => (
+                    <View key={m.lbl} style={{ alignItems: "center" }}>
+                      <Text style={s.metaVal}>{m.val}</Text>
+                      <Text style={s.metaLbl}>{m.lbl}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </LinearGradient>
+          </Animated.View>
         )}
 
-        {logs.map((log) => (
-          <View key={log.id} style={styles.logCard}>
-            <View style={styles.logHeader}>
-              <View>
-                <Text style={styles.logDate}>{log.sleepDate}</Text>
-                {log.bedtime && log.wakeTime && (
-                  <Text style={styles.logTime}>{log.bedtime} → {log.wakeTime}</Text>
-                )}
+        {/* NUIT D'AUJOURD'HUI */}
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>🌙 Cette nuit</Text>
+          <TouchableOpacity
+            onPress={() => todayLog ? openEdit(todayLog) : (() => { resetForm(); setEditingId(null); setShowModal(true); })()}
+            activeOpacity={0.85}
+          >
+            <LinearGradient colors={todayLog ? ["#1A3A2A", "#1A1530"] : ["#2D1A6E", "#1A1240"]} style={s.todayCard}>
+              <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                <Text style={{ fontSize: 30 }}>{todayLog ? getQualityEmoji(todayLog.quality ?? 3) : "🌙"}</Text>
+                <View style={{ marginLeft: 14 }}>
+                  <Text style={s.todayTitle}>{todayLog ? "Nuit enregistrée" : "Enregistrer cette nuit"}</Text>
+                  {todayLog ? (
+                    <>
+                      <Text style={s.todaySub}>{todayLog.bedtime} → {todayLog.wakeTime}{todayLog.durationMinutes ? ` · ${formatDuration(todayLog.durationMinutes)}` : ""}</Text>
+                      <View style={s.qualBadge}>
+                        <View style={[s.qualDot, { backgroundColor: getQualityColor(todayLog.quality ?? 3) }]} />
+                        <Text style={[s.qualText, { color: getQualityColor(todayLog.quality ?? 3) }]}>{getQualityLabel(todayLog.quality ?? 3)}</Text>
+                      </View>
+                    </>
+                  ) : (
+                    <Text style={s.todaySub}>Coucher · Lever · Qualité · Humeur</Text>
+                  )}
+                </View>
               </View>
-              <View style={styles.logRight}>
-                {log.durationMinutes ? (
-                  <Text style={styles.logDuration}>{formatDuration(log.durationMinutes)}</Text>
-                ) : null}
-                {log.quality ? (
-                  <View style={[styles.qualityBadge, { backgroundColor: getQualityColor(log.quality) + "33" }]}>
-                    <Text style={[styles.qualityText, { color: getQualityColor(log.quality) }]}>
-                      {getQualityLabel(log.quality)}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            </View>
+              <Text style={{ color: GOLD, fontSize: 18 }}>{todayLog ? "✏️" : "+"}</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
 
-            {/* Indicateurs */}
-            <View style={styles.logIndicators}>
-              {log.usedMeditation && <Text style={styles.indicator}>🧘 Méditation</Text>}
-              {log.usedBreathing && <Text style={styles.indicator}>🌬️ Respiration</Text>}
-              {log.usedAmbient && <Text style={styles.indicator}>🎵 Sons</Text>}
-              {log.hadNightWaking && (
-                <Text style={[styles.indicator, styles.indicatorWarn]}>
-                  ⚠️ {log.nightWakings} réveil{(log.nightWakings ?? 0) > 1 ? "s" : ""}
-                </Text>
-              )}
-            </View>
+        {/* ONGLETS */}
+        <View style={s.tabs}>
+          {([
+            { key: "overview",        label: "Aperçu" },
+            { key: "history",         label: "Historique" },
+            { key: "recommendations", label: "Conseils" },
+          ] as { key: TabKey; label: string }[]).map(tab => (
+            <TouchableOpacity key={tab.key} onPress={() => setActiveTab(tab.key)}
+              style={[s.tab, activeTab === tab.key && s.tabActive]}>
+              <Text style={[s.tabText, activeTab === tab.key && s.tabTextActive]}>{tab.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-            {log.notes ? (
-              <View style={styles.logNotesContainer}>
-                <Text style={styles.logNotesIcon}>📝</Text>
-                <Text style={styles.logNotes}>{log.notes}</Text>
-              </View>
-            ) : null}
-
-            {/* Actions */}
-            <View style={styles.logActions}>
-              <TouchableOpacity onPress={() => openEditModal(log)} style={styles.editBtn}>
-                <Text style={styles.editBtnText}>Modifier</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleDelete(log.id)} style={styles.deleteBtn}>
-                <Text style={styles.deleteBtnText}>Supprimer</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-
-        <View style={{ height: 40 }} />
-      </ScrollView>
-
-      {/* Modal de saisie */}
-      <Modal visible={showModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.modalHandle} />
-              <Text style={styles.modalTitle}>
-                {editingId ? "Modifier la nuit" : "Ajouter une nuit"}
-              </Text>
-
-              {/* Heures */}
-              <Text style={styles.fieldLabel}>🌙 Heure de coucher</Text>
-              <TextInput
-                style={styles.timeInput}
-                value={form.bedtime}
-                onChangeText={(v) => setForm((f) => ({ ...f, bedtime: v }))}
-                placeholder="22:30"
-                placeholderTextColor="#6B7280"
-                keyboardType="numbers-and-punctuation"
-                returnKeyType="done"
-              />
-
-              <Text style={styles.fieldLabel}>☀️ Heure de réveil</Text>
-              <TextInput
-                style={styles.timeInput}
-                value={form.wakeTime}
-                onChangeText={(v) => setForm((f) => ({ ...f, wakeTime: v }))}
-                placeholder="07:00"
-                placeholderTextColor="#6B7280"
-                keyboardType="numbers-and-punctuation"
-                returnKeyType="done"
-              />
-
-              {/* Qualité */}
-              <Text style={styles.fieldLabel}>⭐ Qualité du sommeil</Text>
-              <View style={styles.qualityRow}>
-                {[1, 2, 3, 4, 5].map((q) => (
-                  <TouchableOpacity
-                    key={q}
-                    style={[styles.qualityBtn, form.quality === q && { backgroundColor: getQualityColor(q) }]}
-                    onPress={() => setForm((f) => ({ ...f, quality: q }))}
-                  >
-                    <Text style={[styles.qualityBtnText, form.quality === q && { color: "#fff" }]}>
-                      {q}
-                    </Text>
-                    <Text style={styles.qualityBtnLabel}>{["", "😣", "😔", "😐", "😊", "😄"][q]}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              {form.quality > 0 && (
-                <Text style={[styles.qualitySelected, { color: getQualityColor(form.quality) }]}>
-                  {getQualityLabel(form.quality)}
-                </Text>
-              )}
-
-              {/* Humeur du soir */}
-              <Text style={styles.fieldLabel}>💭 Humeur du soir</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodRow}>
-                {MOOD_OPTIONS.map((m) => (
-                  <TouchableOpacity
-                    key={m.key}
-                    style={[styles.moodChip, form.eveningMood === m.key && styles.moodChipActive]}
-                    onPress={() => setForm((f) => ({ ...f, eveningMood: f.eveningMood === m.key ? null : m.key }))}
-                  >
-                    <Text style={styles.moodEmoji}>{m.emoji}</Text>
-                    <Text style={[styles.moodLabel, form.eveningMood === m.key && styles.moodLabelActive]}>
-                      {m.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-
-              {/* Réveils nocturnes */}
-              <View style={styles.toggleRow}>
-                <Text style={styles.fieldLabel}>⚠️ Réveil(s) nocturne(s)</Text>
-                <TouchableOpacity
-                  style={[styles.toggle, form.hadNightWaking && styles.toggleActive]}
-                  onPress={() => setForm((f) => ({ ...f, hadNightWaking: !f.hadNightWaking }))}
-                >
-                  <Text style={styles.toggleText}>{form.hadNightWaking ? "Oui" : "Non"}</Text>
-                </TouchableOpacity>
-              </View>
-              {form.hadNightWaking && (
-                <View style={styles.wakingsRow}>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <TouchableOpacity
-                      key={n}
-                      style={[styles.wakingBtn, form.nightWakings === n && styles.wakingBtnActive]}
-                      onPress={() => setForm((f) => ({ ...f, nightWakings: n }))}
-                    >
-                      <Text style={[styles.wakingBtnText, form.nightWakings === n && { color: "#fff" }]}>{n}</Text>
+        {/* ── APERÇU ── */}
+        {activeTab === "overview" && (
+          <View>
+            {/* Graphique */}
+            <View style={s.section}>
+              <View style={s.rowBetween}>
+                <Text style={s.sectionTitle}>📊 Graphique</Text>
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  {(["week", "month"] as const).map(p => (
+                    <TouchableOpacity key={p} onPress={() => setChartPeriod(p)}
+                      style={[s.periodBtn, chartPeriod === p && s.periodBtnActive]}>
+                      <Text style={[s.periodBtnText, chartPeriod === p && { color: GOLD, fontWeight: "600" }]}>{p === "week" ? "7j" : "14j"}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-              )}
-
-              {/* Outils utilisés */}
-              <Text style={styles.fieldLabel}>🛠️ Outils utilisés ce soir</Text>
-              <View style={styles.toolsRow}>
-                {[
-                  { key: "usedMeditation" as const, label: "🧘 Méditation" },
-                  { key: "usedBreathing" as const, label: "🌬️ Respiration" },
-                  { key: "usedAmbient" as const, label: "🎵 Sons" },
-                ].map((tool) => (
-                  <TouchableOpacity
-                    key={tool.key}
-                    style={[styles.toolChip, form[tool.key] && styles.toolChipActive]}
-                    onPress={() => setForm((f) => ({ ...f, [tool.key]: !f[tool.key] }))}
-                  >
-                    <Text style={[styles.toolLabel, form[tool.key] && styles.toolLabelActive]}>
-                      {tool.label}
-                    </Text>
-                  </TouchableOpacity>
+              </View>
+              <View style={s.chartBox}>
+                {(logs as any[]).length > 0 ? <SleepChart logs={logs as any[]} period={chartPeriod} /> : (
+                  <View style={{ height: 100, alignItems: "center", justifyContent: "center" }}>
+                    <Text style={{ color: "rgba(200,169,110,0.4)", fontSize: 13 }}>Enregistrez vos nuits pour voir le graphique</Text>
+                  </View>
+                )}
+              </View>
+              <View style={{ flexDirection: "row", justifyContent: "center", gap: 14, marginTop: 8 }}>
+                {[{ c: GOLD, l: "Durée (barres)" }, { c: "#8B5CF6", l: "Qualité (courbe)" }, { c: GOLD, l: "Objectif 7h30", o: 0.45 }].map(i => (
+                  <View key={i.l} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: i.c, opacity: i.o ?? 1 }} />
+                    <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.55)" }}>{i.l}</Text>
+                  </View>
                 ))}
               </View>
+            </View>
 
-              {/* Notes */}
-              <Text style={styles.fieldLabel}>📝 Notes (optionnel)</Text>
-              <TextInput
-                style={styles.notesInput}
-                value={form.notes}
-                onChangeText={(v) => setForm((f) => ({ ...f, notes: v }))}
-                placeholder="Comment vous êtes-vous sentie ?"
-                placeholderTextColor="#6B7280"
-                multiline
-                numberOfLines={3}
-                returnKeyType="done"
-              />
+            {/* Stats */}
+            {stats && (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>📈 Statistiques</Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                  {[
+                    { emoji: "🌙", val: String(stats.totalLogs ?? 0), lbl: "Nuits enregistrées" },
+                    { emoji: "⏱️", val: stats.avgDurationMinutes ? formatDuration(stats.avgDurationMinutes) : "—", lbl: "Durée moyenne" },
+                    { emoji: "⭐", val: stats.avgQuality ? `${stats.avgQuality}/5` : "—", lbl: "Qualité moyenne" },
+                    { emoji: "🏆", val: stats.bestNightMinutes ? formatDuration(stats.bestNightMinutes) : "—", lbl: "Meilleure nuit" },
+                  ].map(st => (
+                    <View key={st.lbl} style={s.statCard}>
+                      <Text style={{ fontSize: 20, marginBottom: 5 }}>{st.emoji}</Text>
+                      <Text style={s.statVal}>{st.val}</Text>
+                      <Text style={s.statLbl}>{st.lbl}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
 
-              {/* Boutons */}
-              <View style={styles.modalBtns}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowModal(false)}>
-                  <Text style={styles.cancelBtnText}>Annuler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveBtn}
-                  onPress={handleSave}
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                >
-                  <Text style={styles.saveBtnText}>
-                    {createMutation.isPending || updateMutation.isPending ? "Enregistrement..." : "Enregistrer"}
-                  </Text>
+            {/* Rapport hebdo */}
+            {weeklyReport && (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>📅 Cette semaine vs semaine dernière</Text>
+                <View style={s.weekCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.weekColTitle}>Cette semaine</Text>
+                    <Text style={s.weekVal}>{weeklyReport.thisWeek.nights} nuits</Text>
+                    <Text style={s.weekSub}>{weeklyReport.thisWeek.avgDurationMinutes ? formatDuration(weeklyReport.thisWeek.avgDurationMinutes) : "—"} moy.</Text>
+                    <Text style={s.weekSub}>Qualité {weeklyReport.thisWeek.avgQuality ? `${weeklyReport.thisWeek.avgQuality}/5` : "—"}</Text>
+                  </View>
+                  <View style={{ width: 1, height: 60, backgroundColor: BORDER, marginHorizontal: 12 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.weekColTitle}>Semaine dernière</Text>
+                    <Text style={s.weekVal}>{weeklyReport.lastWeek.nights} nuits</Text>
+                    <Text style={s.weekSub}>{weeklyReport.lastWeek.avgDurationMinutes ? formatDuration(weeklyReport.lastWeek.avgDurationMinutes) : "—"} moy.</Text>
+                    <Text style={s.weekSub}>Qualité {weeklyReport.lastWeek.avgQuality ? `${weeklyReport.lastWeek.avgQuality}/5` : "—"}</Text>
+                  </View>
+                  <View style={{ alignItems: "center", marginLeft: 12 }}>
+                    <Text style={{ fontSize: 22 }}>{weeklyReport.trends.quality === "up" ? "📈" : weeklyReport.trends.quality === "down" ? "📉" : "➡️"}</Text>
+                    <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.6)", marginTop: 4, textAlign: "center" }}>
+                      {weeklyReport.trends.quality === "up" ? "En progrès" : weeklyReport.trends.quality === "down" ? "En baisse" : "Stable"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Montre connectée */}
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>⌚ Montre connectée</Text>
+              <View style={s.watchCard}>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+                  <Text style={{ fontSize: 26 }}>⌚</Text>
+                  <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text style={s.watchTitle}>Synchronisation automatique</Text>
+                    <Text style={s.watchSub}>Importez vos données de sommeil</Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                  {[
+                    { name: "Apple Health", emoji: "🍎" },
+                    { name: "Google Fit",   emoji: "🏃" },
+                    { name: "Garmin",       emoji: "⌚" },
+                    { name: "Fitbit",       emoji: "📊" },
+                  ].map(opt => (
+                    <TouchableOpacity key={opt.name}
+                      onPress={() => Alert.alert("Bientôt disponible", `L'intégration avec ${opt.name} sera disponible dans une prochaine mise à jour.`)}
+                      style={s.watchOption}>
+                      <Text style={{ fontSize: 16 }}>{opt.emoji}</Text>
+                      <Text style={s.watchOptionText}>{opt.name}</Text>
+                      <Text style={s.watchBadge}>Bientôt</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={{ fontSize: 11, color: "rgba(200,169,110,0.45)", lineHeight: 16 }}>
+                  La synchronisation automatique importera vos données de sommeil directement depuis votre montre connectée.
+                </Text>
+              </View>
+            </View>
+
+            {/* Conseils */}
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>💡 Conseils scientifiques</Text>
+              {SLEEP_TIPS.map((tip, i) => (
+                <View key={i} style={s.tipCard}>
+                  <Text style={{ fontSize: 18, width: 30 }}>{tip.emoji}</Text>
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={s.tipTitle}>{tip.title}</Text>
+                    <Text style={s.tipDesc}>{tip.desc}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ── HISTORIQUE ── */}
+        {activeTab === "history" && (
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>📋 Historique des nuits</Text>
+            {isLoading ? (
+              <Text style={{ color: "rgba(200,169,110,0.4)", textAlign: "center", paddingVertical: 20 }}>Chargement…</Text>
+            ) : (logs as any[]).length === 0 ? (
+              <View style={{ alignItems: "center", paddingVertical: 40 }}>
+                <Text style={{ fontSize: 44, marginBottom: 12 }}>🌙</Text>
+                <Text style={s.emptyTitle}>Aucune nuit enregistrée</Text>
+                <Text style={s.emptyDesc}>Commencez à suivre votre sommeil pour voir votre historique ici.</Text>
+                <TouchableOpacity onPress={() => { resetForm(); setEditingId(null); setShowModal(true); }} style={s.emptyBtn}>
+                  <Text style={s.emptyBtnText}>Enregistrer ma première nuit</Text>
                 </TouchableOpacity>
               </View>
-
-              <View style={{ height: 40 }} />
-            </ScrollView>
+            ) : (
+              (logs as any[]).map((log: any) => (
+                <View key={log.id} style={s.logCard}>
+                  <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}>
+                    <Text style={{ fontSize: 22 }}>{getQualityEmoji(log.quality ?? 3)}</Text>
+                    <View style={{ marginLeft: 12 }}>
+                      <Text style={s.logDate}>
+                        {new Date(log.sleepDate + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}
+                      </Text>
+                      <Text style={s.logTime}>{log.bedtime} → {log.wakeTime}{log.durationMinutes ? ` · ${formatDuration(log.durationMinutes)}` : ""}</Text>
+                      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 5 }}>
+                        <View style={[s.qualBadge, { backgroundColor: `${getQualityColor(log.quality ?? 3)}22` }]}>
+                          <View style={[s.qualDot, { backgroundColor: getQualityColor(log.quality ?? 3) }]} />
+                          <Text style={[s.qualText, { color: getQualityColor(log.quality ?? 3) }]}>{getQualityLabel(log.quality ?? 3)}</Text>
+                        </View>
+                        {log.usedMeditation && <Text style={s.logTag}>🧘 Médit.</Text>}
+                        {log.usedBreathing  && <Text style={s.logTag}>💨 Resp.</Text>}
+                        {log.usedAmbient    && <Text style={s.logTag}>🎵 Sons</Text>}
+                      </View>
+                      {log.notes ? <Text style={s.logNotes} numberOfLines={1}>{log.notes}</Text> : null}
+                    </View>
+                  </View>
+                  <View style={{ gap: 6 }}>
+                    <TouchableOpacity onPress={() => openEdit(log)} style={s.logActionBtn}><Text style={{ color: GOLD, fontSize: 13 }}>✏️</Text></TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => Alert.alert("Supprimer", "Supprimer cette entrée ?", [
+                        { text: "Annuler", style: "cancel" },
+                        { text: "Supprimer", style: "destructive", onPress: () => deleteMutation.mutate({ id: log.id }) },
+                      ])}
+                      style={s.logActionBtn}><Text style={{ color: "#EF4444", fontSize: 13 }}>🗑️</Text></TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
+        )}
+
+        {/* ── RECOMMANDATIONS ── */}
+        {activeTab === "recommendations" && (
+          <View>
+            {/* Analyse */}
+            {recs && (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🤖 Analyse personnalisée</Text>
+                <LinearGradient colors={["#2D1A6E", "#1A1240"]} style={s.analysisCard}>
+                  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
+                    <SleepScoreCircle score={recs.sleepScore} />
+                    <View style={{ flex: 1, marginLeft: 14 }}>
+                      <Text style={{ fontSize: 14, fontWeight: "700", color: "#F0EBE0" }}>Score : {recs.sleepScore}/100</Text>
+                      <Text style={[{ fontSize: 12, fontWeight: "600", marginTop: 2 }, { color: getSleepScoreColor(recs.sleepScore) }]}>{getSleepScoreLabel(recs.sleepScore)}</Text>
+                      <Text style={{ fontSize: 12, color: "rgba(200,169,110,0.8)", marginTop: 6, lineHeight: 18 }}>{recs.analysis}</Text>
+                    </View>
+                  </View>
+                  <View style={s.analysisTip}>
+                    <Text style={{ fontSize: 16, marginRight: 8 }}>💡</Text>
+                    <Text style={{ flex: 1, fontSize: 12, color: "rgba(200,169,110,0.9)", lineHeight: 18 }}>{recs.tip}</Text>
+                  </View>
+                  {recs.durationStatus && (
+                    <View style={[s.analysisTip, { backgroundColor: "rgba(234,179,8,0.1)", marginTop: 8 }]}>
+                      <Text style={{ fontSize: 16, marginRight: 8 }}>⏱️</Text>
+                      <Text style={{ flex: 1, fontSize: 12, color: "rgba(200,169,110,0.9)", lineHeight: 18 }}>{recs.durationStatus}</Text>
+                    </View>
+                  )}
+                </LinearGradient>
+              </View>
+            )}
+
+            {/* Méditations sommeil */}
+            {recs?.meditations && recs.meditations.length > 0 && (
+              <View style={s.section}>
+                <View style={s.rowBetween}>
+                  <Text style={s.sectionTitle}>🌙 Méditations pour le sommeil</Text>
+                  <TouchableOpacity onPress={() => router.push("/explore" as never)}><Text style={s.seeAll}>Voir tout</Text></TouchableOpacity>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, paddingHorizontal: 20 }}>
+                  {recs.meditations.map((med: any) => <MedCard key={med.slug} med={med} onPress={() => router.push(`/meditation/${med.slug}` as never)} />)}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Méditations matinales */}
+            {recs?.morningMeditations && recs.morningMeditations.length > 0 && (
+              <View style={s.section}>
+                <View style={s.rowBetween}>
+                  <Text style={s.sectionTitle}>☀️ Méditations matinales</Text>
+                  <TouchableOpacity onPress={() => router.push("/explore" as never)}><Text style={s.seeAll}>Voir tout</Text></TouchableOpacity>
+                </View>
+                <Text style={s.sectionDesc}>Démarrez votre journée avec énergie</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, paddingHorizontal: 20 }}>
+                  {recs.morningMeditations.map((med: any) => <MedCard key={med.slug} med={med} onPress={() => router.push(`/meditation/${med.slug}` as never)} />)}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Respiration */}
+            {recs?.breathingMeditations && recs.breathingMeditations.length > 0 && (
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>💨 Exercices de respiration</Text>
+                <Text style={s.sectionDesc}>Techniques pour faciliter l'endormissement</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, paddingHorizontal: 20 }}>
+                  {recs.breathingMeditations.map((med: any) => <MedCard key={med.slug} med={med} onPress={() => router.push(`/meditation/${med.slug}` as never)} />)}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Sons de relaxation */}
+            <View style={s.section}>
+              <View style={s.rowBetween}>
+                <Text style={s.sectionTitle}>🎵 Sons de relaxation</Text>
+                <TouchableOpacity onPress={() => router.push("/ambient" as never)}><Text style={s.seeAll}>Voir tout</Text></TouchableOpacity>
+              </View>
+              <Text style={s.sectionDesc}>Créez votre ambiance sonore idéale pour dormir</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, paddingHorizontal: 20 }}>
+                {AMBIENT_SOUNDS.map(sound => <AmbientCard key={sound.slug} sound={sound} onPress={() => router.push("/ambient" as never)} />)}
+              </ScrollView>
+            </View>
+
+            {/* Routine du soir */}
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>🌛 Routine du soir recommandée</Text>
+              <View style={s.routineCard}>
+                {[
+                  { time: "21h00", emoji: "📵", title: "Écrans éteints",        desc: "Activez le mode nuit sur vos appareils" },
+                  { time: "21h30", emoji: "🛁", title: "Bain ou douche chaude", desc: "Abaisse la température corporelle" },
+                  { time: "22h00", emoji: "🧘", title: "Méditation guidée",     desc: "10-15 min de scan corporel ou respiration" },
+                  { time: "22h15", emoji: "🎵", title: "Sons relaxants",        desc: "Pluie, forêt ou bruit blanc" },
+                  { time: "22h30", emoji: "😴", title: "Coucher",               desc: "Objectif : 7h30 de sommeil" },
+                ].map((step, i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 8 }}>
+                    <Text style={{ width: 42, fontSize: 10, color: "rgba(200,169,110,0.55)", paddingTop: 2, fontWeight: "600" }}>{step.time}</Text>
+                    <View style={{ width: 20, alignItems: "center", marginRight: 10 }}>
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD, marginTop: 2 }} />
+                      {i < 4 && <View style={{ width: 1, flex: 1, backgroundColor: "rgba(200,169,110,0.2)", marginTop: 2, minHeight: 26 }} />}
+                    </View>
+                    <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start", paddingBottom: 8 }}>
+                      <Text style={{ fontSize: 16, marginRight: 8 }}>{step.emoji}</Text>
+                      <View>
+                        <Text style={{ fontSize: 13, fontWeight: "600", color: "#F0EBE0" }}>{step.title}</Text>
+                        <Text style={{ fontSize: 11, color: "rgba(200,169,110,0.6)", marginTop: 2 }}>{step.desc}</Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* ── MODAL SAISIE ── */}
+      <Modal visible={showModal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowModal(false)}>
+        <View style={s.modal}>
+          <View style={s.modalHeader}>
+            <TouchableOpacity onPress={() => { setShowModal(false); setEditingId(null); resetForm(); }}>
+              <Text style={s.modalCancel}>Annuler</Text>
+            </TouchableOpacity>
+            <Text style={s.modalTitle}>{editingId ? "Modifier la nuit" : "Enregistrer ma nuit"}</Text>
+            <TouchableOpacity onPress={handleSave} disabled={isPending}>
+              <Text style={[s.modalSave, { opacity: isPending ? 0.5 : 1 }]}>{isPending ? "…" : "Sauver"}</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+
+            <Text style={s.modalSection}>⏰ Horaires</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              {[
+                { label: "Coucher", key: "bedtime" as const, ph: "22:30" },
+                { label: "Lever",   key: "wakeTime" as const, ph: "07:00" },
+              ].map((f, i) => (
+                <React.Fragment key={f.key}>
+                  {i === 1 && <Text style={{ color: GOLD, fontSize: 18, marginTop: 16 }}>→</Text>}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 11, color: "rgba(200,169,110,0.6)", marginBottom: 6 }}>{f.label}</Text>
+                    <TextInput
+                      style={s.timeInput}
+                      value={form[f.key]}
+                      onChangeText={v => setForm(prev => ({ ...prev, [f.key]: v }))}
+                      placeholder={f.ph} placeholderTextColor="rgba(200,169,110,0.35)"
+                      keyboardType="numbers-and-punctuation" returnKeyType="done"
+                    />
+                  </View>
+                </React.Fragment>
+              ))}
+            </View>
+
+            <Text style={s.modalSection}>⭐ Qualité du sommeil</Text>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              {[1, 2, 3, 4, 5].map(q => (
+                <TouchableOpacity key={q} onPress={() => setForm(f => ({ ...f, quality: q }))}
+                  style={[s.qualBtn, form.quality === q && { borderColor: getQualityColor(q), backgroundColor: `${getQualityColor(q)}22` }]}>
+                  <Text style={{ fontSize: 18 }}>{getQualityEmoji(q)}</Text>
+                  <Text style={[{ fontSize: 9, color: "rgba(200,169,110,0.5)", marginTop: 3, textAlign: "center" }, form.quality === q && { color: getQualityColor(q) }]}>{getQualityLabel(q)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={s.modalSection}>😌 Humeur du soir</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, paddingHorizontal: 20 }}>
+              {MOOD_OPTIONS.map(m => (
+                <TouchableOpacity key={m.key} onPress={() => setForm(f => ({ ...f, eveningMood: f.eveningMood === m.key ? null : m.key }))}
+                  style={[s.moodBtn, form.eveningMood === m.key && s.moodBtnActive]}>
+                  <Text style={{ fontSize: 20 }}>{m.emoji}</Text>
+                  <Text style={[{ fontSize: 10, color: "rgba(200,169,110,0.55)", marginTop: 3, textAlign: "center" }, form.eveningMood === m.key && { color: GOLD }]}>{m.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={s.modalSection}>🌃 Réveils nocturnes</Text>
+            <TouchableOpacity onPress={() => setForm(f => ({ ...f, hadNightWaking: !f.hadNightWaking }))} style={s.toggleRow}>
+              <Text style={{ fontSize: 13, color: "#F0EBE0", flex: 1 }}>J'ai eu des réveils cette nuit</Text>
+              <View style={[s.toggle, form.hadNightWaking && s.toggleActive]}>
+                <View style={[s.toggleThumb, form.hadNightWaking && s.toggleThumbActive]} />
+              </View>
+            </TouchableOpacity>
+            {form.hadNightWaking && (
+              <View style={s.wakingBox}>
+                <Text style={{ fontSize: 12, color: "rgba(200,169,110,0.6)", marginBottom: 10 }}>Nombre de réveils :</Text>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <TouchableOpacity key={n} onPress={() => setForm(f => ({ ...f, nightWakings: n }))}
+                      style={[s.wakingBtn, form.nightWakings === n && s.wakingBtnActive]}>
+                      <Text style={[{ color: "rgba(200,169,110,0.55)", fontWeight: "600" }, form.nightWakings === n && { color: GOLD }]}>{n}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <Text style={s.modalSection}>🧘 Pratiques du soir</Text>
+            {[
+              { key: "usedMeditation" as const, emoji: "🧘", label: "Méditation guidée" },
+              { key: "usedBreathing"  as const, emoji: "💨", label: "Exercice de respiration" },
+              { key: "usedAmbient"    as const, emoji: "🎵", label: "Sons relaxants" },
+            ].map(p => (
+              <TouchableOpacity key={p.key} onPress={() => setForm(f => ({ ...f, [p.key]: !f[p.key] }))} style={s.practiceRow}>
+                <Text style={{ fontSize: 18, marginRight: 12 }}>{p.emoji}</Text>
+                <Text style={{ flex: 1, fontSize: 13, color: "#F0EBE0" }}>{p.label}</Text>
+                <View style={[s.checkbox, form[p.key] && s.checkboxActive]}>
+                  {form[p.key] && <Text style={{ color: NIGHT, fontSize: 11, fontWeight: "700" }}>✓</Text>}
+                </View>
+              </TouchableOpacity>
+            ))}
+
+            <Text style={s.modalSection}>📝 Notes</Text>
+            <TextInput
+              style={s.notesInput}
+              value={form.notes}
+              onChangeText={v => setForm(f => ({ ...f, notes: v }))}
+              placeholder="Comment s'est passée votre nuit ? Rêves, sensations…"
+              placeholderTextColor="rgba(200,169,110,0.35)"
+              multiline numberOfLines={4} returnKeyType="done"
+            />
+
+            <TouchableOpacity onPress={handleSave} disabled={isPending}
+              style={[{ marginTop: 24, borderRadius: 16, overflow: "hidden" }, { opacity: isPending ? 0.6 : 1 }]}>
+              <LinearGradient colors={["#C8A96E", "#8B6914"]} style={{ padding: 16, alignItems: "center" }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: NIGHT }}>
+                  {isPending ? "Enregistrement…" : "🌙 Sauvegarder ma nuit"}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
       </Modal>
     </ScreenContainer>
@@ -719,279 +822,111 @@ export default function SleepTrackerScreen() {
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
+const s = StyleSheet.create({
+  header:      { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, gap: 12 },
+  backBtn:     { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(200,169,110,0.15)", alignItems: "center", justifyContent: "center" },
+  backIcon:    { color: GOLD, fontSize: 18, marginTop: -2 },
+  headerTitle: { fontSize: 20, fontWeight: "700", color: "#F0EBE0" },
+  headerSub:   { fontSize: 12, color: "rgba(200,169,110,0.6)", marginTop: 2 },
+  addBtn:      { backgroundColor: "rgba(200,169,110,0.18)", borderWidth: 1, borderColor: BORDER, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 },
+  addBtnText:  { color: GOLD, fontSize: 13, fontWeight: "600" },
 
-// ─── Palette SomnioPax v3 ────────────────────────────────────────────────
-const S_BG      = '#0D0B1A';
-const S_SURFACE = '#0D0B22';
-const S_GLASS   = '#2A2540';
-const S_BORDER  = 'rgba(200,169,110,0.40)';
-const S_GOLD    = '#C8A96E';
-const S_GOLD_BG = 'rgba(201,168,76,0.14)';
-const S_WHITE   = '#EDE8DC';
-const S_LAV     = 'rgba(240,235,224,0.65)';
-const S_LAV_DIM = 'rgba(240,235,224,0.65)';
+  scoreCard:   { borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 18, flexDirection: "row", alignItems: "center", gap: 14 },
+  scoreLabel:  { fontSize: 11, fontWeight: "600", marginTop: 4 },
+  scoreTitle:  { fontSize: 15, fontWeight: "700", color: "#F0EBE0", marginBottom: 2 },
+  scoreDesc:   { fontSize: 11, color: "rgba(200,169,110,0.55)" },
+  metaVal:     { fontSize: 14, fontWeight: "700", color: GOLD },
+  metaLbl:     { fontSize: 9, color: "rgba(200,169,110,0.55)", marginTop: 1 },
 
-function makeStyles(isDark: boolean) {
-  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
-  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
-  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
-  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
-  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
-  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
-  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
-  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
-  return StyleSheet.create({
-  container: { flex: 1, backgroundColor: S_BG },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  backBtn: { padding: 8 },
-  backArrow: { fontSize: 22, color: S_LAV },
-  headerTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: S_WHITE },
-  addBtn: {
-    backgroundColor: S_GOLD,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-  },
-  addBtnText: { color: S_BG, fontSize: 13, fontWeight: '700' },
+  section:      { paddingHorizontal: 20, marginBottom: 22 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#F0EBE0", marginBottom: 12 },
+  sectionDesc:  { fontSize: 12, color: "rgba(200,169,110,0.55)", marginTop: -8, marginBottom: 12 },
+  rowBetween:   { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  seeAll:       { fontSize: 12, color: GOLD, fontWeight: "600" },
 
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 16,
-    gap: 10,
-    marginBottom: 16,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: S_GLASS,
-    borderRadius: 16,
-    padding: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  statEmoji: { fontSize: 22, marginBottom: 4 },
-  statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: S_GOLD },
-  statLabel: { fontSize: 11, color: S_LAV_DIM, marginTop: 2, textAlign: 'center' },
+  todayCard:  { borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  todayTitle: { fontSize: 15, fontWeight: "600", color: "#F0EBE0" },
+  todaySub:   { fontSize: 12, color: "rgba(200,169,110,0.65)", marginTop: 3 },
+  qualBadge:  { flexDirection: "row", alignItems: "center", marginTop: 5, borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3, backgroundColor: "rgba(255,255,255,0.05)" },
+  qualDot:    { width: 6, height: 6, borderRadius: 3, marginRight: 5 },
+  qualText:   { fontSize: 11, fontWeight: "600" },
 
-  chartCard: {
-    marginHorizontal: 16,
-    backgroundColor: S_GLASS,
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  chartTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 16, color: S_WHITE, marginBottom: 2 },
-  chartSubtitle: { fontSize: 12, color: S_LAV_DIM, marginBottom: 12 },
-  chartWrapper: { alignItems: "center" },
-  legend: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 5 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: "#9CA3AF" },
+  tabs:         { flexDirection: "row", marginHorizontal: 20, marginBottom: 20, backgroundColor: "rgba(200,169,110,0.07)", borderRadius: 12, padding: 4 },
+  tab:          { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: "center" },
+  tabActive:    { backgroundColor: "rgba(200,169,110,0.18)" },
+  tabText:      { fontSize: 12, color: "rgba(200,169,110,0.45)", fontWeight: "500" },
+  tabTextActive:{ color: GOLD, fontWeight: "700" },
 
-  tipCard: {
-    marginHorizontal: 16,
-    backgroundColor: S_GOLD_BG,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 16,
-    flexDirection: 'row',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(201,168,76,0.22)',
-  },
-  tipEmoji: { fontSize: 24 },
-  tipContent: { flex: 1 },
-  tipTitle: { fontSize: 14, fontWeight: '700', color: S_GOLD, marginBottom: 4 },
-  tipText: { fontSize: 13, color: S_LAV, lineHeight: 18 },
-  tipLink: { fontSize: 13, color: S_GOLD, fontWeight: '600', marginTop: 6 },
+  chartBox:   { backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 10, alignItems: "center" },
+  periodBtn:  { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, borderWidth: 1, borderColor: BORDER },
+  periodBtnActive: { backgroundColor: "rgba(200,169,110,0.18)", borderColor: GOLD },
+  periodBtnText: { fontSize: 11, color: "rgba(200,169,110,0.45)" },
 
-  sectionTitle: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 18,
-    color: S_WHITE,
-    paddingHorizontal: 20,
-    marginBottom: 12,
-  },
-  loadingText: { color: S_LAV_DIM, textAlign: 'center', padding: 20 },
+  statCard: { flex: 1, minWidth: "45%", backgroundColor: CARD, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14, alignItems: "center" },
+  statVal:  { fontSize: 17, fontWeight: "700", color: GOLD },
+  statLbl:  { fontSize: 10, color: "rgba(200,169,110,0.55)", marginTop: 3, textAlign: "center" },
 
-  emptyState: { alignItems: 'center', padding: 40 },
-  emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: S_WHITE, marginBottom: 8 },
-  emptyText: { fontSize: 14, color: S_LAV_DIM, textAlign: 'center', lineHeight: 20, marginBottom: 20 },
-  primaryBtn: {
-    backgroundColor: S_GOLD,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  primaryBtnText: { color: S_BG, fontSize: 15, fontWeight: '700' },
+  weekCard:    { backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16, flexDirection: "row", alignItems: "center" },
+  weekColTitle:{ fontSize: 11, color: "rgba(200,169,110,0.55)", marginBottom: 6, fontWeight: "600" },
+  weekVal:     { fontSize: 16, fontWeight: "700", color: "#F0EBE0" },
+  weekSub:     { fontSize: 11, color: "rgba(200,169,110,0.65)", marginTop: 2 },
 
-  logCard: {
-    marginHorizontal: 16,
-    backgroundColor: S_GLASS,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  logHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
-  logDate: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 14, color: S_WHITE },
-  logTime: { fontSize: 12, color: S_LAV_DIM, marginTop: 2 },
-  logRight: { alignItems: 'flex-end', gap: 4 },
-  logDuration: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: S_GOLD },
-  qualityBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  qualityText: { fontSize: 11, fontWeight: '600' },
-  logIndicators: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 6 },
-  indicator: { fontSize: 11, color: S_LAV, backgroundColor: 'rgba(200,169,110,0.40)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  indicatorWarn: { color: '#FCD34D', backgroundColor: 'rgba(252,211,77,0.10)' },
-  logNotesContainer: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: S_GOLD_BG, borderRadius: 10, padding: 10, marginBottom: 10, gap: 8 },
-  logNotesIcon: { fontSize: 13, marginTop: 1 },
-  logNotes: { flex: 1, fontSize: 13, color: S_GOLD, fontStyle: 'italic', lineHeight: 18 },
-  logActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
-  editBtn: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: S_BORDER },
-  editBtnText: { fontSize: 12, color: S_LAV },
-  deleteBtn: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(248,113,113,0.3)' },
-  deleteBtnText: { fontSize: 12, color: '#F87171' },
+  watchCard:       { backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16 },
+  watchTitle:      { fontSize: 14, fontWeight: "600", color: "#F0EBE0" },
+  watchSub:        { fontSize: 11, color: "rgba(200,169,110,0.55)", marginTop: 2 },
+  watchOption:     { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "rgba(200,169,110,0.07)", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, borderWidth: 1, borderColor: BORDER },
+  watchOptionText: { fontSize: 12, color: "#F0EBE0", fontWeight: "500" },
+  watchBadge:      { fontSize: 9, color: GOLD, backgroundColor: "rgba(200,169,110,0.13)", borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 },
+
+  tipCard:  { flexDirection: "row", alignItems: "flex-start", backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 12, marginBottom: 8 },
+  tipTitle: { fontSize: 13, fontWeight: "600", color: "#F0EBE0", marginBottom: 3 },
+  tipDesc:  { fontSize: 11, color: "rgba(200,169,110,0.65)", lineHeight: 16 },
+
+  logCard:      { flexDirection: "row", alignItems: "flex-start", backgroundColor: CARD, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14, marginBottom: 10 },
+  logDate:      { fontSize: 13, fontWeight: "600", color: "#F0EBE0" },
+  logTime:      { fontSize: 11, color: "rgba(200,169,110,0.65)", marginTop: 2 },
+  logTag:       { fontSize: 10, color: "rgba(200,169,110,0.65)", backgroundColor: "rgba(200,169,110,0.07)", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
+  logNotes:     { fontSize: 11, color: "rgba(200,169,110,0.45)", marginTop: 4, fontStyle: "italic" },
+  logActionBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: "rgba(200,169,110,0.07)", alignItems: "center", justifyContent: "center" },
+
+  emptyTitle: { fontSize: 16, fontWeight: "600", color: "#F0EBE0", marginBottom: 8 },
+  emptyDesc:  { fontSize: 13, color: "rgba(200,169,110,0.55)", textAlign: "center", lineHeight: 20, marginBottom: 20 },
+  emptyBtn:   { backgroundColor: "rgba(200,169,110,0.18)", borderRadius: 20, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: BORDER },
+  emptyBtnText: { color: GOLD, fontSize: 13, fontWeight: "600" },
+
+  analysisCard: { borderRadius: 20, borderWidth: 1, borderColor: BORDER, padding: 18 },
+  analysisTip:  { flexDirection: "row", alignItems: "flex-start", backgroundColor: "rgba(200,169,110,0.07)", borderRadius: 12, padding: 12 },
+
+  routineCard: { backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16 },
 
   // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
-  modalSheet: {
-    backgroundColor: S_SURFACE,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    maxHeight: '90%',
-    borderTopWidth: 1,
-    borderColor: S_BORDER,
-  },
-  modalHandle: { width: 40, height: 4, backgroundColor: S_BORDER, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
-  modalTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: S_WHITE, marginBottom: 20, textAlign: 'center' },
+  modal:       { flex: 1, backgroundColor: "#0D0B1A" },
+  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottomWidth: 1, borderBottomColor: BORDER },
+  modalCancel: { fontSize: 15, color: "rgba(200,169,110,0.55)" },
+  modalTitle:  { fontSize: 16, fontWeight: "700", color: "#F0EBE0" },
+  modalSave:   { fontSize: 15, color: GOLD, fontWeight: "700" },
+  modalSection:{ fontSize: 14, fontWeight: "700", color: "#F0EBE0", marginTop: 20, marginBottom: 12 },
 
-  fieldLabel: { fontSize: 14, fontWeight: '600', color: S_GOLD, marginBottom: 8, marginTop: 12 },
-  timeInput: {
-    backgroundColor: S_GLASS,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 18,
-    color: S_WHITE,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-    textAlign: 'center',
-    letterSpacing: 2,
-  },
+  timeInput: { backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 12, color: "#F0EBE0", fontSize: 18, fontWeight: "600", textAlign: "center" },
 
-  qualityRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  qualityBtn: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: S_GLASS,
-    borderRadius: 10,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  qualityBtnText: { fontSize: 16, fontWeight: '700', color: S_LAV_DIM },
-  qualityBtnLabel: { fontSize: 16 },
-  qualitySelected: { fontSize: 13, fontWeight: '600', textAlign: 'center', marginTop: 4, color: S_GOLD },
+  qualBtn: { flex: 1, alignItems: "center", backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 8 },
 
-  moodRow: { marginBottom: 4 },
-  moodChip: {
-    alignItems: 'center',
-    backgroundColor: S_GLASS,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  moodChipActive: { borderColor: 'rgba(201,168,76,0.45)', backgroundColor: S_GOLD_BG },
-  moodEmoji: { fontSize: 20 },
-  moodLabel: { fontSize: 10, color: S_LAV_DIM, marginTop: 2 },
-  moodLabelActive: { color: S_GOLD },
+  moodBtn:      { alignItems: "center", backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 10, marginRight: 8, minWidth: 68 },
+  moodBtnActive:{ borderColor: GOLD, backgroundColor: "rgba(200,169,110,0.13)" },
 
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  toggle: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: S_GLASS,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  toggleActive: { backgroundColor: S_GOLD, borderColor: S_GOLD },
-  toggleText: { fontSize: 13, color: S_LAV_DIM, fontWeight: '600' },
+  toggleRow:       { flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 14, marginBottom: 10 },
+  toggle:          { width: 44, height: 24, borderRadius: 12, backgroundColor: "rgba(200,169,110,0.12)", borderWidth: 1, borderColor: BORDER, justifyContent: "center", paddingHorizontal: 2 },
+  toggleActive:    { backgroundColor: "rgba(200,169,110,0.3)", borderColor: GOLD },
+  toggleThumb:     { width: 18, height: 18, borderRadius: 9, backgroundColor: "rgba(200,169,110,0.35)" },
+  toggleThumbActive: { backgroundColor: GOLD, alignSelf: "flex-end" },
 
-  wakingsRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  wakingBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: S_GLASS,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  wakingBtnActive: { backgroundColor: S_GOLD, borderColor: S_GOLD },
-  wakingBtnText: { fontSize: 15, fontWeight: '700', color: S_LAV_DIM },
+  wakingBox:    { backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 14, marginBottom: 10 },
+  wakingBtn:    { width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(200,169,110,0.07)", borderWidth: 1, borderColor: BORDER, alignItems: "center", justifyContent: "center" },
+  wakingBtnActive: { borderColor: GOLD, backgroundColor: "rgba(200,169,110,0.18)" },
 
-  toolsRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  toolChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: S_GLASS,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  toolChipActive: { backgroundColor: S_GOLD_BG, borderColor: 'rgba(201,168,76,0.4)' },
-  toolLabel: { fontSize: 13, color: S_LAV_DIM },
-  toolLabelActive: { color: S_GOLD },
+  practiceRow: { flexDirection: "row", alignItems: "center", backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 14, marginBottom: 8 },
+  checkbox:    { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: BORDER, alignItems: "center", justifyContent: "center" },
+  checkboxActive: { backgroundColor: GOLD, borderColor: GOLD },
 
-  notesInput: {
-    backgroundColor: S_GLASS,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 14,
-    color: S_WHITE,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-
-  modalBtns: { flexDirection: 'row', gap: 12, marginTop: 20 },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    backgroundColor: S_GLASS,
-    borderWidth: 1,
-    borderColor: S_BORDER,
-  },
-  cancelBtnText: { fontSize: 15, color: S_LAV_DIM, fontWeight: '600' },
-  saveBtn: {
-    flex: 2,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    backgroundColor: S_GOLD,
-  },
-  saveBtnText: { fontSize: 15, color: S_BG, fontWeight: '700' },
-  });
-}
+  notesInput: { backgroundColor: CARD, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14, color: "#F0EBE0", fontSize: 14, minHeight: 96, textAlignVertical: "top" },
+});
