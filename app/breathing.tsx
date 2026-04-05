@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo} from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Platform, Image } from 'react-native';
 import { router } from 'expo-router';
 import Animated, {
   useSharedValue,
@@ -392,11 +392,17 @@ export default function BreathingScreen() {
             <Text style={[styles.listSubtitle, { color: B_LAV }]}>{TECHNIQUES.length} techniques disponibles</Text>
           </View>
         </View>
-        {/* Intro card */}
-        <LinearGradient
-          colors={isDark ? ['#1A1240', '#2A1870'] : ['#EDE8DC', '#E8E0FF']}
-          style={[styles.introCard, { borderColor: B_BORDER }]}
-        >
+        {/* Intro card avec image */}
+        <View style={[styles.introCard, { borderColor: B_BORDER, overflow: 'hidden' }]}>
+          <Image
+            source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/breathing-hero_c_66be2e89.jpg' }}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.3 }}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={isDark ? ['rgba(26,18,64,0.75)', 'rgba(42,24,112,0.88)'] : ['rgba(237,232,220,0.82)', 'rgba(232,224,255,0.92)']}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          />
           <Text style={styles.introEmoji}>🌬️</Text>
           <View style={{ flex: 1 }}>
             <Text style={[styles.introTitle, { color: B_WHITE }]}>La respiration consciente</Text>
@@ -404,7 +410,7 @@ export default function BreathingScreen() {
               Quelques minutes de respiration guidée suffisent pour calmer le système nerveux et retrouver la sérénité.
             </Text>
           </View>
-        </LinearGradient>
+        </View>
 
         {/* Technique cards */}
         {TECHNIQUES.map((technique) => (

@@ -697,3 +697,16 @@
 - [x] Section "Pour vous aujourd'hui" dans le Dashboard (recommandations basées sur mainGoal)
 - [x] Recommandations adaptées par objectif : 3 actions ciblées (méditation, sons, respiration)
 - [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
+
+## Phase 62 : Génération d'images premium (Nano Banana)
+
+- [x] Générer hero nocturne pour le Dashboard (lac de montagne la nuit)
+- [x] Générer image portrait pour l'Onboarding (personne en méditation)
+- [x] Générer 7 images pour les sons d'ambiance (pluie, océan, forêt, feu, oiseaux, bol tibétain, cosmos)
+- [x] Générer image pour la page Respiration (brume matinale)
+- [x] Générer 5 images pour les objectifs de l'onboarding (sommeil, stress, confiance, focus, énergie)
+- [x] Intégrer l'image hero dans le Dashboard (fond mode sombre, opacité 0.4)
+- [x] Intégrer l'image portrait dans l'onboarding (section bienvenue, avec fondu vers le bas)
+- [x] Intégrer les 7 images dans les cartes sons d'ambiance (fond avec overlay pour lisibilité)
+- [x] Intégrer l'image dans la carte intro de la page Respiration
+- [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end

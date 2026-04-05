@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  Animated, Dimensions, Platform, Modal, TextInput,
+  Animated, Dimensions, Platform, Modal, TextInput, Image,
 } from 'react-native';
 import { useThemeContext } from '@/lib/theme-provider';
 import { getThemeColors } from '@/lib/theme-constants';
@@ -245,12 +245,20 @@ export default function HomeScreen() {
     <ScreenContainer containerClassName={isDark ? 'bg-[#0D0B1A]' : 'bg-[#FAF7F2]'}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
-        {/* ── HERO NOCTURNE ──────────────────────────────────────────────── */}
+        {/* ── HERO NOCTURNE ────────────────────────────────────────────── */}
         <View style={styles.heroWrapper}>
           <LinearGradient
             colors={isDark ? ['#120F24', '#0D0B1A', '#0D0B1A'] : ['#F0EBE0', '#F0EBE0', '#FAF7F2']}
             style={styles.hero}
           >
+            {/* Image nocturne en fond (mode sombre uniquement) */}
+            {isDark && (
+              <Image
+                source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/hero-dashboard_c_d97d6c54.jpg' }}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.4 }}
+                resizeMode="cover"
+              />
+            )}
             <StarField />
 
             {/* Lune animée */}

@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView, Platform,
-  Dimensions, PanResponder,
+  Dimensions, PanResponder, Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
@@ -70,6 +70,17 @@ const SOUND_GRADIENTS: Record<string, readonly [string, string, ...string[]]> = 
   night_insects: ['#0D2010', '#166534', '#14532D'],
   cave:          ['#111827', '#1F2937', '#374151'],
   default:       ['#1A1A2E', '#374151', '#4B5563'],
+};
+
+// Images réelles pour les sons (générées avec Nano Banana, hébergées sur CDN)
+const SOUND_IMAGES: Record<string, { uri: string }> = {
+  rain:         { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-rain_c_3e8005d6.jpg' },
+  forest:       { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-forest_c_29780292.jpg' },
+  ocean:        { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-ocean_c_42763065.jpg' },
+  fire:         { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-fire_c_a2c24143.jpg' },
+  birds:        { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-birds_c_ffcb2c52.jpg' },
+  tibetan_bowl: { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-tibetan-bowl_c_d998628f.jpg' },
+  cosmos:       { uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/sound-cosmos_c_534a037e.jpg' },
 };
 
 const SOUND_BIG_EMOJI: Record<string, string> = {
@@ -198,6 +209,8 @@ function SoundCard({
   const cardAnimStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const glowStyle = useAnimatedStyle(() => ({ opacity: glowOpacity.value }));
 
+  const soundImage = SOUND_IMAGES[sound.id];
+
   return (
     <Animated.View style={[{ width: CARD_W }, cardAnimStyle]}>
       <Pressable
@@ -215,7 +228,17 @@ function SoundCard({
             !hasUrl && { opacity: 0.55 },
           ]}
         >
-          <Animated.View style={[cardSt.glowOverlay, glowStyle, { backgroundColor: `${AM_GOLD}18` }]} />
+          {/* Image réelle en fond si disponible */}
+          {soundImage && (
+            <Image
+              source={soundImage}
+              style={cardSt.bgImage}
+              resizeMode="cover"
+            />
+          )}
+          {/* Overlay pour lisibilité du texte */}
+          <View style={[cardSt.glowOverlay, { backgroundColor: soundImage ? 'rgba(0,0,0,0.42)' : 'transparent' }]} />
+          <Animated.View style={[cardSt.glowOverlay, glowStyle, { backgroundColor: `${AM_GOLD}22` }]} />
 
           <View style={cardSt.topRow}>
             <Text style={cardSt.bigEmoji}>{bigEmoji}</Text>
@@ -263,6 +286,10 @@ const cardSt = StyleSheet.create({
     borderRadius: 20, padding: 14, minHeight: 145,
     justifyContent: 'flex-end', overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+  },
+  bgImage: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    width: '100%', height: '100%', borderRadius: 20,
   },
   glowOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 20 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },

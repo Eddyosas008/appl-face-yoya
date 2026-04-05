@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Pressable, ScrollView,
-  TextInput, Dimensions, Platform,
+  TextInput, Dimensions, Platform, Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import Animated, {
@@ -361,10 +361,22 @@ export default function OnboardingScreen() {
     || (step.type === 'text' && textInput.trim().length > 0)
     || (step.type !== 'text' && currentValue !== undefined);
 
-  // ── Rendu de l'étape Bienvenue ──────────────────────────────────────────────
+  // ── Rendu de l'étape Bienvenue ────────────────────────────────────────────
   function renderWelcome() {
     return (
       <Animated.View entering={FadeIn.duration(600)} style={welcomeSt.container}>
+        {/* Image de méditation en haut */}
+        <View style={welcomeSt.heroImageWrap}>
+          <Image
+            source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/onboarding-hero_c_708dd0cf.jpg' }}
+            style={welcomeSt.heroImage}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['transparent', isDark ? BG_D : BG_L]}
+            style={welcomeSt.heroImageOverlay}
+          />
+        </View>
         {/* Logo animé */}
         <View style={welcomeSt.logoWrap}>
           <LinearGradient
@@ -663,7 +675,15 @@ export default function OnboardingScreen() {
 
 // ─── Styles des sous-composants ───────────────────────────────────────────────
 const welcomeSt = StyleSheet.create({
-  container: { alignItems: 'center', paddingTop: 20, paddingBottom: 8 },
+  container: { alignItems: 'center', paddingTop: 0, paddingBottom: 8 },
+  heroImageWrap: {
+    width: '100%', height: 220, borderRadius: 24, overflow: 'hidden',
+    marginBottom: 24, position: 'relative',
+  },
+  heroImage: { width: '100%', height: '100%' },
+  heroImageOverlay: {
+    position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+  },
   logoWrap: { position: 'relative', marginBottom: 24 },
   logoBg: {
     width: 120, height: 120, borderRadius: 30,
