@@ -435,16 +435,16 @@ export default function MeditationPlayerScreen() {
         source={{ uri: bgImageUri }}
         style={[
           StyleSheet.absoluteFillObject,
-          { opacity: isDark ? 0.18 : 0.12 },
+          { opacity: isDark ? 0.45 : 0.38 },
         ]}
         resizeMode="cover"
-        blurRadius={Platform.OS === 'web' ? 0 : 3}
+        blurRadius={Platform.OS === 'web' ? 0 : 2}
       />
       {/* Overlay gradient sombre pour la lisibilité */}
       <LinearGradient
         colors={isDark
-          ? ['rgba(7,5,28,0.55)', 'rgba(12,8,48,0.40)', 'rgba(15,11,46,0.70)']
-          : ['rgba(250,247,242,0.60)', 'rgba(232,227,245,0.45)', 'rgba(237,232,248,0.75)']}
+          ? ['rgba(7,5,28,0.45)', 'rgba(12,8,48,0.30)', 'rgba(15,11,46,0.60)']
+          : ['rgba(250,247,242,0.40)', 'rgba(232,227,245,0.25)', 'rgba(237,232,248,0.55)']}
         style={StyleSheet.absoluteFillObject}
       />
       <StarField />

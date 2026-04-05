@@ -171,7 +171,7 @@ function ChoiceCard({
         {imageUri ? (
           <Image
             source={{ uri: imageUri }}
-            style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.45 : 0.38 }]}
+            style={[StyleSheet.absoluteFillObject, { opacity: isDark ? 0.65 : 0.55 }]}
             resizeMode="cover"
           />
         ) : null}
@@ -181,8 +181,8 @@ function ChoiceCard({
             StyleSheet.absoluteFillObject,
             {
               backgroundColor: selected
-                ? (isDark ? 'rgba(200,169,110,0.35)' : 'rgba(200,169,110,0.28)')
-                : (isDark ? 'rgba(13,11,26,0.58)' : 'rgba(250,247,242,0.52)'),
+                ? (isDark ? 'rgba(200,169,110,0.30)' : 'rgba(200,169,110,0.22)')
+                : (isDark ? 'rgba(13,11,26,0.45)' : 'rgba(30,20,10,0.30)'),
             },
           ]}
         />

@@ -84,7 +84,7 @@ function HeroMeditationCard({ item, categories, isFav, isLocked, onPress, onFav 
         {/* Image thématique en fond */}
         <Image
           source={{ uri: imgUri }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.38 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.70 }}
           resizeMode="cover"
         />
         {/* Badge catégorie */}
@@ -161,7 +161,7 @@ function MeditationCardHorizontal({ item, categories, isFav, isLocked, onPress, 
       <LinearGradient colors={[g1, g2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={hStyles.cover}>
         <Image
           source={{ uri: imgUri }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.45 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.75 }}
           resizeMode="cover"
         />
         <Text style={hStyles.emoji}>{item.emoji ?? cat?.emoji ?? '🧘'}</Text>
@@ -228,7 +228,7 @@ function MeditationCardGrid({ item, categories, isFav, isLocked, onPress, onFav 
       <LinearGradient colors={[g1, g2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={gStyles.cover}>
         <Image
           source={{ uri: imgUri }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.45 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.75 }}
           resizeMode="cover"
         />
         <Text style={gStyles.emoji}>{item.emoji ?? cat?.emoji ?? '🧘'}</Text>

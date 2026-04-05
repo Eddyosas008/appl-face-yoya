@@ -236,8 +236,8 @@ function SoundCard({
               resizeMode="cover"
             />
           )}
-          {/* Overlay pour lisibilité du texte */}
-          <View style={[cardSt.glowOverlay, { backgroundColor: soundImage ? 'rgba(0,0,0,0.42)' : 'transparent' }]} />
+          {/* Overlay pour lisibilité du texte - adapté mode clair/sombre */}
+          <View style={[cardSt.glowOverlay, { backgroundColor: soundImage ? 'rgba(0,0,0,0.35)' : 'transparent' }]} />
           <Animated.View style={[cardSt.glowOverlay, glowStyle, { backgroundColor: `${AM_GOLD}22` }]} />
 
           <View style={cardSt.topRow}>

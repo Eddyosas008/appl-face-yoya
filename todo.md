@@ -754,3 +754,15 @@
 - [x] Supprimer les plugins react-native-health et react-native-health-connect de app.config.ts
 - [x] Vérifier que les imports de react-native-health sont dynamiques (await import) dans health-sync.ts
 - [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end
+
+## Phase 67 : Correction visibilité images (mode clair + sombre)
+
+- [x] Dashboard hero : opacité 0.65 (dark) / 0.50 (light) — visible en mode clair
+- [x] Onboarding cartes objectifs : opacité 0.65 (dark) / 0.55 (light) + overlay réduit rgba(30,20,10,0.30)
+- [x] Respiration carte intro : opacité 0.60 (dark) / 0.50 (light) + overlay réduit
+- [x] Explore carte héro : opacité 0.70 (uniforme)
+- [x] Explore cartes horizontales : opacité 0.75 (uniforme)
+- [x] Explore cartes grille : opacité 0.75 (uniforme)
+- [x] Sons d'ambiance : overlay réduit à rgba(0,0,0,0.35)
+- [x] Lecteur audio : opacité 0.45 (dark) / 0.38 (light) + overlay réduit
+- [x] Vérifier TypeScript : 0 erreur dans les fichiers front-end

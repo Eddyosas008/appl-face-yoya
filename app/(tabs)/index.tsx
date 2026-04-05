@@ -251,14 +251,12 @@ export default function HomeScreen() {
             colors={isDark ? ['#120F24', '#0D0B1A', '#0D0B1A'] : ['#F0EBE0', '#F0EBE0', '#FAF7F2']}
             style={styles.hero}
           >
-            {/* Image nocturne en fond (mode sombre uniquement) */}
-            {isDark && (
-              <Image
-                source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/hero-dashboard_c_d97d6c54.jpg' }}
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: 0.4 }}
-                resizeMode="cover"
-              />
-            )}
+            {/* Image nocturne en fond — visible en mode clair ET sombre */}
+            <Image
+              source={{ uri: 'https://d2xsxph8kpxj0f.cloudfront.net/91776583/eYFNRfZnGFDCF7cJsc37XA/hero-dashboard_c_d97d6c54.jpg' }}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', opacity: isDark ? 0.65 : 0.50 }}
+              resizeMode="cover"
+            />
             <StarField />
 
             {/* Lune animée */}
