@@ -562,3 +562,20 @@
 - [x] Section Abonnement Premium redessinée
 - [x] Bouton déconnexion stylisé en bas
 - [x] Animations d'entrée sur les sections
+
+## Phase 53 : Authentification email/mot de passe réelle
+
+- [x] Table DB emailAuth (userId, email, passwordHash, emailVerified)
+- [x] Table DB passwordResets (userId, token, expiresAt, usedAt)
+- [x] Migration DB appliquée
+- [x] Backend : route POST /api/auth/register (bcrypt hash, JWT session)
+- [x] Backend : route POST /api/auth/login (vérification bcrypt, JWT session)
+- [x] Backend : route POST /api/auth/forgot-password (token reset 1h, email nodemailer)
+- [x] Backend : route GET /api/auth/reset-password/validate (vérification token)
+- [x] Backend : route POST /api/auth/reset-password (consomme token, nouveau hash)
+- [x] Frontend service email-auth-service.ts (fetch wrapper + stockage token natif)
+- [x] Écran signin.tsx : auth email réelle + lien "Mot de passe oublié"
+- [x] Écran signup.tsx : inscription réelle + indicateur force mot de passe + champ prénom
+- [x] Écran forgot-password.tsx : formulaire + état succès
+- [x] Écran reset-password.tsx : validation token + formulaire + redirection auto
+- [x] Layout auth mis à jour avec les nouvelles routes

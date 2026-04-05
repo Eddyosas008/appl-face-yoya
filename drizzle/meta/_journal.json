@@ -50,6 +50,13 @@
       "when": 1775309928396,
       "tag": "0006_lucky_moira_mactaggert",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1775388126616,
+      "tag": "0007_many_silhouette",
+      "breakpoints": true
     }
   ]
 }

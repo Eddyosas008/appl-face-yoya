@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, sum } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, isNull, sum } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -28,6 +28,8 @@ import {
   ambientSounds,
   type AmbientSound,
   type InsertAmbientSound,
+  emailAuth,
+  passwordResets,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -813,4 +815,119 @@ export async function upsertAmbientSound(data: InsertAmbientSound) {
   } else {
     await db.insert(ambientSounds).values(data);
   }
+}
+
+// ─── Email/Password Authentication ───────────────────────────────────────────
+
+export async function createEmailUser(data: {
+  email: string;
+  passwordHash: string;
+  name?: string;
+}): Promise<{ userId: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Create user in the main users table with a synthetic openId
+  const openId = `email:${data.email}`;
+  await db.insert(users).values({
+    openId,
+    email: data.email,
+    name: data.name ?? data.email.split("@")[0],
+    loginMethod: "email",
+    lastSignedIn: new Date(),
+  }).onDuplicateKeyUpdate({ set: { lastSignedIn: new Date() } });
+
+  const userRow = await db.select({ id: users.id }).from(users).where(eq(users.openId, openId)).limit(1);
+  if (!userRow[0]) throw new Error("Failed to create user");
+  const userId = userRow[0].id;
+
+  // Store hashed password in emailAuth table
+  await db.insert(emailAuth).values({
+    userId,
+    email: data.email,
+    passwordHash: data.passwordHash,
+    emailVerified: false,
+  }).onDuplicateKeyUpdate({ set: { passwordHash: data.passwordHash } });
+
+  return { userId };
+}
+
+export async function getEmailAuthByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select({
+      id: emailAuth.id,
+      userId: emailAuth.userId,
+      email: emailAuth.email,
+      passwordHash: emailAuth.passwordHash,
+      emailVerified: emailAuth.emailVerified,
+    })
+    .from(emailAuth)
+    .where(eq(emailAuth.email, email))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function updateUserLastSignedIn(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ lastSignedIn: new Date() }).where(eq(users.id, userId));
+}
+
+// ─── Password Reset Tokens ────────────────────────────────────────────────────
+
+export async function createPasswordResetToken(userId: number, token: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  // Invalidate previous tokens for this user
+  await db.delete(passwordResets).where(
+    and(eq(passwordResets.userId, userId), isNull(passwordResets.usedAt))
+  );
+  await db.insert(passwordResets).values({ userId, token, expiresAt });
+}
+
+export async function getValidPasswordResetToken(token: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(passwordResets)
+    .where(
+      and(
+        eq(passwordResets.token, token),
+        gt(passwordResets.expiresAt, now),
+        isNull(passwordResets.usedAt)
+      )
+    )
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function consumePasswordResetToken(token: string): Promise<number | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const row = await getValidPasswordResetToken(token);
+  if (!row) return null;
+  await db.update(passwordResets)
+    .set({ usedAt: new Date() })
+    .where(eq(passwordResets.token, token));
+  return row.userId;
+}
+
+export async function updateEmailPassword(userId: number, passwordHash: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(emailAuth)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(emailAuth.userId, userId));
 }

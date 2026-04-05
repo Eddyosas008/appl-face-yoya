@@ -312,3 +312,29 @@ export const ambientSounds = mysqlTable("ambientSounds", {
 });
 export type AmbientSound = typeof ambientSounds.$inferSelect;
 export type InsertAmbientSound = typeof ambientSounds.$inferInsert;
+
+// ─── Email/Password Authentication ───────────────────────────────────────────
+// Stores hashed passwords for email-based login (separate from OAuth users table)
+export const emailAuth = mysqlTable("emailAuth", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  emailVerified: boolean("emailVerified").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type EmailAuth = typeof emailAuth.$inferSelect;
+export type InsertEmailAuth = typeof emailAuth.$inferInsert;
+
+// ─── Password Reset Tokens ────────────────────────────────────────────────────
+export const passwordResets = mysqlTable("passwordResets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  token: varchar("token", { length: 128 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PasswordReset = typeof passwordResets.$inferSelect;
+export type InsertPasswordReset = typeof passwordResets.$inferInsert;
