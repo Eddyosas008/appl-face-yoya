@@ -197,7 +197,7 @@ function ChoiceCard({
             </View>
           )}
           <Text style={choiceSt.emoji}>{emoji}</Text>
-          <Text style={[choiceSt.label, { color: '#FFFFFF', textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }]}>{label}</Text>
+          <Text style={[choiceSt.label, { color: '#FFFFFF', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }]}>{label}</Text>
           {desc && <Text style={[choiceSt.desc, { color: 'rgba(255,255,255,0.80)' }]}>{desc}</Text>}
         </View>
       </Pressable>

@@ -791,3 +791,11 @@
 - [x] mood-chart-30days.tsx : MoodHeatmap responsive avec Dimensions.get
 - [x] ambient.tsx : CARD_W cohérent avec padding scroll + paddingBottom pour FloatingPlayer
 - [x] Sauvegarder checkpoint
+
+## Phase 70 : Correction avertissements textShadow*
+
+- [x] Identifier tous les fichiers utilisant textShadowColor/Offset/Radius (3 fichiers trouvés)
+- [x] app/(tabs)/index.tsx ligne 857 : featuredMoon textShadow* → textShadow CSS unifié
+- [x] app/onboarding.tsx ligne 200 : ChoiceCard label textShadow* → textShadow CSS unifié
+- [x] components/mood-chart-30days.tsx lignes 447-449 : heatDay textShadow* → textShadow CSS unifié
+- [x] Vérification finale : 0 occurrence restante de textShadowColor/Offset/Radius

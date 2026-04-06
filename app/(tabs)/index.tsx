@@ -854,7 +854,7 @@ function makeStyles(isDark: boolean) {
   featuredCard: { borderRadius: 24, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative', overflow: 'hidden', borderWidth: 1, borderColor: BORD },
   featuredHalo: { position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: 70, backgroundColor: isDark ? 'rgba(200,169,110,0.20)' : 'rgba(139,105,20,0.12)' },
   featuredLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1, zIndex: 1 },
-  featuredMoon: { fontSize: 32, textShadowColor: isDark ? 'rgba(201,150,62,0.5)' : 'rgba(139,105,20,0.4)', textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } },
+  featuredMoon: { fontSize: 32, textShadow: isDark ? '0 0 12px rgba(201,150,62,0.5)' : '0 0 12px rgba(139,105,20,0.4)' },
   featuredTag: { fontSize: 8.5, letterSpacing: 1.6, textTransform: 'uppercase', color: GOLD_C, marginBottom: 4, opacity: 0.85 },
   featuredTitle: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: '#FFFFFF', lineHeight: 23, marginBottom: 3 },
   featuredMeta: { fontSize: 10.5, color: 'rgba(255,255,255,0.70)', letterSpacing: 0.3 },
