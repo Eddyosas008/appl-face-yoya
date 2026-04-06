@@ -807,3 +807,12 @@
 - [x] lib/theme-provider.tsx : remplacer pointerEvents prop par style={{ pointerEvents: 'none' }}
 - [x] Vérification finale : 0 occurrence restante de pointerEvents en prop
 - [x] Sauvegarder checkpoint
+
+## Phase 72 : Correction des 5 erreurs TypeScript
+
+- [x] Diagnostic : les erreurs étaient dans index.tsx, mood-chart-30days.tsx et onboarding.tsx (textShadow CSS), pas dans server/routers.ts
+- [x] index.tsx : textShadow CSS → textShadowColor/Offset/Radius natifs React Native
+- [x] mood-chart-30days.tsx : textShadow CSS → textShadowColor/Offset/Radius natifs React Native
+- [x] onboarding.tsx : textShadow CSS inline → textShadowColor/Offset/Radius natifs React Native
+- [x] Vérification : tsc --noEmit passe sans aucune erreur
+- [x] Sauvegarder checkpoint
