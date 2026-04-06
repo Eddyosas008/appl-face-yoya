@@ -86,7 +86,7 @@ export function StarField() {
   }, []);
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFillObject, { pointerEvents: 'none' }]}>
       {/* Blobs aurora flottants */}
       {AURORA_BLOBS.map((blob, i) => (
         <Animated.View

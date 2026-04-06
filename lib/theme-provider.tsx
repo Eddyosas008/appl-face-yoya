@@ -185,9 +185,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         <Animated.View
           style={[
             styles.overlay,
-            { backgroundColor: overlayColor, opacity: fadeAnim },
+            { backgroundColor: overlayColor, opacity: fadeAnim, pointerEvents: 'none' },
           ]}
-          pointerEvents="none"
         />
       </View>
     </ThemeContext.Provider>

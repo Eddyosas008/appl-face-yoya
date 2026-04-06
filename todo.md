@@ -799,3 +799,11 @@
 - [x] app/onboarding.tsx ligne 200 : ChoiceCard label textShadow* → textShadow CSS unifié
 - [x] components/mood-chart-30days.tsx lignes 447-449 : heatDay textShadow* → textShadow CSS unifié
 - [x] Vérification finale : 0 occurrence restante de textShadowColor/Offset/Radius
+
+## Phase 71 : Correction avertissement props.pointerEvents déprécié
+
+- [x] star-field.tsx : remplacer pointerEvents prop par style={{ pointerEvents: 'none' }}
+- [x] animated-screen.tsx : non concerné (pas d'occurrence)
+- [x] lib/theme-provider.tsx : remplacer pointerEvents prop par style={{ pointerEvents: 'none' }}
+- [x] Vérification finale : 0 occurrence restante de pointerEvents en prop
+- [x] Sauvegarder checkpoint
