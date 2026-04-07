@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions, Animated } from 'react-native';
 import { router } from 'expo-router';
 import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient as SvgGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,32 +13,157 @@ import { MoodChart30Days } from '@/components/mood-chart-30days';
 import { useAuth } from '@/hooks/use-auth';
 import { useThemeContext } from '@/lib/theme-provider';
 
-
 const MOOD_SCORE: Record<string, number> = {
-  happy: 5,
-  grateful: 5,
-  calm: 4,
-  neutral: 3,
-  tired: 2,
-  anxious: 2,
-  sad: 1,
-  overwhelmed: 1,
+  happy: 5, grateful: 5, calm: 4, neutral: 3,
+  tired: 2, anxious: 2, sad: 1, overwhelmed: 1,
 };
 
 const MOOD_COLOR: Record<string, string> = {
-  happy: '#22C55E',
-  grateful: '#10B981',
-  calm: '#6366F1',
-  neutral: '#94A3B8',
-  tired: '#F59E0B',
-  anxious: '#F97316',
-  sad: '#3B82F6',
-  overwhelmed: '#EF4444',
+  happy: '#22C55E', grateful: '#10B981', calm: '#6366F1', neutral: '#94A3B8',
+  tired: '#F59E0B', anxious: '#F97316', sad: '#3B82F6', overwhelmed: '#EF4444',
 };
 
+// ─── Skeleton block réutilisable ──────────────────────────────────────────────
+function SkeletonBlock({
+  width = '100%' as number | string,
+  height = 16,
+  borderRadius = 8,
+  style,
+}: {
+  width?: number | string;
+  height?: number;
+  borderRadius?: number;
+  style?: object;
+}) {
+  const { isDark } = useThemeContext();
+  const anim = useRef(new Animated.Value(0.35)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0.35, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [anim]);
+
+  const baseColor = isDark ? 'rgba(200,169,110,0.14)' : 'rgba(139,105,20,0.10)';
+  return (
+    <Animated.View
+      style={[{ width, height, borderRadius, backgroundColor: baseColor, opacity: anim }, style]}
+    />
+  );
+}
+
+// ─── Skeleton complet de la page Progression ─────────────────────────────────
+function ProgressSkeleton({ isDark }: { isDark: boolean }) {
+  const CARD = isDark ? '#2A2540' : '#FFFFFF';
+  const BORD = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+
+  return (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+    >
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 }}>
+        <SkeletonBlock width={22} height={22} borderRadius={11} />
+        <View style={{ flex: 1, marginLeft: 12, gap: 6 }}>
+          <SkeletonBlock width={160} height={22} borderRadius={8} />
+          <SkeletonBlock width={120} height={13} borderRadius={5} />
+        </View>
+      </View>
+
+      {/* Stats row — 4 cartes */}
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+        {[0, 1, 2, 3].map(i => (
+          <View key={i} style={{
+            flex: 1, borderRadius: 14, padding: 12, alignItems: 'center', gap: 8,
+            backgroundColor: CARD, borderWidth: 1, borderColor: BORD,
+          }}>
+            <SkeletonBlock width={28} height={28} borderRadius={14} />
+            <SkeletonBlock width={36} height={20} borderRadius={6} />
+            <SkeletonBlock width={44} height={11} borderRadius={4} />
+          </View>
+        ))}
+      </View>
+
+      {/* Programmes en cours */}
+      <View style={{ borderRadius: 18, padding: 14, marginBottom: 14, backgroundColor: CARD, borderWidth: 1, borderColor: BORD }}>
+        <SkeletonBlock width={180} height={16} borderRadius={6} style={{ marginBottom: 14 }} />
+        {[0, 1].map(i => (
+          <View key={i} style={{
+            flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10,
+            borderBottomWidth: i === 0 ? 1 : 0, borderBottomColor: BORD,
+          }}>
+            <SkeletonBlock width={38} height={38} borderRadius={19} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <SkeletonBlock width="80%" height={14} borderRadius={5} />
+              <SkeletonBlock width="55%" height={11} borderRadius={4} />
+              <SkeletonBlock width="100%" height={6} borderRadius={3} />
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Graphique humeur 30 jours */}
+      <View style={{ borderRadius: 18, padding: 14, marginBottom: 14, backgroundColor: CARD, borderWidth: 1, borderColor: BORD }}>
+        <SkeletonBlock width={150} height={16} borderRadius={6} style={{ marginBottom: 8 }} />
+        <SkeletonBlock width={210} height={12} borderRadius={5} style={{ marginBottom: 16 }} />
+        <SkeletonBlock width="100%" height={130} borderRadius={12} />
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+          {[0, 1, 2, 3].map(i => (
+            <View key={i} style={{
+              flex: 1, borderRadius: 10, padding: 10, gap: 6,
+              backgroundColor: isDark ? 'rgba(200,169,110,0.06)' : 'rgba(139,105,20,0.05)',
+            }}>
+              <SkeletonBlock width="60%" height={10} borderRadius={4} />
+              <SkeletonBlock width="80%" height={14} borderRadius={5} />
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Minutes méditées — barres */}
+      <View style={{ borderRadius: 18, padding: 14, marginBottom: 14, backgroundColor: CARD, borderWidth: 1, borderColor: BORD }}>
+        <SkeletonBlock width={210} height={16} borderRadius={6} style={{ marginBottom: 18 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 110 }}>
+          {[55, 35, 80, 28, 90, 48, 68].map((h, i) => (
+            <View key={i} style={{ flex: 1, alignItems: 'center', gap: 4 }}>
+              <SkeletonBlock width="70%" height={h} borderRadius={6} />
+              <SkeletonBlock width={12} height={10} borderRadius={3} />
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Sessions récentes */}
+      <View style={{ borderRadius: 18, padding: 14, marginBottom: 14, backgroundColor: CARD, borderWidth: 1, borderColor: BORD }}>
+        <SkeletonBlock width={160} height={16} borderRadius={6} style={{ marginBottom: 14 }} />
+        {[0, 1, 2].map(i => (
+          <View key={i} style={{
+            flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10,
+            borderBottomWidth: i < 2 ? 1 : 0, borderBottomColor: BORD,
+          }}>
+            <SkeletonBlock width={40} height={40} borderRadius={20} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <SkeletonBlock width="70%" height={14} borderRadius={5} />
+              <SkeletonBlock width="45%" height={11} borderRadius={4} />
+            </View>
+            <SkeletonBlock width={36} height={22} borderRadius={8} />
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+// ─── Graphique d'humeur (7 jours) ────────────────────────────────────────────
 function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
   const screenW = Dimensions.get('window').width;
-  const width = screenW - 72; // 16px padding*2 + 14px card padding*2 + 12px extra
+  const width = screenW - 72;
   const height = 140;
   const padding = { top: 16, right: 16, bottom: 32, left: 28 };
 
@@ -151,6 +276,7 @@ function MoodChart({ checkIns, colors }: { checkIns: any[]; colors: any }) {
   );
 }
 
+// ─── Écran principal ──────────────────────────────────────────────────────────
 export default function ProgressScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
@@ -159,22 +285,25 @@ export default function ProgressScreen() {
   const { profile, checkIns, sessionHistory, journalEntries } = useUser();
 
   // Données humeur 30 jours depuis la DB
-  const { data: mood30Data = [] } = trpc.stats.mood30.useQuery(
+  const { data: mood30Data = [], isLoading: loadingMood30 } = trpc.stats.mood30.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
 
   // Sessions depuis la DB (si connecté)
-  const { data: dbSessions = [] } = trpc.sessions.list.useQuery(
+  const { data: dbSessions = [], isLoading: loadingSessions } = trpc.sessions.list.useQuery(
     { limit: 10 },
     { enabled: isAuthenticated }
   );
 
   // Programmes en cours
-  const { data: inProgressPrograms = [] } = trpc.programs.inProgress.useQuery(
+  const { data: inProgressPrograms = [], isLoading: loadingPrograms } = trpc.programs.inProgress.useQuery(
     undefined,
     { enabled: isAuthenticated }
   );
+
+  // État de chargement global : vrai si l'utilisateur est connecté et que les données ne sont pas encore arrivées
+  const isLoading = isAuthenticated && (loadingMood30 || loadingSessions || loadingPrograms);
 
   // Stats
   const totalSessions = isAuthenticated ? dbSessions.length || sessionHistory.length : sessionHistory.length;
@@ -216,6 +345,15 @@ export default function ProgressScreen() {
   const displaySessions = isAuthenticated && dbSessions.length > 0
     ? (dbSessions as any[]).slice(0, 5)
     : sessionHistory.slice(-5).reverse();
+
+  // ─── Skeleton pendant le chargement ───────────────────────────────────────
+  if (isLoading) {
+    return (
+      <ScreenContainer>
+        <ProgressSkeleton isDark={isDark} />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer>
@@ -287,7 +425,7 @@ export default function ProgressScreen() {
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>Humeur (30 jours)</Text>
           <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
             {checkIns.length === 0 && mood30Data.length === 0
-              ? 'Faites un check-in pour voir votre courbe d\'humeur'
+              ? "Faites un check-in pour voir votre courbe d'humeur"
               : 'Votre évolution émotionnelle ce mois'}
           </Text>
           <MoodChart30Days
@@ -403,42 +541,42 @@ function makeStyles(isDark: boolean) {
   const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
   const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
   return StyleSheet.create({
-  scroll: { paddingHorizontal: 16, paddingBottom: 100 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: '800' },
-  subtitle: { fontSize: 14, marginTop: 2 },
-  statsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  statCard: { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4, minWidth: 0 },
-  statEmoji: { fontSize: 20 },
-  statValue: { fontSize: 20, fontWeight: '800' },
-  statLabel: { fontSize: 10, textAlign: 'center', lineHeight: 13 },
-  card: { borderRadius: 18, padding: 14, marginBottom: 14 },
-  cardTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  cardSubtitle: { fontSize: 12, marginBottom: 12 },
-  barChart: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 110, paddingTop: 16 },
-  barItem: { flex: 1, alignItems: 'center', gap: 4 },
-  barValue: { fontSize: 9, height: 14 },
-  barBg: { width: 18, height: 80, borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
-  barFill: { width: '100%', borderRadius: 6 },
-  barLabel: { fontSize: 11 },
-  moodRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  moodEmoji: { fontSize: 18, width: 24 },
-  moodLabel: { width: 80, fontSize: 12 },
-  moodBarBg: { flex: 1, height: 6, borderRadius: 3, overflow: 'hidden' },
-  moodBarFill: { height: '100%', borderRadius: 3 },
-  moodPct: { width: 32, fontSize: 11, textAlign: 'right' },
-  sessionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  sessionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  sessionTitle: { fontSize: 14, fontWeight: '600' },
-  sessionMeta: { fontSize: 12, marginTop: 2 },
-  durationBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  durationText: { fontSize: 12, fontWeight: '600' },
-  miniBarBg: { height: 4, borderRadius: 2, overflow: 'hidden', marginTop: 4 },
-  miniBarFill: { height: '100%', borderRadius: 2 },
-  emptyCard: { borderRadius: 18, padding: 28, alignItems: 'center' },
-  emptyTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
-  emptySub: { fontSize: 14, lineHeight: 20, textAlign: 'center', marginBottom: 20 },
-  startBtn: { borderRadius: 999, paddingVertical: 13, paddingHorizontal: 24 },
-  startBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+    scroll:        { paddingHorizontal: 16, paddingBottom: 100 },
+    header:        { flexDirection: 'row', alignItems: 'center', paddingTop: 16, marginBottom: 20 },
+    title:         { fontSize: 22, fontWeight: '800' },
+    subtitle:      { fontSize: 14, marginTop: 2 },
+    statsRow:      { flexDirection: 'row', gap: 8, marginBottom: 16 },
+    statCard:      { flex: 1, borderRadius: 14, padding: 12, alignItems: 'center', gap: 4, minWidth: 0, borderWidth: 1, borderColor: BORD },
+    statEmoji:     { fontSize: 20 },
+    statValue:     { fontSize: 20, fontWeight: '800' },
+    statLabel:     { fontSize: 10, textAlign: 'center', lineHeight: 13 },
+    card:          { borderRadius: 18, padding: 14, marginBottom: 14, borderWidth: 1, borderColor: BORD },
+    cardTitle:     { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+    cardSubtitle:  { fontSize: 12, marginBottom: 12 },
+    barChart:      { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 110, paddingTop: 16 },
+    barItem:       { flex: 1, alignItems: 'center', gap: 4 },
+    barValue:      { fontSize: 9, height: 14 },
+    barBg:         { width: '70%', height: 80, borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden' },
+    barFill:       { width: '100%', borderRadius: 6 },
+    barLabel:      { fontSize: 11 },
+    moodRow:       { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+    moodEmoji:     { fontSize: 18, width: 26 },
+    moodLabel:     { fontSize: 13, width: 90 },
+    moodBarBg:     { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
+    moodBarFill:   { height: '100%', borderRadius: 4 },
+    moodPct:       { fontSize: 12, width: 34, textAlign: 'right' },
+    sessionRow:    { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+    sessionIcon:   { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+    sessionTitle:  { fontSize: 14, fontWeight: '600' },
+    sessionMeta:   { fontSize: 12, marginTop: 2 },
+    durationBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+    durationText:  { fontSize: 12, fontWeight: '600' },
+    miniBarBg:     { height: 4, borderRadius: 2, marginTop: 6, overflow: 'hidden' },
+    miniBarFill:   { height: '100%', borderRadius: 2 },
+    emptyCard:     { borderRadius: 18, padding: 24, alignItems: 'center', marginTop: 8, borderWidth: 1, borderColor: BORD },
+    emptyTitle:    { fontSize: 18, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
+    emptySub:      { fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+    startBtn:      { borderRadius: 24, paddingHorizontal: 24, paddingVertical: 12 },
+    startBtnText:  { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
   });
 }

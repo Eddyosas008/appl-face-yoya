@@ -842,3 +842,14 @@
 - [x] Texte des notes plus lisible (couleur rgba(240,235,224,0.80) au lieu de 0.45)
 - [x] pnpm check : 0 erreur TypeScript
 - [x] Sauvegarder checkpoint
+
+## Phase 75 : Skeleton loader dans progress.tsx
+
+- [x] Analyser progress.tsx : 3 requêtes tRPC (mood30, sessions.list, programs.inProgress) sans isLoading
+- [x] Créer composant SkeletonBlock réutilisable avec animation Animated.loop (0.35 ↔ 1.0, 900ms)
+- [x] Créer composant ProgressSkeleton avec placeholders pour header, stats 4 cartes, programmes, graphiques, sessions
+- [x] Ajouter isLoading global = isAuthenticated && (loadingMood30 || loadingSessions || loadingPrograms)
+- [x] Rendu conditionnel : if (isLoading) return <ScreenContainer><ProgressSkeleton /></ScreenContainer>
+- [x] Skeleton adapté au thème clair/sombre (isDark)
+- [x] pnpm check : 0 erreur TypeScript
+- [x] Sauvegarder checkpoint
