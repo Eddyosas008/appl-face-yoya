@@ -816,3 +816,29 @@
 - [x] onboarding.tsx : textShadow CSS inline → textShadowColor/Offset/Radius natifs React Native
 - [x] Vérification : tsc --noEmit passe sans aucune erreur
 - [x] Sauvegarder checkpoint
+
+## Phase 73 : Notes de nuit (champ notes dans le modal de saisie du sommeil)
+
+- [ ] Analyser le modal de saisie du sommeil dans index.tsx (Dashboard)
+- [ ] Analyser le schéma DB (drizzle) pour la table sleep_sessions
+- [ ] Analyser sleep-tracker.tsx pour voir l'affichage de l'historique
+- [ ] Ajouter la colonne notes (text nullable) dans le schéma DB
+- [ ] Mettre à jour server/db.ts : logSleep et getSleepHistory pour inclure notes
+- [ ] Mettre à jour server/routers.ts : procédure logSleep pour accepter notes
+- [ ] Ajouter le champ TextInput multilignes dans le modal de saisie du Dashboard
+- [ ] Afficher les notes dans l'historique sleep-tracker.tsx
+- [ ] Migrer la DB (pnpm db:push)
+- [ ] Sauvegarder checkpoint
+
+## Phase 74 : Amélioration affichage notes dans l'historique sleep-tracker
+
+- [x] Lire le code de l'historique dans sleep-tracker.tsx (section logItem)
+- [x] Créer composant LogNoteBlock avec état d'expansion local
+- [x] numberOfLines={3} par défaut, illimité quand expanded=true
+- [x] Indicateur visuel 📓 sous l'emoji qualité quand une note est présente
+- [x] Label "Notes de nuit" en petites majuscules au-dessus du texte
+- [x] Fond semi-transparent + bord gauche doré pour distinguer les notes
+- [x] Bouton "Voir plus ▼" / "Voir moins ▲" pour les notes > 80 caractères
+- [x] Texte des notes plus lisible (couleur rgba(240,235,224,0.80) au lieu de 0.45)
+- [x] pnpm check : 0 erreur TypeScript
+- [x] Sauvegarder checkpoint

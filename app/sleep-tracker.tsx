@@ -230,6 +230,40 @@ function MedCard({ med, onPress }: { med: any; onPress: () => void }) {
   );
 }
 
+// ─── Notes de nuit (avec expansion) ─────────────────────────────────────────────
+function LogNoteBlock({ notes }: { notes: string }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const isLong = notes.length > 80;
+  return (
+    <TouchableOpacity
+      onPress={() => isLong && setExpanded(e => !e)}
+      activeOpacity={isLong ? 0.75 : 1}
+      style={{
+        marginTop: 8,
+        backgroundColor: "rgba(200,169,110,0.06)",
+        borderRadius: 10,
+        borderLeftWidth: 2,
+        borderLeftColor: "rgba(200,169,110,0.40)",
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+      }}
+    >
+      <Text style={{ fontSize: 9, color: "rgba(200,169,110,0.5)", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4 }}>📓 Notes de nuit</Text>
+      <Text
+        style={{ fontSize: 12, color: "rgba(240,235,224,0.80)", fontStyle: "italic", lineHeight: 18 }}
+        numberOfLines={expanded ? undefined : 3}
+      >
+        {notes}
+      </Text>
+      {isLong && (
+        <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.50)", marginTop: 5, textAlign: "right" }}>
+          {expanded ? "Voir moins ▲" : "Voir plus ▼"}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+}
+
 // ─── Carte son ambiant ─────────────────────────────────────────────────────────
 function AmbientCard({ sound, onPress }: { sound: typeof AMBIENT_SOUNDS[0]; onPress: () => void }) {
   return (
@@ -552,8 +586,11 @@ export default function SleepTrackerScreen() {
               (logs as any[]).map((log: any) => (
                 <View key={log.id} style={s.logCard}>
                   <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}>
-                    <Text style={{ fontSize: 22 }}>{getQualityEmoji(log.quality ?? 3)}</Text>
-                    <View style={{ marginLeft: 12 }}>
+                    <View style={{ alignItems: "center" }}>
+                      <Text style={{ fontSize: 22 }}>{getQualityEmoji(log.quality ?? 3)}</Text>
+                      {log.notes ? <Text style={{ fontSize: 9, marginTop: 3, opacity: 0.6 }}>📓</Text> : null}
+                    </View>
+                    <View style={{ marginLeft: 12, flex: 1 }}>
                       <Text style={s.logDate}>
                         {new Date(log.sleepDate + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "short" })}
                       </Text>
@@ -567,7 +604,7 @@ export default function SleepTrackerScreen() {
                         {log.usedBreathing  && <Text style={s.logTag}>💨 Resp.</Text>}
                         {log.usedAmbient    && <Text style={s.logTag}>🎵 Sons</Text>}
                       </View>
-                      {log.notes ? <Text style={s.logNotes} numberOfLines={1}>{log.notes}</Text> : null}
+                      {log.notes ? <LogNoteBlock notes={log.notes} /> : null}
                     </View>
                   </View>
                   <View style={{ gap: 6 }}>
