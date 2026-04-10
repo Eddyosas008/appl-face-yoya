@@ -861,3 +861,13 @@
 - [x] Filtres (Toutes / Avec notes / Excellentes / Bonnes) dans l'historique du sommeil
 - [x] Widget "Prochaine séance recommandée" sur l'écran d'accueil (index.tsx)
 - [x] Animation pulse sur le bouton CTA check-in
+
+## Mode Séance Express (10 avril 2026)
+- [x] Composant ExpressSessionSheet (bottom sheet avec player audio intégré)
+- [x] Visualiseur audio animé (barres pulsantes dorées)
+- [x] Minuteur de décompte 5 minutes avec affichage en temps réel
+- [x] Sélecteur de méditation express (jusqu'à 3 séances courtes)
+- [x] Bouton flottant doré "⚡ Express" sur l'écran d'accueil
+- [x] Animation pulse sur le bouton flottant
+- [x] Halo lumineux animé autour de l'emoji de méditation
+- [x] Message d'encouragement contextuel (avant/pendant/après)

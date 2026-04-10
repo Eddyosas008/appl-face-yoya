@@ -18,6 +18,7 @@ import { AnimatedScreen, AnimatedItem } from '@/components/animated-screen';
 import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
 import { DailyProgressBar } from '@/components/daily-progress-bar';
+import { ExpressSessionSheet } from '@/components/express-session-sheet';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -210,6 +211,7 @@ export default function HomeScreen() {
 
   // Modal saisie sommeil
   const [showSleepModal, setShowSleepModal] = useState(false);
+  const [showExpress, setShowExpress] = useState(false);
   const [sleepBedtime,   setSleepBedtime]   = useState('22:30');
   const [sleepWakeTime,  setSleepWakeTime]  = useState('07:00');
   const [sleepQuality,   setSleepQuality]   = useState(3);
@@ -756,6 +758,34 @@ export default function HomeScreen() {
 
       </ScrollView>
 
+      {/* ── BOUTON FLOTTANT SÉANCE EXPRESS ──────────────────────────────────── */}
+      <Animated.View
+        style={[
+          styles.fabContainer,
+          { transform: [{ scale: pulseAnim }] },
+        ]}
+        pointerEvents="box-none"
+      >
+        <Pressable
+          style={({ pressed }) => [styles.fab, { transform: [{ scale: pressed ? 0.92 : 1 }] }]}
+          onPress={() => {
+            setShowExpress(true);
+            if (Platform.OS !== 'web') {
+              const Haptics = require('expo-haptics');
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            }
+          }}
+        >
+          <LinearGradient colors={['#C8A96E', '#8B6028']} style={styles.fabGradient}>
+            <Text style={styles.fabEmoji}>⚡</Text>
+            <Text style={styles.fabLabel}>Express</Text>
+          </LinearGradient>
+        </Pressable>
+      </Animated.View>
+
+      {/* ── SHEET SÉANCE EXPRESS ─────────────────────────────────────────────── */}
+      <ExpressSessionSheet visible={showExpress} onClose={() => setShowExpress(false)} />
+
       {/* ── MODAL SAISIE SOMMEIL ───────────────────────────────────────────── */}
       <Modal visible={showSleepModal} transparent animationType="slide" onRequestClose={() => setShowSleepModal(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setShowSleepModal(false)}>
@@ -990,5 +1020,29 @@ function makeStyles(isDark: boolean) {
   moodEmptyEmoji: { fontSize: 28 },
   moodEmptyTitle: { fontSize: 14, fontWeight: '600', lineHeight: 19 },
   moodEmptyHint: { fontSize: 11, marginTop: 2 },
+  // ── Bouton flottant Séance Express ──────────────────────────────────────────
+  fabContainer: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    zIndex: 999,
+  },
+  fab: {
+    borderRadius: 28,
+    overflow: 'hidden',
+    ...(Platform.OS === 'ios'
+      ? { shadowColor: '#C8A96E', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.55, shadowRadius: 14 }
+      : { elevation: 10 }),
+  },
+  fabGradient: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    borderRadius: 28,
+  },
+  fabEmoji: { fontSize: 18 },
+  fabLabel: { fontSize: 13, fontWeight: '800' as const, color: '#07051C', letterSpacing: 0.3 },
   });
 }
