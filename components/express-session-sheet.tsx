@@ -72,6 +72,12 @@ const EXPRESS_MEDITATIONS = [
   },
 ];
 
+// ─── KeepAwake guard (ne monte que sur iOS/Android pour éviter le crash WakeLock web) ──
+function KeepAwakeGuard() {
+  useKeepAwake();
+  return null;
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function formatTime(seconds: number): string {
   if (!seconds || isNaN(seconds)) return '0:00';
@@ -174,7 +180,7 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
   const status = useAudioPlayerStatus(player);
   const playCountedRef = useRef(false);
 
-  useKeepAwake();
+  // KeepAwake est géré par le composant KeepAwakeGuard ci-dessous (évite le crash WakeLock web)
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
@@ -294,10 +300,11 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose} statusBarTranslucent>
+      {/* KeepAwake uniquement sur iOS/Android (WakeLock non disponible sur web) */}
+      {Platform.OS !== 'web' && <KeepAwakeGuard />}
       {/* Backdrop */}
       <Animated.View
-        style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(7,5,28,0.72)', opacity: backdropAnim }]}
-        pointerEvents={visible ? 'auto' : 'none'}
+        style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(7,5,28,0.72)', opacity: backdropAnim, pointerEvents: visible ? 'auto' : 'none' }]}
       >
         <Pressable style={StyleSheet.absoluteFillObject} onPress={handleClose} />
       </Animated.View>
