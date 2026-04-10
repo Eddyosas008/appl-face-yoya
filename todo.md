@@ -853,3 +853,11 @@
 - [x] Skeleton adapté au thème clair/sombre (isDark)
 - [x] pnpm check : 0 erreur TypeScript
 - [x] Sauvegarder checkpoint
+
+## Améliorations Phase 76 (10 avril 2026)
+- [x] Skeleton loader animé dans la bibliothèque de méditations (explore.tsx)
+- [x] Suggestions rapides contextuelles avec icônes et couleurs dans le chat IA (chat.tsx)
+- [x] Édition inline des notes de nuit dans l'historique du sommeil (sleep-tracker.tsx)
+- [x] Filtres (Toutes / Avec notes / Excellentes / Bonnes) dans l'historique du sommeil
+- [x] Widget "Prochaine séance recommandée" sur l'écran d'accueil (index.tsx)
+- [x] Animation pulse sur le bouton CTA check-in

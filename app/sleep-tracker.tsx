@@ -230,37 +230,85 @@ function MedCard({ med, onPress }: { med: any; onPress: () => void }) {
   );
 }
 
-// ─── Notes de nuit (avec expansion) ─────────────────────────────────────────────
-function LogNoteBlock({ notes }: { notes: string }) {
+// ─── Notes de nuit (avec expansion et édition inline) ────────────────────────────
+function LogNoteBlock({ notes, logId, onNoteUpdated }: { notes: string; logId: number; onNoteUpdated: (id: number, newNote: string) => void }) {
   const [expanded, setExpanded] = React.useState(false);
+  const [editing, setEditing]   = React.useState(false);
+  const [draft, setDraft]       = React.useState(notes);
   const isLong = notes.length > 80;
-  return (
-    <TouchableOpacity
-      onPress={() => isLong && setExpanded(e => !e)}
-      activeOpacity={isLong ? 0.75 : 1}
-      style={{
+
+  const handleSave = () => {
+    onNoteUpdated(logId, draft.trim());
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <View style={{
         marginTop: 8,
-        backgroundColor: "rgba(200,169,110,0.06)",
+        backgroundColor: "rgba(200,169,110,0.08)",
         borderRadius: 10,
         borderLeftWidth: 2,
-        borderLeftColor: "rgba(200,169,110,0.40)",
+        borderLeftColor: GOLD,
         paddingHorizontal: 10,
         paddingVertical: 8,
-      }}
-    >
-      <Text style={{ fontSize: 9, color: "rgba(200,169,110,0.5)", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 4 }}>📓 Notes de nuit</Text>
-      <Text
-        style={{ fontSize: 12, color: "rgba(240,235,224,0.80)", fontStyle: "italic", lineHeight: 18 }}
-        numberOfLines={expanded ? undefined : 3}
-      >
-        {notes}
-      </Text>
-      {isLong && (
-        <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.50)", marginTop: 5, textAlign: "right" }}>
-          {expanded ? "Voir moins ▲" : "Voir plus ▼"}
+      }}>
+        <Text style={{ fontSize: 9, color: "rgba(200,169,110,0.5)", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 6 }}>📓 Modifier la note</Text>
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          multiline
+          autoFocus
+          style={{
+            fontSize: 12, color: "#F0EBE0", fontStyle: "italic", lineHeight: 18,
+            borderWidth: 1, borderColor: "rgba(200,169,110,0.30)", borderRadius: 8,
+            padding: 8, minHeight: 60, backgroundColor: "rgba(0,0,0,0.2)",
+          }}
+          placeholderTextColor="rgba(200,169,110,0.4)"
+          placeholder="Vos notes de nuit..."
+        />
+        <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+          <TouchableOpacity onPress={() => { setEditing(false); setDraft(notes); }}>
+            <Text style={{ fontSize: 12, color: "rgba(200,169,110,0.5)" }}>Annuler</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSave} style={{ backgroundColor: GOLD, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4 }}>
+            <Text style={{ fontSize: 12, color: "#07051C", fontWeight: "700" }}>Sauver</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{
+      marginTop: 8,
+      backgroundColor: "rgba(200,169,110,0.06)",
+      borderRadius: 10,
+      borderLeftWidth: 2,
+      borderLeftColor: "rgba(200,169,110,0.40)",
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+    }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <Text style={{ fontSize: 9, color: "rgba(200,169,110,0.5)", letterSpacing: 0.8, textTransform: "uppercase" }}>📓 Notes de nuit</Text>
+        <TouchableOpacity onPress={() => setEditing(true)} hitSlop={8}>
+          <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.55)" }}>✏️ Modifier</Text>
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity onPress={() => isLong && setExpanded(e => !e)} activeOpacity={isLong ? 0.75 : 1}>
+        <Text
+          style={{ fontSize: 12, color: "rgba(240,235,224,0.80)", fontStyle: "italic", lineHeight: 18 }}
+          numberOfLines={expanded ? undefined : 3}
+        >
+          {notes}
         </Text>
-      )}
-    </TouchableOpacity>
+        {isLong && (
+          <Text style={{ fontSize: 10, color: "rgba(200,169,110,0.50)", marginTop: 5, textAlign: "right" }}>
+            {expanded ? "Voir moins ▲" : "Voir plus ▼"}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -284,6 +332,7 @@ export default function SleepTrackerScreen() {
   const [chartPeriod, setChartPeriod] = useState<"week" | "month">("week");
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const [historyFilter, setHistoryFilter] = useState<"all" | "notes" | "q4" | "q5">("all");
   const [form, setForm] = useState<SleepFormData>({
     bedtime: "22:30", wakeTime: "07:00", quality: 3,
     hadNightWaking: false, nightWakings: 0, eveningMood: null,
@@ -311,6 +360,23 @@ export default function SleepTrackerScreen() {
     onError: (e) => Alert.alert("Erreur", e.message),
   });
   const deleteMutation = trpc.sleep.delete.useMutation({ onSuccess: invalidate });
+
+  const handleNoteUpdate = useCallback((logId: number, newNote: string) => {
+    const log = (logs as any[]).find((l: any) => l.id === logId);
+    if (!log) return;
+    updateMutation.mutate({
+      id: logId,
+      bedtime: log.bedtime ?? "22:30",
+      wakeTime: log.wakeTime ?? "07:00",
+      quality: log.quality ?? 3,
+      nightWakings: log.nightWakings ?? 0,
+      eveningMood: log.eveningMood ?? undefined,
+      usedMeditation: log.usedMeditation ?? false,
+      usedBreathing: log.usedBreathing ?? false,
+      usedAmbient: log.usedAmbient ?? false,
+      notes: newNote || undefined,
+    });
+  }, [logs, updateMutation]);
 
   const resetForm = useCallback(() => {
     setForm({ bedtime: "22:30", wakeTime: "07:00", quality: 3, hadNightWaking: false, nightWakings: 0, eveningMood: null, usedMeditation: false, usedBreathing: false, usedAmbient: false, notes: "" });
@@ -571,6 +637,33 @@ export default function SleepTrackerScreen() {
         {activeTab === "history" && (
           <View style={s.section}>
             <Text style={s.sectionTitle}>📋 Historique des nuits</Text>
+
+            {/* Filtres */}
+            {(logs as any[]).length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }} contentContainerStyle={{ gap: 8 }}>
+                {([
+                  { key: "all",   label: "Toutes",         emoji: "🌙" },
+                  { key: "notes", label: "Avec notes",     emoji: "📓" },
+                  { key: "q5",    label: "Excellentes",    emoji: "✨" },
+                  { key: "q4",    label: "Bonnes",         emoji: "😊" },
+                ] as { key: typeof historyFilter; label: string; emoji: string }[]).map(f => (
+                  <TouchableOpacity
+                    key={f.key}
+                    onPress={() => setHistoryFilter(f.key)}
+                    style={{
+                      flexDirection: "row", alignItems: "center", gap: 5,
+                      borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7,
+                      backgroundColor: historyFilter === f.key ? GOLD : "rgba(200,169,110,0.10)",
+                      borderWidth: 1, borderColor: historyFilter === f.key ? GOLD : "rgba(200,169,110,0.25)",
+                    }}
+                  >
+                    <Text style={{ fontSize: 12 }}>{f.emoji}</Text>
+                    <Text style={{ fontSize: 12, fontWeight: "600", color: historyFilter === f.key ? "#07051C" : "rgba(200,169,110,0.80)" }}>{f.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
             {isLoading ? (
               <Text style={{ color: "rgba(200,169,110,0.4)", textAlign: "center", paddingVertical: 20 }}>Chargement…</Text>
             ) : (logs as any[]).length === 0 ? (
@@ -582,8 +675,25 @@ export default function SleepTrackerScreen() {
                   <Text style={s.emptyBtnText}>Enregistrer ma première nuit</Text>
                 </TouchableOpacity>
               </View>
-            ) : (
-              (logs as any[]).map((log: any) => (
+            ) : (() => {
+              const filtered = (logs as any[]).filter((log: any) => {
+                if (historyFilter === "notes") return !!log.notes;
+                if (historyFilter === "q5") return (log.quality ?? 0) >= 5;
+                if (historyFilter === "q4") return (log.quality ?? 0) === 4;
+                return true;
+              });
+              if (filtered.length === 0) {
+                return (
+                  <View style={{ alignItems: "center", paddingVertical: 30 }}>
+                    <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
+                    <Text style={{ color: "rgba(200,169,110,0.6)", fontSize: 13, textAlign: "center" }}>Aucune nuit ne correspond à ce filtre</Text>
+                    <TouchableOpacity onPress={() => setHistoryFilter("all")} style={{ marginTop: 10 }}>
+                      <Text style={{ color: GOLD, fontSize: 12, fontWeight: "600" }}>Voir toutes les nuits</Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              }
+              return filtered.map((log: any) => (
                 <View key={log.id} style={s.logCard}>
                   <View style={{ flex: 1, flexDirection: "row", alignItems: "flex-start" }}>
                     <View style={{ alignItems: "center" }}>
@@ -604,7 +714,7 @@ export default function SleepTrackerScreen() {
                         {log.usedBreathing  && <Text style={s.logTag}>💨 Resp.</Text>}
                         {log.usedAmbient    && <Text style={s.logTag}>🎵 Sons</Text>}
                       </View>
-                      {log.notes ? <LogNoteBlock notes={log.notes} /> : null}
+                      {log.notes ? <LogNoteBlock notes={log.notes} logId={log.id} onNoteUpdated={handleNoteUpdate} /> : null}
                     </View>
                   </View>
                   <View style={{ gap: 6 }}>
@@ -617,8 +727,8 @@ export default function SleepTrackerScreen() {
                       style={s.logActionBtn}><Text style={{ color: "#EF4444", fontSize: 13 }}>🗑️</Text></TouchableOpacity>
                   </View>
                 </View>
-              ))
-            )}
+              ));
+            })()}
           </View>
         )}
 

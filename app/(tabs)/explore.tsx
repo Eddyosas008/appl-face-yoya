@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ScrollView as HScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  useSharedValue, useAnimatedStyle, withTiming, withSpring,
+import ReAnimated, {
+  useSharedValue, useAnimatedStyle, withTiming,
   interpolate, Extrapolation,
 } from 'react-native-reanimated';
 import {
   View, Text, StyleSheet, Pressable,
   TextInput, ActivityIndicator, ScrollView,
-  Platform,
+  Platform, Animated,
 } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
@@ -21,6 +21,116 @@ import { AnimatedScreen } from '@/components/animated-screen';
 import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
 import { useThemeContext } from '@/lib/theme-provider';
+
+// ─── Skeleton loader ──────────────────────────────────────────────────────────
+function SkeletonBlock({ width, height, borderRadius = 10, style }: {
+  width: number | string; height: number; borderRadius?: number; style?: any;
+}) {
+  const { isDark } = useThemeContext();
+  const opacity = useRef(new Animated.Value(0.35)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.35, duration: 900, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [opacity]);
+
+  const bg = isDark ? 'rgba(200,169,110,0.12)' : 'rgba(139,105,20,0.10)';
+  return (
+    <Animated.View
+      style={[
+        { width: width as any, height, borderRadius, backgroundColor: bg, opacity },
+        style,
+      ]}
+    />
+  );
+}
+
+function ExploreSkeleton({ isDark }: { isDark: boolean }) {
+  const BG = isDark ? 'rgba(200,169,110,0.08)' : 'rgba(139,105,20,0.06)';
+  return (
+    <View style={{ paddingHorizontal: 18, paddingTop: 0 }}>
+      {/* Header */}
+      <View style={{ paddingTop: 18, marginBottom: 20 }}>
+        <SkeletonBlock width={180} height={28} borderRadius={8} />
+        <SkeletonBlock width={120} height={12} borderRadius={6} style={{ marginTop: 6 }} />
+      </View>
+
+      {/* Quick cards */}
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 22 }}>
+        {[0,1,2,3].map(i => (
+          <SkeletonBlock key={i} width={148} height={110} borderRadius={18} />
+        ))}
+      </View>
+
+      {/* Search bar */}
+      <SkeletonBlock width="100%" height={46} borderRadius={16} style={{ marginBottom: 8 }} />
+
+      {/* Category chips */}
+      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 22 }}>
+        {[80, 60, 90, 70, 80].map((w, i) => (
+          <SkeletonBlock key={i} width={w} height={34} borderRadius={999} />
+        ))}
+      </View>
+
+      {/* Hero card */}
+      <SkeletonBlock width="100%" height={180} borderRadius={22} style={{ marginBottom: 28 }} />
+
+      {/* Section : À la une */}
+      <View style={{ marginBottom: 28 }}>
+        <SkeletonBlock width={120} height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          {[0,1,2,3].map(i => (
+            <View key={i} style={{ width: 158, borderRadius: 18, overflow: 'hidden', backgroundColor: BG }}>
+              <SkeletonBlock width={158} height={100} borderRadius={0} />
+              <View style={{ padding: 10, gap: 5 }}>
+                <SkeletonBlock width={60} height={9} borderRadius={4} />
+                <SkeletonBlock width={120} height={12} borderRadius={4} />
+                <SkeletonBlock width={80} height={10} borderRadius={4} />
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Section : Populaires */}
+      <View style={{ marginBottom: 28 }}>
+        <SkeletonBlock width={100} height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          {[0,1,2].map(i => (
+            <View key={i} style={{ width: 158, borderRadius: 18, overflow: 'hidden', backgroundColor: BG }}>
+              <SkeletonBlock width={158} height={100} borderRadius={0} />
+              <View style={{ padding: 10, gap: 5 }}>
+                <SkeletonBlock width={60} height={9} borderRadius={4} />
+                <SkeletonBlock width={120} height={12} borderRadius={4} />
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Section catégorie */}
+      <View style={{ marginBottom: 28 }}>
+        <SkeletonBlock width={140} height={20} borderRadius={6} style={{ marginBottom: 12 }} />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+          {[0,1,2,3].map(i => (
+            <View key={i} style={{ width: '47%', borderRadius: 18, overflow: 'hidden', backgroundColor: BG }}>
+              <SkeletonBlock width="100%" height={118} borderRadius={0} />
+              <View style={{ padding: 11, gap: 5 }}>
+                <SkeletonBlock width={60} height={9} borderRadius={4} />
+                <SkeletonBlock width={100} height={12} borderRadius={4} />
+                <SkeletonBlock width={70} height={10} borderRadius={4} />
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function formatDuration(seconds: number): string {
@@ -479,7 +589,7 @@ export default function ExploreScreen() {
           </HScrollView>
 
           {/* ── Barre de recherche ── */}
-          <Animated.View style={[dynStyles.searchBar, { backgroundColor: isDark ? '#1E1A30' : '#F0EBE0' }, searchBarStyle]}>
+          <ReAnimated.View style={[dynStyles.searchBar, { backgroundColor: isDark ? '#1E1A30' : '#F0EBE0' }, searchBarStyle]}>
             <IconSymbol name="magnifyingglass" size={18} color={colors.muted} />
             <TextInput
               ref={searchInputRef}
@@ -497,7 +607,7 @@ export default function ExploreScreen() {
                 <IconSymbol name="xmark.circle.fill" size={18} color={colors.muted} />
               </Pressable>
             ) : null}
-          </Animated.View>
+          </ReAnimated.View>
 
           {/* Compteur résultats de recherche */}
           {search.length > 0 && !isLoading && (
@@ -545,12 +655,7 @@ export default function ExploreScreen() {
           </HScrollView>
 
           {/* ── Chargement ── */}
-          {isLoading && (
-            <View style={dynStyles.loadingContainer}>
-              <ActivityIndicator color={colors.primary} size="large" />
-              <Text style={[dynStyles.loadingText, { color: colors.muted }]}>Chargement du catalogue...</Text>
-            </View>
-          )}
+          {isLoading && <ExploreSkeleton isDark={isDark} />}
 
           {/* ── VUE FILTRÉE : grille 2 colonnes ── */}
           {!isLoading && isFiltered && (

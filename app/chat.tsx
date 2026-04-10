@@ -140,13 +140,27 @@ function TypingIndicator({ isDark }: { isDark: boolean }) {
 }
 
 // ── Écran principal ──────────────────────────────────────────────────────────
-const QUICK_PROMPTS = [
-  'Je me sens submergée',
-  "Je n'arrive pas à dormir",
-  'Je rumine trop',
-  "J'ai besoin de réconfort",
-  'Je suis épuisée émotionnellement',
+type QuickPrompt = { label: string; icon: string; color: string; message: string };
+
+const QUICK_PROMPTS_EMOTIONS: QuickPrompt[] = [
+  { label: 'Je me sens submergée', icon: '🌊', color: 'rgba(59,130,246,0.18)', message: 'Je me sens submergée en ce moment, j\'ai besoin d\'aide.' },
+  { label: 'J\'ai besoin de réconfort', icon: '🤗', color: 'rgba(236,72,153,0.18)', message: 'J\'ai besoin de réconfort et de douceur.' },
+  { label: 'Je suis épuisée', icon: '😮‍💨', color: 'rgba(245,158,11,0.18)', message: 'Je suis épuisée émotionnellement, comment me ressourcer ?' },
+  { label: 'Je rumine trop', icon: '🌀', color: 'rgba(139,92,246,0.18)', message: 'Je n\'arrête pas de ruminer des pensées négatives.' },
 ];
+
+const QUICK_PROMPTS_SOMMEIL: QuickPrompt[] = [
+  { label: 'Je n\'arrive pas à dormir', icon: '🌙', color: 'rgba(30,58,95,0.25)', message: 'Je n\'arrive pas à m\'endormir ce soir, que faire ?' },
+  { label: 'Méditation du soir', icon: '✨', color: 'rgba(200,169,110,0.18)', message: 'Propose-moi une méditation guidée pour m\'endormir.' },
+  { label: 'Exercice de respiration', icon: '🫁', color: 'rgba(5,150,105,0.18)', message: 'Guide-moi dans un exercice de respiration pour me calmer.' },
+  { label: 'Routine du soir', icon: '🕯️', color: 'rgba(124,45,18,0.20)', message: 'Aide-moi à créer une routine du soir apaisante.' },
+];
+
+function getContextualPrompts(): QuickPrompt[] {
+  const hour = new Date().getHours();
+  if (hour >= 20 || hour < 6) return QUICK_PROMPTS_SOMMEIL;
+  return QUICK_PROMPTS_EMOTIONS;
+}
 
 export default function ChatScreen() {
   const { isAuthenticated } = useAuth();
@@ -335,21 +349,23 @@ export default function ChatScreen() {
         {/* ── Suggestions rapides ── */}
         {showQuickPrompts && (
           <View style={styles.quickPromptsWrap}>
+            <Text style={[styles.quickPromptsTitle, { color: TEXT_MUTED }]}>Par où commencer ?</Text>
             <FlatList
               horizontal
-              data={QUICK_PROMPTS}
-              keyExtractor={(item) => item}
+              data={getContextualPrompts()}
+              keyExtractor={(item) => item.label}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.quickPromptsList}
               renderItem={({ item }) => (
                 <Pressable
                   style={({ pressed }) => [
                     styles.quickPrompt,
-                    { backgroundColor: PROMPT_BG, borderColor: PROMPT_BORDER, opacity: pressed ? 0.7 : 1 },
+                    { backgroundColor: item.color, borderColor: PROMPT_BORDER, opacity: pressed ? 0.7 : 1 },
                   ]}
-                  onPress={() => sendMessage(item)}
+                  onPress={() => sendMessage(item.message)}
                 >
-                  <Text style={[styles.quickPromptText, { color: TEXT_MUTED }]}>{item}</Text>
+                  <Text style={styles.quickPromptIcon}>{item.icon}</Text>
+                  <Text style={[styles.quickPromptText, { color: TEXT_MAIN }]} numberOfLines={2}>{item.label}</Text>
                 </Pressable>
               )}
             />
@@ -537,15 +553,27 @@ function makeStyles(isDark: boolean) {
   },
 
   // Suggestions rapides
-  quickPromptsWrap: { paddingVertical: 10 },
-  quickPromptsList: { paddingHorizontal: 16, gap: 8 },
-  quickPrompt: {
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
+  quickPromptsWrap: { paddingVertical: 8 },
+  quickPromptsTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    paddingHorizontal: 16,
+    marginBottom: 8,
   },
-  quickPromptText: { fontSize: 13, fontWeight: '500' },
+  quickPromptsList: { paddingHorizontal: 16, gap: 10 },
+  quickPrompt: {
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    maxWidth: 160,
+    gap: 4,
+    alignItems: 'flex-start',
+  },
+  quickPromptIcon: { fontSize: 20, marginBottom: 2 },
+  quickPromptText: { fontSize: 12, fontWeight: '600', lineHeight: 16 },
 
   // Zone de saisie
   inputWrap: {

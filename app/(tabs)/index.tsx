@@ -192,8 +192,9 @@ export default function HomeScreen() {
   const quote = SLEEP_QUOTES[quoteIndex];
 
   // Animations
-  const fadeAnim  = useRef(new Animated.Value(0)).current;
-  const moonAnim  = useRef(new Animated.Value(0)).current;
+  const fadeAnim   = useRef(new Animated.Value(0)).current;
+  const moonAnim   = useRef(new Animated.Value(0)).current;
+  const pulseAnim  = useRef(new Animated.Value(1)).current;
   const [tipIndex, setTipIndex] = useState(0);
 
   // Données DB
@@ -232,6 +233,13 @@ export default function HomeScreen() {
         Animated.timing(moonAnim, { toValue: 0,  duration: 3500, useNativeDriver: true }),
       ])),
     ]).start();
+    // Pulse CTA
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.04, duration: 1200, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,    duration: 1200, useNativeDriver: true }),
+      ])
+    ).start();
     const interval = setInterval(() => setTipIndex(i => (i + 1) % SLEEP_TIPS.length), 5000);
     return () => clearInterval(interval);
   }, []);
@@ -732,16 +740,18 @@ export default function HomeScreen() {
 
         {/* ── CTA CHECK-IN */}
         <View style={styles.section}>
-          <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]} onPress={() => router.push('/checkin' as never)}>
-            <LinearGradient colors={isDark ? [INDIGO_MID, '#4F46E5'] : ['#8B5CF6', '#7C3AED']} style={styles.ctaCard}>
-              <Text style={styles.ctaEmoji}>🌙</Text>
-              <View style={styles.ctaContent}>
-                <Text style={styles.ctaTitle}>Comment vous sentez-vous ce soir ?</Text>
-                <Text style={styles.ctaSub}>Faites votre check-in émotionnel</Text>
-              </View>
-              <IconSymbol name="chevron.right" size={20} color="rgba(255,255,255,0.7)" />
-            </LinearGradient>
-          </Pressable>
+          <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+            <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]} onPress={() => router.push('/checkin' as never)}>
+              <LinearGradient colors={isDark ? [INDIGO_MID, '#4F46E5'] : ['#8B5CF6', '#7C3AED']} style={styles.ctaCard}>
+                <Text style={styles.ctaEmoji}>🌙</Text>
+                <View style={styles.ctaContent}>
+                  <Text style={styles.ctaTitle}>Comment vous sentez-vous ce soir ?</Text>
+                  <Text style={styles.ctaSub}>Faites votre check-in émotionnel</Text>
+                </View>
+                <IconSymbol name="chevron.right" size={20} color="rgba(255,255,255,0.7)" />
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
         </View>
 
       </ScrollView>
