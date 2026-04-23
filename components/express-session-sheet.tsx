@@ -11,6 +11,7 @@ import {
   Animated, Dimensions, Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { incrementDailyExpressCount } from '@/hooks/use-express-session-history';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -240,8 +241,9 @@ export function ExpressSessionSheet({ visible, onClose, onSessionComplete }: Exp
               bellPlayer.play();
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             }
-            // Incrémenter le compteur hebdomadaire
+            // Incrémenter les compteurs (hebdomadaire + journalier)
             incrementWeeklyCount();
+            incrementDailyExpressCount();
             onSessionComplete?.();
             return 0;
           }

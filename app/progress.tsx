@@ -10,6 +10,8 @@ import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { trpc } from '@/lib/trpc';
 import { MoodChart30Days } from '@/components/mood-chart-30days';
+import { ExpressBarChart } from '@/components/express-bar-chart';
+import { useExpressSessionHistory } from '@/hooks/use-express-session-history';
 import { useAuth } from '@/hooks/use-auth';
 import { useThemeContext } from '@/lib/theme-provider';
 
@@ -291,6 +293,8 @@ export default function ProgressScreen() {
   );
 
   // Sessions depuis la DB (si connecté)
+  const { dailyCounts: expressDays, totalWeek: expressTotalWeek, loading: loadingExpress } =
+    useExpressSessionHistory();
   const { data: dbSessions = [], isLoading: loadingSessions } = trpc.sessions.list.useQuery(
     { limit: 10 },
     { enabled: isAuthenticated }
@@ -465,6 +469,25 @@ export default function ProgressScreen() {
           </View>
         </View>
 
+        {/* Séances express — 7 jours */}
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={[styles.cardTitle, { color: colors.foreground }]}>⚡ Séances express (7 jours)</Text>
+            {expressTotalWeek > 0 && (
+              <View style={[styles.expressBadge, { backgroundColor: 'rgba(200,169,110,0.15)', borderColor: 'rgba(200,169,110,0.4)' }]}>
+                <Text style={[styles.expressBadgeText, { color: '#C8A96E' }]}>{expressTotalWeek} cette semaine</Text>
+              </View>
+            )}
+          </View>
+          {loadingExpress ? (
+            <View style={{ height: 120 }}>
+              <SkeletonBlock width='100%' height={120} borderRadius={8} />
+            </View>
+          ) : (
+            <ExpressBarChart data={expressDays} totalWeek={expressTotalWeek} />
+          )}
+        </View>
+
         {/* Mood distribution */}
         {moodCounts.length > 0 && (
           <View style={[styles.card, { backgroundColor: colors.surface }]}>
@@ -559,6 +582,8 @@ function makeStyles(isDark: boolean) {
     barBg:         { width: '70%', height: 80, borderRadius: 6, justifyContent: 'flex-end', overflow: 'hidden' },
     barFill:       { width: '100%', borderRadius: 6 },
     barLabel:      { fontSize: 11 },
+    expressBadge:     { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1 },
+    expressBadgeText: { fontSize: 10, fontWeight: '700' as const },
     moodRow:       { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
     moodEmoji:     { fontSize: 18, width: 26 },
     moodLabel:     { fontSize: 13, width: 90 },

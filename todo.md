@@ -877,3 +877,11 @@
 - [x] Durée personnalisable : sélecteur 3 / 5 / 10 minutes avant le lancement
 - [x] Compteur de séances express hebdomadaires persisté dans AsyncStorage
 - [x] Badge "X séances cette semaine" sur l'écran d'accueil
+
+## Phase 78 : Historique séances express dans Progression (23 avril 2026)
+- [x] Hook useExpressSessionHistory (lecture AsyncStorage + agrégation 7 jours)
+- [x] Stockage journalier incrementDailyExpressCount (clé @somnioPax:expressSessionsDay)
+- [x] Composant ExpressBarChart (barres dorées animées, état vide, résumé textuel)
+- [x] Intégration dans progress.tsx avec skeleton loader
+- [x] Badge "X cette semaine" dans l'en-tête de la carte
+- [x] Câblage express-session-sheet.tsx → incrementDailyExpressCount à chaque fin de séance
