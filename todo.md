@@ -871,3 +871,9 @@
 - [x] Animation pulse sur le bouton flottant
 - [x] Halo lumineux animé autour de l'emoji de méditation
 - [x] Message d'encouragement contextuel (avant/pendant/après)
+
+## Phase 77 : Améliorations Séance Express (23 avril 2026)
+- [x] Son de fin de séance (cloche douce via expo-audio) + haptic Success
+- [x] Durée personnalisable : sélecteur 3 / 5 / 10 minutes avant le lancement
+- [x] Compteur de séances express hebdomadaires persisté dans AsyncStorage
+- [x] Badge "X séances cette semaine" sur l'écran d'accueil

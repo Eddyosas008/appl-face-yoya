@@ -19,6 +19,7 @@ import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
 import { DailyProgressBar } from '@/components/daily-progress-bar';
 import { ExpressSessionSheet } from '@/components/express-session-sheet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -27,6 +28,15 @@ const INDIGO_DEEP  = '#1A1240';   // fond hero sombre
 const INDIGO_MID   = '#2E1870';   // cartes gradient
 
 // ─── Données statiques ───────────────────────────────────────────────────────
+function getWeekNumber(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+const EXPRESS_SESSIONS_KEY = '@somnioPax:expressSessionsWeek';
+
 const SLEEP_ISSUES = [
   { id: 'insomnia',  emoji: '😶', label: 'Insomnie',         desc: "Difficultés à s'endormir",  color: '#4F46E5' },
   { id: 'wakeup',   emoji: '😴', label: 'Réveils nocturnes', desc: 'Se réveiller la nuit',       color: '#7C3AED' },
@@ -212,6 +222,24 @@ export default function HomeScreen() {
   // Modal saisie sommeil
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [showExpress, setShowExpress] = useState(false);
+  const [expressWeekCount, setExpressWeekCount] = useState(0);
+  // Charger le compteur hebdomadaire au montage
+  useEffect(() => {
+    const loadCount = async () => {
+      try {
+        const now = new Date();
+        const weekKey = `${now.getFullYear()}-W${getWeekNumber(now)}`;
+        const raw = await AsyncStorage.getItem(EXPRESS_SESSIONS_KEY);
+        const data: Record<string, number> = raw ? JSON.parse(raw) : {};
+        setExpressWeekCount(data[weekKey] ?? 0);
+      } catch (_) {}
+    };
+    loadCount();
+  }, []);
+  // Callback appelé quand une séance express est complétée
+  const handleExpressComplete = React.useCallback(() => {
+    setExpressWeekCount(prev => prev + 1);
+  }, []);
   const [sleepBedtime,   setSleepBedtime]   = useState('22:30');
   const [sleepWakeTime,  setSleepWakeTime]  = useState('07:00');
   const [sleepQuality,   setSleepQuality]   = useState(3);
@@ -765,6 +793,12 @@ export default function HomeScreen() {
           { transform: [{ scale: pulseAnim }], pointerEvents: 'box-none' },
         ]}
       >
+        {/* Badge compteur hebdomadaire */}
+        {expressWeekCount > 0 && (
+          <View style={styles.fabBadge}>
+            <Text style={styles.fabBadgeText}>{expressWeekCount}</Text>
+          </View>
+        )}
         <Pressable
           style={({ pressed }) => [styles.fab, { transform: [{ scale: pressed ? 0.92 : 1 }] }]}
           onPress={() => {
@@ -783,7 +817,7 @@ export default function HomeScreen() {
       </Animated.View>
 
       {/* ── SHEET SÉANCE EXPRESS ─────────────────────────────────────────────── */}
-      <ExpressSessionSheet visible={showExpress} onClose={() => setShowExpress(false)} />
+      <ExpressSessionSheet visible={showExpress} onClose={() => setShowExpress(false)} onSessionComplete={handleExpressComplete} />
 
       {/* ── MODAL SAISIE SOMMEIL ───────────────────────────────────────────── */}
       <Modal visible={showSleepModal} transparent animationType="slide" onRequestClose={() => setShowSleepModal(false)}>
@@ -1020,6 +1054,27 @@ function makeStyles(isDark: boolean) {
   moodEmptyTitle: { fontSize: 14, fontWeight: '600', lineHeight: 19 },
   moodEmptyHint: { fontSize: 11, marginTop: 2 },
   // ── Bouton flottant Séance Express ──────────────────────────────────────────
+  fabBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#C8A96E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    zIndex: 10,
+    borderWidth: 1.5,
+    borderColor: '#07051C',
+  },
+  fabBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#07051C',
+    lineHeight: 14,
+  },
   fabContainer: {
     position: 'absolute',
     bottom: 100,

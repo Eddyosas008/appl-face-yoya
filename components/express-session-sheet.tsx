@@ -10,6 +10,7 @@ import {
   View, Text, StyleSheet, Pressable, Modal,
   Animated, Dimensions, Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -30,7 +31,13 @@ const INDIGO     = '#2E1870';
 const SURFACE    = '#1E1A35';
 const WHITE_SOFT = '#F0EBE0';
 const TEXT_SOFT  = '#A89880';
-const EXPRESS_DURATION = 5 * 60; // 5 minutes en secondes
+const DURATION_OPTIONS = [
+  { label: '3 min', seconds: 3 * 60 },
+  { label: '5 min', seconds: 5 * 60 },
+  { label: '10 min', seconds: 10 * 60 },
+];
+const DEFAULT_DURATION_IDX = 1; // 5 min par défaut
+const EXPRESS_SESSIONS_KEY = '@somnioPax:expressSessionsWeek';
 
 // ─── Méditations express embarquées (fallback si pas de DB) ─────────────────
 const EXPRESS_MEDITATIONS = [
@@ -71,6 +78,15 @@ const EXPRESS_MEDITATIONS = [
     coverColor: '#0F0C29',
   },
 ];
+
+// ─── Helpers utilitaires ────────────────────────────────────────────────────
+function getWeekNumber(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
 
 // ─── KeepAwake guard (ne monte que sur iOS/Android pour éviter le crash WakeLock web) ──
 function KeepAwakeGuard() {
@@ -137,9 +153,11 @@ const vizStyles = StyleSheet.create({
 interface ExpressSessionSheetProps {
   visible: boolean;
   onClose: () => void;
+  /** Appelé quand une séance est complétée (minuteur = 0) */
+  onSessionComplete?: () => void;
 }
 
-export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetProps) {
+export function ExpressSessionSheet({ visible, onClose, onSessionComplete }: ExpressSessionSheetProps) {
   // Données DB — méditations courtes (≤ 6 min)
   const { data: allMeds = [] } = trpc.catalog.list.useQuery({ limit: 100 });
   const { isAuthenticated } = useAuth();
@@ -154,6 +172,13 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
   }, [allMeds]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  // Durée personnalisable
+  const [durationIdx, setDurationIdx] = useState(DEFAULT_DURATION_IDX);
+  const sessionDuration = DURATION_OPTIONS[durationIdx].seconds;
+  // Player cloche de fin (URI embarquée en base64 — son court)
+  const bellPlayer = useAudioPlayer(
+    { uri: 'https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3' }
+  );
   const meditation = shortMeds[selectedIndex] ?? shortMeds[0];
 
   // Animation slide-up
@@ -198,7 +223,7 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
   }, [status.playing]);
 
   // Minuteur décompte 5 min
-  const [timeLeft, setTimeLeft] = useState(EXPRESS_DURATION);
+  const [timeLeft, setTimeLeft] = useState(sessionDuration);
   const [timerActive, setTimerActive] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -210,6 +235,14 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
             clearInterval(timerRef.current!);
             setTimerActive(false);
             player.pause();
+            // Son de fin + haptic
+            if (Platform.OS !== 'web') {
+              bellPlayer.play();
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+            // Incrémenter le compteur hebdomadaire
+            incrementWeeklyCount();
+            onSessionComplete?.();
             return 0;
           }
           return t - 1;
@@ -222,7 +255,7 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
   // Barre de progression audio ou minuteur
   const progress = hasAudio && status.duration > 0
     ? status.currentTime / status.duration
-    : 1 - timeLeft / EXPRESS_DURATION;
+    : 1 - timeLeft / sessionDuration;
 
   // Halo animé
   const haloScale = useSharedValue(1);
@@ -255,7 +288,7 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
   const handleSelectMed = useCallback((idx: number) => {
     player.pause();
     setSelectedIndex(idx);
-    setTimeLeft(EXPRESS_DURATION);
+    setTimeLeft(sessionDuration);
     setTimerActive(false);
     playCountedRef.current = false;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -285,10 +318,22 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
   const isPlaying = hasAudio ? status.playing : timerActive;
 
   // Fermer et réinitialiser
+  // Compteur hebdomadaire
+  const incrementWeeklyCount = useCallback(async () => {
+    try {
+      const now = new Date();
+      const weekKey = `${now.getFullYear()}-W${getWeekNumber(now)}`;
+      const raw = await AsyncStorage.getItem(EXPRESS_SESSIONS_KEY);
+      const data: Record<string, number> = raw ? JSON.parse(raw) : {};
+      data[weekKey] = (data[weekKey] ?? 0) + 1;
+      await AsyncStorage.setItem(EXPRESS_SESSIONS_KEY, JSON.stringify(data));
+    } catch (_) {}
+  }, []);
+
   const handleClose = useCallback(() => {
     player.pause();
     setTimerActive(false);
-    setTimeLeft(EXPRESS_DURATION);
+    setTimeLeft(sessionDuration);
     playCountedRef.current = false;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onClose();
@@ -319,11 +364,35 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
           <View style={styles.header}>
             <View>
               <Text style={styles.headerBadge}>⚡ SÉANCE EXPRESS</Text>
-              <Text style={styles.headerTitle}>5 minutes pour vous recentrer</Text>
+              <Text style={styles.headerTitle}>{DURATION_OPTIONS[durationIdx].label} pour vous recentrer</Text>
             </View>
             <Pressable style={({ pressed }) => [styles.closeBtn, { opacity: pressed ? 0.6 : 1 }]} onPress={handleClose}>
               <Text style={styles.closeBtnText}>✕</Text>
             </Pressable>
+          </View>
+
+          {/* Sélecteur de durée */}
+          <View style={styles.durationSelector}>
+            {DURATION_OPTIONS.map((opt, i) => (
+              <Pressable
+                key={opt.label}
+                style={({ pressed }) => [
+                  styles.durationChip,
+                  durationIdx === i && styles.durationChipActive,
+                  { opacity: pressed ? 0.75 : 1 },
+                ]}
+                onPress={() => {
+                  setDurationIdx(i);
+                  setTimeLeft(opt.seconds);
+                  setTimerActive(false);
+                  if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+              >
+                <Text style={[styles.durationChipLabel, durationIdx === i && styles.durationChipLabelActive]}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
           </View>
 
           {/* Sélecteur de méditation */}
@@ -386,7 +455,7 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
               style={({ pressed }) => [styles.controlBtn, { opacity: pressed ? 0.6 : 1 }]}
               onPress={() => {
                 player.seekTo(0);
-                setTimeLeft(EXPRESS_DURATION);
+                setTimeLeft(sessionDuration);
                 setTimerActive(false);
                 if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
@@ -418,7 +487,7 @@ export function ExpressSessionSheet({ visible, onClose }: ExpressSessionSheetPro
 
           {/* Message d'encouragement */}
           <Text style={styles.encouragement}>
-            {timeLeft === EXPRESS_DURATION
+            {timeLeft === sessionDuration
               ? 'Prenez une grande inspiration et commencez.'
               : isPlaying
               ? 'Restez dans le moment présent…'
@@ -451,6 +520,33 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     paddingHorizontal: 24,
     paddingTop: 12,
+  },
+  durationSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  durationChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(200,169,110,0.35)',
+    backgroundColor: 'rgba(200,169,110,0.08)',
+  },
+  durationChipActive: {
+    backgroundColor: 'rgba(200,169,110,0.22)',
+    borderColor: '#C8A96E',
+  },
+  durationChipLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(200,169,110,0.6)',
+    letterSpacing: 0.3,
+  },
+  durationChipLabelActive: {
+    color: '#C8A96E',
   },
   handle: {
     width: 40, height: 4, borderRadius: 2,
