@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { ScreenContainer } from '@/components/screen-container';
 import { StarField } from '@/components/star-field';
+import { FeatureTourSlides } from '@/components/feature-tour-slides';
 import { useThemeContext } from '@/lib/theme-provider';
 import { useUser } from '@/lib/user-context';
 import { useAuth } from '@/hooks/use-auth';
@@ -40,7 +41,7 @@ const GOAL_IMAGES: Record<string, string> = {
 };
 
 // ─── Définition des étapes ────────────────────────────────────────────────────
-type StepType = 'welcome' | 'text' | 'choice-grid' | 'choice-list' | 'summary';
+type StepType = 'welcome' | 'features' | 'text' | 'choice-grid' | 'choice-list' | 'summary';
 
 interface Step {
   id: string;
@@ -55,6 +56,12 @@ const STEPS: Step[] = [
   {
     id: 'welcome',
     type: 'welcome',
+  },
+  {
+    id: 'features',
+    type: 'features',
+    title: 'Découvrez SomnioPax',
+    subtitle: 'Voici ce qui vous attend',
   },
   {
     id: 'name',
@@ -321,7 +328,7 @@ export default function OnboardingScreen() {
 
   const step = STEPS[currentStep];
   // Exclude welcome and summary from progress count
-  const contentSteps = STEPS.filter(s => s.type !== 'welcome' && s.type !== 'summary');
+  const contentSteps = STEPS.filter(s => s.type !== 'welcome' && s.type !== 'features' && s.type !== 'summary');
   const contentIndex = contentSteps.findIndex(s => s.id === step.id);
   const progressValue = contentIndex >= 0 ? (contentIndex + 1) / contentSteps.length : 0;
 
@@ -395,6 +402,20 @@ export default function OnboardingScreen() {
     || (step.type !== 'text' && currentValue !== undefined);
 
   // ── Rendu de l'étape Bienvenue ────────────────────────────────────────────
+  // ── Rendu de l'étape Feature Tour ─────────────────────────────────────────
+  function renderFeatures() {
+    return (
+      <FeatureTourSlides
+        isDark={isDark}
+        GOLD={GOLD}
+        onComplete={() => {
+          setCurrentStep(s => s + 1);
+          scrollRef.current?.scrollTo({ y: 0, animated: false });
+          haptic();
+        }}
+      />
+    );
+  }
   function renderWelcome() {
     return (
       <Animated.View entering={FadeIn.duration(600)} style={welcomeSt.container}>
@@ -644,7 +665,7 @@ export default function OnboardingScreen() {
         </Animated.View>
 
         {/* ── Boutons de navigation ─────────────────────────────────────────── */}
-        <View style={styles.navRow}>
+        {step.type !== 'features' && <View style={styles.navRow}>
           {/* Bouton Retour */}
           {currentStep > 0 && !isSummary && (
             <Pressable
@@ -690,7 +711,7 @@ export default function OnboardingScreen() {
               </LinearGradient>
             </Pressable>
           )}
-        </View>
+        </View>}
 
         {/* Lien "Passer" sur l'écran de bienvenue */}
         {isWelcome && (

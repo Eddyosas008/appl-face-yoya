@@ -907,3 +907,11 @@
 - [x] Composant ReminderSettings : toggle, presets rapides, sélecteur heure, jours
 - [x] Intégration dans l'écran Profil (section Rappels)
 - [x] Handler de notifications dans _layout.tsx (foreground + deep links)
+
+## Phase 81 : Onboarding Feature Tour
+- [x] Composant FeatureTourSlides avec carousel swipeable 4 slides
+- [x] Animations Reanimated : scale/opacity par slide active, FadeInDown pour texte
+- [x] Pagination par points animés (largeur variable)
+- [x] Intégration dans onboarding.tsx comme étape 'features' (step 2)
+- [x] Masquage des boutons nav globaux sur l'étape features (auto-géré)
+- [x] Lien "Passer la présentation" dans le feature tour
