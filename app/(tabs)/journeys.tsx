@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -71,10 +70,35 @@ export default function JourneysScreen() {
       <StarField />
       <AnimatedScreen preset="fadeSlideUp" duration={300}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* Header */}
-        <LinearGradient colors={["#1A0533", "#0D0B1E"]} style={styles.header}>
-          <Text style={styles.title}>🌙 Programmes Sommeil</Text>
-          <Text style={styles.subtitle}>Des parcours scientifiques pour transformer vos nuits</Text>
+        {/* Header hero */}
+        <LinearGradient
+          colors={isDark ? ["#1A0533", "#0D0B1E"] : ["#EDE8DC", "#FAF7F2"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <View style={styles.headerContent}>
+            <Text style={styles.title}>🌙 Programmes Sommeil</Text>
+            <Text style={styles.subtitle}>Des parcours scientifiques pour transformer vos nuits</Text>
+            {programs && programs.length > 0 && (
+              <View style={styles.headerStats}>
+                <View style={styles.headerStatItem}>
+                  <Text style={styles.headerStatNum}>{programs.length}</Text>
+                  <Text style={styles.headerStatLabel}>programmes</Text>
+                </View>
+                <View style={styles.headerStatDivider} />
+                <View style={styles.headerStatItem}>
+                  <Text style={styles.headerStatNum}>{myPrograms?.length ?? 0}</Text>
+                  <Text style={styles.headerStatLabel}>commencés</Text>
+                </View>
+                <View style={styles.headerStatDivider} />
+                <View style={styles.headerStatItem}>
+                  <Text style={styles.headerStatNum}>{myPrograms?.filter(p => p.isCompleted).length ?? 0}</Text>
+                  <Text style={styles.headerStatLabel}>terminés</Text>
+                </View>
+              </View>
+            )}
+          </View>
         </LinearGradient>
 
         {/* Programme en cours */}
@@ -164,7 +188,16 @@ export default function JourneysScreen() {
 
         {/* Programs list */}
         {isLoading ? (
-          <ActivityIndicator color="#A78BFA" style={{ marginTop: 40 }} />
+          <View style={styles.skeletonContainer}>
+            {[0, 1, 2].map((i) => (
+              <View key={i} style={[styles.skeletonCard, { opacity: 1 - i * 0.2 }]}>
+                <View style={styles.skeletonEmoji} />
+                <View style={styles.skeletonTitle} />
+                <View style={styles.skeletonSub} />
+                <View style={styles.skeletonMeta} />
+              </View>
+            ))}
+          </View>
         ) : (
           <View style={styles.programsList}>
             {filtered.map((program) => {
@@ -234,7 +267,12 @@ export default function JourneysScreen() {
                           <Text style={styles.progressPct}>{Math.round(progressPct * 100)}%</Text>
                         </View>
                         <View style={styles.progressBar}>
-                          <View style={[styles.progressFill, { width: `${progressPct * 100}%` as unknown as number }]} />
+                          <LinearGradient
+                            colors={['#C8A96E', '#F0D090']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={[styles.progressFill, { width: `${progressPct * 100}%` as unknown as number }]}
+                          />
                         </View>
                       </View>
                     ) : (
@@ -242,9 +280,12 @@ export default function JourneysScreen() {
                         <Text style={styles.enrollCount}>
                           👥 {program.totalEnrollments} participants
                         </Text>
-                        <View style={styles.startBtn}>
+                        <LinearGradient
+                          colors={['#C8A96E', '#8B6028']}
+                          style={styles.startBtn}
+                        >
                           <Text style={styles.startBtnText}>Commencer →</Text>
-                        </View>
+                        </LinearGradient>
                       </View>
                     )}
                   </LinearGradient>
@@ -288,6 +329,18 @@ function makeStyles(isDark: boolean) {
   const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
   return StyleSheet.create({
   scroll: { paddingBottom: 120 },
+  headerContent: { gap: 4 },
+  headerStats: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 0 },
+  headerStatItem: { flex: 1, alignItems: 'center' },
+  headerStatNum: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 20, color: GOLD_C },
+  headerStatLabel: { fontSize: 9, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.3, textTransform: 'uppercase' as const },
+  headerStatDivider: { width: 1, height: 28, backgroundColor: 'rgba(200,169,110,0.25)' },
+  skeletonContainer: { paddingHorizontal: 20, gap: 16, marginTop: 8 },
+  skeletonCard: { borderRadius: 24, backgroundColor: GLASS_BG_C, padding: 24, gap: 12, borderWidth: 1, borderColor: GLASS_BORDER_C },
+  skeletonEmoji: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(200,169,110,0.15)' },
+  skeletonTitle: { width: '70%', height: 20, borderRadius: 8, backgroundColor: 'rgba(200,169,110,0.12)' },
+  skeletonSub: { width: '90%', height: 14, borderRadius: 6, backgroundColor: 'rgba(200,169,110,0.08)' },
+  skeletonMeta: { width: '50%', height: 12, borderRadius: 5, backgroundColor: 'rgba(200,169,110,0.06)' },
   header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 24 },
   title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, color: WHITE_SOFT_C, marginBottom: 6 },
   subtitle: { fontSize: 12, color: LAVENDER_C, lineHeight: 18, letterSpacing: 0.2 },
@@ -356,16 +409,16 @@ function makeStyles(isDark: boolean) {
   progressLabel: { fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: '500' },
   progressPct: { fontSize: 12, color: GOLD_C, fontWeight: '600' },
   progressBar: {
-    height: 4, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2, overflow: 'hidden',
+    height: 6, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden',
   },
-  progressFill: { height: '100%', backgroundColor: GOLD_C, borderRadius: 2 },
+  progressFill: { height: '100%', borderRadius: 3 },
   startSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   enrollCount: { fontSize: 11, color: 'rgba(255,255,255,0.55)' },
   startBtn: {
-    backgroundColor: 'rgba(212,168,83,0.2)', paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, borderWidth: 0.5, borderColor: 'rgba(212,168,83,0.4)',
+    paddingHorizontal: 16, paddingVertical: 8,
+    borderRadius: 20, overflow: 'hidden',
   },
-  startBtnText: { fontSize: 12, color: GOLD_C, fontWeight: '600', letterSpacing: 0.2 },
+  startBtnText: { fontSize: 12, color: '#0D0B1A', fontWeight: '700' as const, letterSpacing: 0.2 },
   emptyState: { alignItems: 'center', paddingTop: 60 },
   emptyEmoji: { fontSize: 48, marginBottom: 12 },
   emptyText: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 18, color: LAVENDER_MED_C },

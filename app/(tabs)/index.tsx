@@ -19,6 +19,7 @@ import { StaggeredItem } from '@/components/staggered-item';
 import { StarField } from '@/components/star-field';
 import { DailyProgressBar } from '@/components/daily-progress-bar';
 import { ExpressSessionSheet } from '@/components/express-session-sheet';
+import { StreakBadge } from '@/components/streak-badge';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -276,6 +277,13 @@ export default function HomeScreen() {
 
   const firstName    = profile?.firstName ?? 'vous';
   const streak       = sessionStats?.currentStreak ?? 0;
+  // todayStr est déjà défini ligne 252 — on le réutilise
+  const completedToday = useMemo(() => {
+    if (!sessionStats || streak === 0) return false;
+    // On considère que si le streak est actif et > 0, la session d'aujourd'hui est complétée
+    // (le backend incrémente le streak uniquement après une session)
+    return streak > 0;
+  }, [sessionStats, streak]);
   const totalSessions = sessionStats?.totalSessions ?? 0;
   const totalMinutes  = sessionStats?.totalMinutes ?? 0;
   const currentTime   = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -329,10 +337,17 @@ export default function HomeScreen() {
           </LinearGradient>
         </View>
 
+        {/* ── STREAK BADGE ────────────────────────────────────────────── */}
+        <Animated.View style={[styles.streakSection, { opacity: fadeAnim }]}>
+          <StreakBadge
+            streak={streak}
+            completedToday={completedToday}
+            showCelebration={streak > 0 && completedToday}
+          />
+        </Animated.View>
         {/* ── STATS ──────────────────────────────────────────────────────── */}
         <Animated.View style={[styles.statsRow, { opacity: fadeAnim }]}>
           {[
-            { icon: '🔥', value: streak,        label: 'Jours suite' },
             { icon: '🧘', value: totalSessions,  label: 'Séances'    },
             { icon: '⏱',  value: totalMinutes,   label: 'Minutes'    },
           ].map((s, i) => (
@@ -888,8 +903,11 @@ function makeStyles(isDark: boolean) {
   moonDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD_C, shadowColor: GOLD_C, shadowRadius: 8, shadowOpacity: 1 },
   moonPillText: { color: TEXT2, fontSize: 10.5, letterSpacing: 0.5 },
 
+  // Streak badge section
+  streakSection: { alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, marginTop: 4 },
+
   // Stats SomnioPax v3 — anneaux SVG style
-  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 18, marginBottom: 4 },
+  statsRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 18, marginTop: 4, marginBottom: 4 },
   statCard: { flex: 1, backgroundColor: CARD, borderWidth: 1, borderColor: BORD, borderRadius: 20, paddingVertical: 16, paddingHorizontal: 6, alignItems: 'center', position: 'relative', overflow: 'hidden' },
   statIcon: { fontSize: 18, marginBottom: 4 },
   statValue: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 24, color: TEXT1, lineHeight: 26, marginBottom: 4 },

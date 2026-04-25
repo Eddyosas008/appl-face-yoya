@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, Pressable, FlatList, TextInput,
   Modal, ScrollView, ActivityIndicator, Alert, Dimensions,
@@ -321,24 +321,36 @@ export default function JournalScreen() {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View>
-              {/* ── En-tête ── */}
-              <View style={styles.header}>
+              {/* ── En-tête hero ── */}
+              <LinearGradient
+                colors={isDark ? ['#1A0A3A', '#0D0B1A'] : ['#EDE8DC', '#FAF7F2']}
+                style={styles.heroHeader}
+              >
                 <View style={styles.headerRow}>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={[styles.title, { color: TEXT1 }]}>Mon journal</Text>
-                    <Text style={[styles.subtitle, { color: TEXT2 }]}>
-                      {allEntries.length} entrée{allEntries.length !== 1 ? 's' : ''}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                      <View style={[styles.entryCountBadge, { backgroundColor: `${GOLD}20`, borderColor: `${GOLD}40` }]}>
+                        <Text style={[styles.entryCountText, { color: GOLD }]}>
+                          {allEntries.length} entrée{allEntries.length !== 1 ? 's' : ''}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                   <Pressable
-                    style={({ pressed }) => [styles.writeBtn, { backgroundColor: GOLD, opacity: pressed ? 0.85 : 1 }]}
+                    style={({ pressed }) => [styles.writeBtn, { opacity: pressed ? 0.85 : 1 }]}
                     onPress={() => setIsWriting(true)}
                   >
-                    <IconSymbol name="pencil" size={16} color="#0D0B1A" />
-                    <Text style={styles.writeBtnText}>Écrire</Text>
+                    <LinearGradient
+                      colors={isDark ? ['#C8A96E', '#8B6028'] : ['#8B6914', '#6B4F10']}
+                      style={styles.writeBtnGradient}
+                    >
+                      <IconSymbol name="pencil" size={15} color="#FFFFFF" />
+                      <Text style={styles.writeBtnText}>Écrire</Text>
+                    </LinearGradient>
                   </Pressable>
                 </View>
-              </View>
+              </LinearGradient>
 
               {/* ── Onglets ── */}
               <View style={[styles.tabs, { backgroundColor: isDark ? '#1A1530' : '#EDE8DC', borderColor: BORD }]}>
@@ -531,7 +543,17 @@ export default function JournalScreen() {
             const moodColor = MOOD_COLORS[e.mood ?? 'neutral'] ?? GOLD;
             return (
               <Pressable
-                style={({ pressed }) => [styles.entryCard, { backgroundColor: CARD, borderColor: `${moodColor}30`, opacity: pressed ? 0.88 : 1 }]}
+                style={({ pressed }) => [
+                  styles.entryCard,
+                  {
+                    backgroundColor: CARD,
+                    borderColor: `${moodColor}25`,
+                    opacity: pressed ? 0.88 : 1,
+                    borderLeftColor: moodColor,
+                    borderLeftWidth: 3,
+                    transform: [{ scale: pressed ? 0.985 : 1 }],
+                  },
+                ]}
                 onPress={() => setSelectedEntry(e)}
               >
                 <View style={styles.entryHeader}>
@@ -695,12 +717,16 @@ function makeStyles(isDark: boolean) {
   return StyleSheet.create({
     list: { paddingHorizontal: 20, paddingBottom: 120 },
 
+    heroHeader: { paddingHorizontal: 16, paddingTop: 18, paddingBottom: 16, marginHorizontal: -20 },
     header: { paddingTop: 18, marginBottom: 18 },
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     title: { fontFamily: 'PlayfairDisplay-Medium', fontSize: 28, marginBottom: 4 },
     subtitle: { fontSize: 11, letterSpacing: 0.3 },
-    writeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 9 },
-    writeBtnText: { color: '#0D0B1A', fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
+    entryCountBadge: { borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1 },
+    entryCountText: { fontSize: 11, fontWeight: '700' as const, letterSpacing: 0.3 },
+    writeBtn: { borderRadius: 999, overflow: 'hidden' as const },
+    writeBtnGradient: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 10 },
+    writeBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' as const, letterSpacing: 0.3 },
 
     tabs: { flexDirection: 'row', borderRadius: 16, borderWidth: 1, padding: 4, marginBottom: 20 },
     tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 8, borderRadius: 12 },
@@ -732,8 +758,8 @@ function makeStyles(isDark: boolean) {
     entryCard: {
       borderRadius: 18, borderWidth: 1, padding: 14, marginBottom: 12,
       shadowColor: isDark ? '#000' : '#1C1410',
-      shadowOffset: { width: 0, height: 3 }, shadowOpacity: isDark ? 0.25 : 0.10,
-      shadowRadius: isDark ? 10 : 8, elevation: isDark ? 6 : 4,
+      shadowOffset: { width: 0, height: 4 }, shadowOpacity: isDark ? 0.35 : 0.12,
+      shadowRadius: isDark ? 14 : 10, elevation: isDark ? 8 : 5,
     },
     entryHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
     entryMoodCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },

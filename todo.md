@@ -885,3 +885,17 @@
 - [x] Intégration dans progress.tsx avec skeleton loader
 - [x] Badge "X cette semaine" dans l'en-tête de la carte
 - [x] Câblage express-session-sheet.tsx → incrementDailyExpressCount à chaque fin de séance
+
+## Phase 79 : Améliorations visuelles globales
+
+- [x] Journal : header hero avec gradient animé + badge compteur d'entrées
+- [x] Journal : bouton "Écrire" avec gradient doré plein
+- [x] Journal : cartes d'entrée avec bord gauche coloré selon l'humeur
+- [x] Parcours : header hero avec stats (nb programmes, commencés, terminés)
+- [x] Parcours : bouton "Commencer" avec gradient doré plein
+- [x] Parcours : barre de progression plus épaisse avec gradient
+- [x] Parcours : skeleton loader pendant le chargement
+- [x] Accueil : composant StreakBadge animé avec confettis dorés
+- [x] Accueil : badge streak avec pulsation et halo lumineux
+- [x] Profil : header hero avec gradient profond amélioré
+- [x] Profil : barre de progression niveau avec gradient doré

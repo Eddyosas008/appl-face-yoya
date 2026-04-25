@@ -256,7 +256,9 @@ export default function ProfileScreen() {
         {/* ── HEADER PROFIL ──────────────────────────────────────────────── */}
         <Animated.View style={[styles.headerSection, { opacity: headerAnim, transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
           <LinearGradient
-            colors={isDark ? ['rgba(200,169,110,0.12)', 'rgba(200,169,110,0.04)'] : ['rgba(139,105,20,0.08)', 'rgba(139,105,20,0.02)']}
+            colors={isDark ? ['#1A0A3A', '#0D0B1A'] : ['#EDE8DC', '#FAF7F2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={[styles.headerCard, { borderColor: BORD }]}
           >
             {/* Avatar + infos */}
@@ -317,11 +319,13 @@ export default function ProfileScreen() {
                 </Text>
               </View>
               <View style={[styles.levelProgressBg, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}>
-                <View
+                <LinearGradient
+                  colors={[level.color, '#F0D090']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
                   style={[
                     styles.levelProgressFill,
                     {
-                      backgroundColor: level.color,
                       width: level.next === 9999 ? '100%' : `${Math.min(100, (totalMinutes / level.next) * 100)}%` as any,
                     },
                   ]}
@@ -337,7 +341,7 @@ export default function ProfileScreen() {
           <View style={[styles.statsGrid, { borderColor: BORD }]}>
             {[
               { value: String(totalSessions), label: 'Sessions', icon: '🧘', color: '#60A5FA' },
-              { value: `${totalMinutes}m`, label: 'Minutes', icon: '⏱️', color: '#A78BFA' },
+              { value: `${totalMinutes}m`,    label: 'Minutes',  icon: '⏱️', color: '#A78BFA' },
               { value: `${currentStreak}j`, label: 'Série actuelle', icon: '🔥', color: '#FB923C' },
               { value: `${longestStreak}j`, label: 'Meilleure série', icon: '🏆', color: GOLD_C },
             ].map((stat, i) => (
