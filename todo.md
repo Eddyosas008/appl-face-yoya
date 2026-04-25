@@ -899,3 +899,11 @@
 - [x] Accueil : badge streak avec pulsation et halo lumineux
 - [x] Profil : header hero avec gradient profond amélioré
 - [x] Profil : barre de progression niveau avec gradient doré
+
+## Phase 80 : Rappels de méditation quotidiens
+
+- [x] Hook useNotifications : permissions, planification, persistance AsyncStorage
+- [x] Service notification-service : canal Android, messages variés, presets
+- [x] Composant ReminderSettings : toggle, presets rapides, sélecteur heure, jours
+- [x] Intégration dans l'écran Profil (section Rappels)
+- [x] Handler de notifications dans _layout.tsx (foreground + deep links)
