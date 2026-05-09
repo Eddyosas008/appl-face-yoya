@@ -20,6 +20,7 @@ import { StarField } from '@/components/star-field';
 import { DailyProgressBar } from '@/components/daily-progress-bar';
 import { ExpressSessionSheet } from '@/components/express-session-sheet';
 import { StreakBadge } from '@/components/streak-badge';
+import { AIDailyCard } from '@/components/ai-daily-card';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -680,6 +681,18 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* ── RECOMMANDATION IA ─────────────────────────────────────────── */}
+        {isAuthenticated && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View>
+                <Text style={styles.sectionTitle}>🤖 Votre conseil personnalisé</Text>
+                <Text style={styles.sectionSub}>Généré par Yoya IA pour ce moment</Text>
+              </View>
+            </View>
+            <AIDailyCard mood={recentCheckIns.length > 0 ? (recentCheckIns[0] as any).mood : undefined} />
+          </View>
+        )}
         {/* ── CONSEIL DU SOIR ────────────────────────────────────────────── */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>💡 Conseil du soir</Text>

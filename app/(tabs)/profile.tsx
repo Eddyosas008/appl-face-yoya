@@ -17,6 +17,9 @@ import { MOOD_EMOJIS, MOOD_LABELS } from '@/lib/mock-data';
 import { AnimatedScreen } from '@/components/animated-screen';
 import { StarField } from '@/components/star-field';
 import { ReminderSettings } from '@/components/reminder-settings';
+import { ThemeSelector } from '@/components/theme-selector';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { ShareProgressCard } from '@/components/share-progress-card';
 import { DailyGoalPicker } from '@/components/daily-goal-picker';
 import { useThemeContext } from '@/lib/theme-provider';
 
@@ -96,6 +99,7 @@ function SettingRow({
 export default function ProfileScreen() {
   const colors = useColors();
   const { isDark, themeMode, setThemeMode } = useThemeContext();
+  const { themeId, setTheme } = useAppTheme();
   const styles = useMemo(() => makeStyles(isDark), [isDark]);
   const { profile, checkIns, logout, updateProfile } = useUser();
   const { isAuthenticated, user } = useAuth();
@@ -517,6 +521,16 @@ export default function ProfileScreen() {
         {/* ── RAPPELS ────────────────────────────────────────────────────── */}
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Rappels 🔔</Text>
         <ReminderSettings />
+        <View style={{ height: 12 }} />
+        <ThemeSelector currentThemeId={themeId} onSelect={setTheme} />
+        <View style={{ height: 12 }} />
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Partager 🏆</Text>
+        <ShareProgressCard
+          firstName={firstName}
+          streak={currentStreak}
+          totalSessions={totalSessions}
+          totalMinutes={totalMinutes}
+        />
 
         {/* ── PARAMÈTRES ─────────────────────────────────────────────────── */}
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Paramètres</Text>

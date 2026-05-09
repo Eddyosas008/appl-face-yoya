@@ -839,6 +839,44 @@ Réponds toujours en français. Sois concise (2-4 paragraphes max) mais profonde
       }),
   }),
 
+
+  // ─── Recommandation IA quotidienne ────────────────────────────────────────────
+  ai: router({
+    dailyRecommendation: protectedProcedure
+      .input(z.object({
+        mood: z.string().optional(),
+        hour: z.number().min(0).max(23),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const profile = await db.getUserProfile(ctx.user.id);
+        const recentSessions = await db.getSessionHistory(ctx.user.id, 3);
+        const timeOfDay = input.hour < 12 ? 'matin' : input.hour < 18 ? 'après-midi' : 'soir';
+        const systemPrompt = `Tu es Yoya, une assistante bien-être bienveillante. Génère une recommandation personnalisée courte et actionnable pour l'utilisateur.
+Contexte : ${timeOfDay}, humeur actuelle : ${input.mood ?? 'non renseignée'}, objectif : ${profile?.mainGoal ?? 'bien-être général'}, niveau : ${profile?.meditationLevel ?? 'débutant'}.
+Sessions récentes : ${recentSessions.length} séances de méditation cette semaine.
+Réponds UNIQUEMENT avec un JSON valide : {"title": "...", "message": "...", "action": "meditate|breathe|journal|sleep|chat", "emoji": "..."}
+Le message doit faire 1-2 phrases max, être chaleureux et personnalisé. L'action doit être l'une des 5 valeurs exactes.`;
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Génère ma recommandation du moment." },
+          ],
+        });
+        const rawContent = response.choices[0]?.message?.content ?? '{}';
+        const rawStr = typeof rawContent === 'string' ? rawContent : '{}';
+        try {
+          const parsed = JSON.parse(rawStr.replace(/```json\n?|```/g, '').trim());
+          return {
+            title: parsed.title ?? 'Moment de bien-être',
+            message: parsed.message ?? 'Prenez un instant pour vous.',
+            action: parsed.action ?? 'meditate',
+            emoji: parsed.emoji ?? '✨',
+          };
+        } catch {
+          return { title: 'Moment de bien-être', message: 'Prenez un instant pour vous.', action: 'meditate', emoji: '✨' };
+        }
+      }),
+  }),
   // ─── Statistiques avancées ─────────────────────────────────────────────────────
   stats: router({
     mood30: protectedProcedure.query(async ({ ctx }) => {

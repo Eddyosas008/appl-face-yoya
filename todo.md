@@ -915,3 +915,17 @@
 - [x] Intégration dans onboarding.tsx comme étape 'features' (step 2)
 - [x] Masquage des boutons nav globaux sur l'étape features (auto-géré)
 - [x] Lien "Passer la présentation" dans le feature tour
+
+## Phase 82 : Développement en profondeur
+
+- [x] Refonte écran de respiration : anneau SVG animé + ondes concentriques pulsantes
+- [x] Recommandation IA quotidienne sur l'accueil (route LLM backend + composant AIDailyCard)
+- [x] Sélecteur de thèmes visuels : Nuit Profonde / Forêt Zen / Océan Calme / Aurore Rose
+- [x] Partage de progression : carte récapitulative (streak, sessions, minutes, express) via expo-sharing
+
+## Phase 82 : Développement en profondeur
+
+- [x] Refonte écran de respiration : anneau SVG animé + ondes concentriques pulsantes
+- [x] Recommandation IA quotidienne sur l'accueil (route LLM backend + composant AIDailyCard)
+- [x] Sélecteur de thèmes visuels : Nuit Profonde / Forêt Zen / Océan Calme / Aurore Rose
+- [x] Partage de progression : carte récapitulative (streak, sessions, minutes, express) via expo-sharing

@@ -13,6 +13,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
+import Svg, { Circle as SvgCircle, Defs, LinearGradient as SvgGradient, Stop } from 'react-native-svg';
 import { ScreenContainer } from '@/components/screen-container';
 import { StarField } from '@/components/star-field';
 import { useColors } from '@/hooks/use-colors';
@@ -129,6 +130,53 @@ const TECHNIQUES: BreathingTechnique[] = [
   },
 ];
 
+// ─── Composant anneau de progression SVG ─────────────────────────────────────
+import { useAnimatedProps, type SharedValue } from 'react-native-reanimated';
+const AnimatedCircle = Animated.createAnimatedComponent(SvgCircle);
+
+function ProgressRing({
+  progress, isRunning, gradient,
+}: {
+  progress: SharedValue<number>;
+  isRunning: boolean;
+  gradient: string[];
+}) {
+  const SIZE = 200;
+  const STROKE = 4;
+  const R = (SIZE - STROKE) / 2;
+  const CIRCUMFERENCE = 2 * Math.PI * R;
+
+  const animatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: CIRCUMFERENCE * (1 - progress.value),
+  }));
+
+  if (!isRunning) return null;
+
+  return (
+    <Svg width={SIZE} height={SIZE} style={{ transform: [{ rotate: '-90deg' }] }}>
+      <Defs>
+        <SvgGradient id="ringGrad" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor={gradient[0]} stopOpacity="1" />
+          <Stop offset="1" stopColor={gradient[gradient.length - 1]} stopOpacity="1" />
+        </SvgGradient>
+      </Defs>
+      {/* Track */}
+      <SvgCircle
+        cx={SIZE / 2} cy={SIZE / 2} r={R}
+        stroke="rgba(255,255,255,0.15)" strokeWidth={STROKE} fill="none"
+      />
+      {/* Progress */}
+      <AnimatedCircle
+        cx={SIZE / 2} cy={SIZE / 2} r={R}
+        stroke="url(#ringGrad)" strokeWidth={STROKE} fill="none"
+        strokeDasharray={CIRCUMFERENCE}
+        animatedProps={animatedProps}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 export default function BreathingScreen() {
   const colors = useColors();
   const { isDark } = useThemeContext();
@@ -152,21 +200,64 @@ export default function BreathingScreen() {
 
   const circleScale = useSharedValue(1);
   const circleOpacity = useSharedValue(0.6);
+  // Ondes concentriques
+  const wave1Scale = useSharedValue(1);
+  const wave1Opacity = useSharedValue(0);
+  const wave2Scale = useSharedValue(1);
+  const wave2Opacity = useSharedValue(0);
+  const wave3Scale = useSharedValue(1);
+  const wave3Opacity = useSharedValue(0);
+  // Anneau de progression de phase
+  const ringProgress = useSharedValue(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const circleStyle = useAnimatedStyle(() => ({
     transform: [{ scale: circleScale.value }],
     opacity: circleOpacity.value,
   }));
+  const wave1Style = useAnimatedStyle(() => ({
+    transform: [{ scale: wave1Scale.value }],
+    opacity: wave1Opacity.value,
+  }));
+  const wave2Style = useAnimatedStyle(() => ({
+    transform: [{ scale: wave2Scale.value }],
+    opacity: wave2Opacity.value,
+  }));
+  const wave3Style = useAnimatedStyle(() => ({
+    transform: [{ scale: wave3Scale.value }],
+    opacity: wave3Opacity.value,
+  }));
 
   const animatePhase = useCallback((phase: { label: string; duration: number }) => {
     const dur = phase.duration * 1000;
+    // Anneau de progression : repart de 0 à 1 sur la durée de la phase
+    ringProgress.value = 0;
+    ringProgress.value = withTiming(1, { duration: dur, easing: Easing.linear });
     if (phase.label === 'Inspirez') {
       circleScale.value = withTiming(1.5, { duration: dur, easing: Easing.inOut(Easing.ease) });
       circleOpacity.value = withTiming(1, { duration: dur });
+      // Ondes concentriques à l'inspiration
+      wave1Scale.value = 1; wave1Opacity.value = 0.5;
+      wave1Scale.value = withTiming(2.2, { duration: dur * 0.9, easing: Easing.out(Easing.ease) });
+      wave1Opacity.value = withTiming(0, { duration: dur * 0.9 });
+      wave2Scale.value = 1; wave2Opacity.value = 0;
+      wave2Scale.value = withTiming(2.0, { duration: dur * 0.9, easing: Easing.out(Easing.ease) });
+      wave2Opacity.value = withSequence(
+        withTiming(0.35, { duration: dur * 0.15 }),
+        withTiming(0, { duration: dur * 0.75 })
+      );
+      wave3Scale.value = 1; wave3Opacity.value = 0;
+      wave3Scale.value = withTiming(1.8, { duration: dur * 0.9, easing: Easing.out(Easing.ease) });
+      wave3Opacity.value = withSequence(
+        withTiming(0.2, { duration: dur * 0.25 }),
+        withTiming(0, { duration: dur * 0.65 })
+      );
     } else if (phase.label === 'Expirez') {
       circleScale.value = withTiming(1, { duration: dur, easing: Easing.inOut(Easing.ease) });
       circleOpacity.value = withTiming(0.6, { duration: dur });
+      wave1Opacity.value = withTiming(0, { duration: 300 });
+      wave2Opacity.value = withTiming(0, { duration: 300 });
+      wave3Opacity.value = withTiming(0, { duration: 300 });
     } else {
       // Hold — subtle pulse
       circleScale.value = withSequence(
