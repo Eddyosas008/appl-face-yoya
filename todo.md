@@ -940,3 +940,19 @@
 - [x] Vérifier que logout() navigue correctement vers /(auth)/welcome
 - [x] Tests serveur : inscription, connexion, mauvais mot de passe — tous OK
 - [x] 0 erreur TypeScript globale
+
+## Phase 84 : Validation temps réel des formulaires auth
+
+- [ ] Créer le hook useFormValidation (règles email, mot de passe, prénom)
+- [ ] Intégrer la validation dans signin.tsx (email valide, mot de passe non vide)
+- [ ] Intégrer la validation dans signup.tsx (prénom, email, force du mot de passe, confirmation)
+- [ ] Indicateurs visuels : bordure verte/rouge, icône ✓/✗, message d'erreur animé
+- [ ] Jauge de force du mot de passe (faible / moyen / fort)
+- [ ] Bouton de soumission désactivé si le formulaire est invalide
+- [ ] 0 erreur TypeScript
+
+## Phase 84 : Validation en temps réel des formulaires auth
+- [x] Créer hook useFormValidation avec règles email, mot de passe, prénom
+- [x] Fonctions utilitaires : getPasswordStrength, getStrengthLabel, getStrengthColor, getStrengthFill
+- [x] signin.tsx : bordures colorées (vert/rouge), icône ✓, messages d'erreur inline, validation au blur et à la soumission
+- [x] signup.tsx : même système + jauge de force du mot de passe (Faible/Moyen/Fort) avec barre de progression animée

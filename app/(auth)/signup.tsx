@@ -1,5 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import {
+  View, Text, TextInput, StyleSheet, Pressable,
+  ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
+} from 'react-native';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { StarField } from '@/components/star-field';
@@ -7,20 +10,32 @@ import { useUser } from '@/lib/user-context';
 import { useThemeContext } from '@/lib/theme-provider';
 import { registerWithEmail } from '@/lib/email-auth-service';
 import { GoogleSignInButton } from '@/components/google-sign-in-button';
+import {
+  useSignUpValidation,
+  getPasswordStrength,
+  getStrengthLabel,
+  getStrengthColor,
+  getStrengthFill,
+} from '@/hooks/use-form-validation';
 import type { User } from '@/lib/_core/auth';
+
+const SUCCESS_COLOR = '#4ADE80';
+const ERROR_COLOR   = '#F87171';
 
 export default function SignUpScreen() {
   const { signup } = useUser();
   const { isDark } = useThemeContext();
-  const styles = useMemo(() => makeStyles(isDark), [isDark]);
-  const [name, setName]             = useState('');
-  const [email, setEmail]           = useState('');
-  const [password, setPassword]     = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading]   = useState(false);
-  const [error, setError]           = useState('');
+  const styles = useMemo(() => makeStyles(), []);
+  const v = useSignUpValidation();
 
-  // Palette dynamique
+  const [name, setName]                       = useState('');
+  const [email, setEmail]                     = useState('');
+  const [password, setPassword]               = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading]             = useState(false);
+  const [serverError, setServerError]         = useState('');
+
+  // Palette
   const BG      = isDark ? '#0D0B1A' : '#FAF7F2';
   const GOLD    = isDark ? '#C8A96E' : '#8B6914';
   const WHITE   = isDark ? '#EDE8DC' : '#1C1410';
@@ -28,36 +43,40 @@ export default function SignUpScreen() {
   const LAV_DIM = isDark ? 'rgba(240,235,224,0.45)' : 'rgba(80,60,140,0.40)';
   const BORDER  = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(120,100,180,0.18)';
   const GLASS   = isDark ? '#2A2540' : 'rgba(255,255,255,0.75)';
+  const TRACK   = isDark ? '#3A3555' : '#E5E7EB';
 
-  // Password strength
-  const strength = password.length === 0 ? 0
-    : password.length < 8 ? 1
-    : password.length < 12 && !/[^a-zA-Z0-9]/.test(password) ? 2
-    : 3;
-  const strengthLabel = ['', 'Faible', 'Moyen', 'Fort'];
-  const strengthColor = ['', '#F87171', '#FBBF24', '#4ADE80'];
+  // Force du mot de passe
+  const strength      = getPasswordStrength(password);
+  const strengthLabel = getStrengthLabel(strength);
+  const strengthColor = getStrengthColor(strength);
+  const strengthFill  = getStrengthFill(strength);
+
+  type SignUpField = 'firstName' | 'email' | 'password' | 'confirmPassword';
+
+  function getBorderColor(field: SignUpField): string {
+    const valid = v.isFieldValid(field);
+    if (valid === true)  return SUCCESS_COLOR;
+    if (valid === false) return ERROR_COLOR;
+    return BORDER;
+  }
+
+  function getLabelColor(field: SignUpField): string {
+    const valid = v.isFieldValid(field);
+    if (valid === true)  return SUCCESS_COLOR;
+    if (valid === false) return ERROR_COLOR;
+    return GOLD;
+  }
 
   async function handleSignUp() {
-    setError('');
-    if (!email.trim() || !password) {
-      setError('Veuillez remplir les champs obligatoires.');
-      return;
-    }
-    if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.');
-      return;
-    }
+    setServerError('');
+    const isValid = v.validate(name, email, password, confirmPassword);
+    if (!isValid) return;
     setIsLoading(true);
     try {
       const result = await registerWithEmail(email.trim(), password, name.trim() || undefined);
-      // signup() dans user-context gère la navigation vers /onboarding via setTimeout
       await signup(result.user.email ?? email, password);
     } catch (e: any) {
-      setError(e?.message ?? 'Erreur lors de la création du compte.');
+      setServerError(e?.message ?? 'Erreur lors de la création du compte.');
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +93,7 @@ export default function SignUpScreen() {
           contentContainerStyle={[styles.scroll, { backgroundColor: BG }]}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Back button */}
+          {/* Back */}
           <Pressable
             style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
             onPress={() => router.back()}
@@ -82,6 +101,7 @@ export default function SignUpScreen() {
             <Text style={[styles.backArrow, { color: LAV }]}>←</Text>
           </Pressable>
 
+          {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: WHITE }]}>Créer un compte</Text>
             <Text style={[styles.subtitle, { color: LAV }]}>
@@ -91,86 +111,165 @@ export default function SignUpScreen() {
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Prénom optionnel */}
+
+            {/* ── Prénom (optionnel) ── */}
             <View style={styles.field}>
-              <Text style={[styles.label, { color: GOLD }]}>
-                Prénom <Text style={{ color: LAV_DIM, fontWeight: '400' }}>(optionnel)</Text>
-              </Text>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: getLabelColor('firstName') }]}>
+                  Prénom{' '}
+                  <Text style={{ color: LAV_DIM, fontWeight: '400' }}>(optionnel)</Text>
+                </Text>
+                {v.isFieldValid('firstName') === true && (
+                  <Text style={{ fontSize: 14, color: SUCCESS_COLOR }}>✓</Text>
+                )}
+              </View>
               <TextInput
-                style={[styles.input, { borderColor: BORDER, backgroundColor: GLASS, color: WHITE }]}
+                style={[styles.input, {
+                  borderColor: getBorderColor('firstName'),
+                  backgroundColor: GLASS,
+                  color: WHITE,
+                }]}
                 placeholder="Votre prénom"
                 placeholderTextColor={LAV_DIM}
                 value={name}
-                onChangeText={setName}
+                onChangeText={(val) => {
+                  setName(val);
+                  v.updateFields({ firstName: val, email, password, confirmPassword }, 'firstName');
+                }}
+                onBlur={() => v.touch('firstName')}
                 autoCapitalize="words"
                 returnKeyType="next"
               />
+              {v.errors.firstName && v.isFieldValid('firstName') === false && (
+                <Text style={styles.fieldError}>{v.errors.firstName}</Text>
+              )}
             </View>
 
+            {/* ── Email ── */}
             <View style={styles.field}>
-              <Text style={[styles.label, { color: GOLD }]}>Adresse e-mail</Text>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: getLabelColor('email') }]}>
+                  Adresse e-mail
+                </Text>
+                {v.isFieldValid('email') === true && (
+                  <Text style={{ fontSize: 14, color: SUCCESS_COLOR }}>✓</Text>
+                )}
+              </View>
               <TextInput
-                style={[styles.input, { borderColor: BORDER, backgroundColor: GLASS, color: WHITE }]}
+                style={[styles.input, {
+                  borderColor: getBorderColor('email'),
+                  backgroundColor: GLASS,
+                  color: WHITE,
+                }]}
                 placeholder="votre@email.com"
                 placeholderTextColor={LAV_DIM}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(val) => {
+                  setEmail(val);
+                  v.updateFields({ firstName: name, email: val, password, confirmPassword }, 'email');
+                }}
+                onBlur={() => v.touch('email')}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="next"
               />
-            </View>
-
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: GOLD }]}>Mot de passe</Text>
-              <TextInput
-                style={[styles.input, { borderColor: BORDER, backgroundColor: GLASS, color: WHITE }]}
-                placeholder="Minimum 8 caractères"
-                placeholderTextColor={LAV_DIM}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                returnKeyType="next"
-              />
-              {password.length > 0 && (
-                <View style={styles.strengthRow}>
-                  {[1, 2, 3].map((i) => (
-                    <View
-                      key={i}
-                      style={[styles.strengthBar, { backgroundColor: i <= strength ? strengthColor[strength] : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)') }]}
-                    />
-                  ))}
-                  <Text style={[styles.strengthLabel, { color: strengthColor[strength] }]}>{strengthLabel[strength]}</Text>
-                </View>
+              {v.errors.email && v.isFieldValid('email') === false && (
+                <Text style={styles.fieldError}>{v.errors.email}</Text>
               )}
             </View>
 
+            {/* ── Mot de passe ── */}
             <View style={styles.field}>
-              <Text style={[styles.label, { color: GOLD }]}>Confirmer le mot de passe</Text>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: getLabelColor('password') }]}>
+                  Mot de passe
+                </Text>
+                {v.isFieldValid('password') === true && (
+                  <Text style={{ fontSize: 14, color: SUCCESS_COLOR }}>✓</Text>
+                )}
+              </View>
               <TextInput
-                style={[styles.input, { borderColor: confirmPassword && confirmPassword !== password ? '#F87171' : BORDER, backgroundColor: GLASS, color: WHITE }]}
+                style={[styles.input, {
+                  borderColor: getBorderColor('password'),
+                  backgroundColor: GLASS,
+                  color: WHITE,
+                }]}
+                placeholder="Minimum 8 caractères"
+                placeholderTextColor={LAV_DIM}
+                value={password}
+                onChangeText={(val) => {
+                  setPassword(val);
+                  v.updateFields({ firstName: name, email, password: val, confirmPassword }, 'password');
+                }}
+                onBlur={() => v.touch('password')}
+                secureTextEntry
+                returnKeyType="next"
+              />
+              {/* Jauge de force */}
+              {password.length > 0 && (
+                <View style={styles.strengthRow}>
+                  <View style={[styles.strengthTrack, { backgroundColor: TRACK }]}>
+                    <View style={[styles.strengthFill, {
+                      width: `${Math.round(strengthFill * 100)}%` as any,
+                      backgroundColor: strengthColor,
+                    }]} />
+                  </View>
+                  <Text style={[styles.strengthLabel, { color: strengthColor }]}>
+                    {strengthLabel}
+                  </Text>
+                </View>
+              )}
+              {v.errors.password && v.isFieldValid('password') === false && (
+                <Text style={styles.fieldError}>{v.errors.password}</Text>
+              )}
+            </View>
+
+            {/* ── Confirmation ── */}
+            <View style={styles.field}>
+              <View style={styles.labelRow}>
+                <Text style={[styles.label, { color: getLabelColor('confirmPassword') }]}>
+                  Confirmer le mot de passe
+                </Text>
+                {v.isFieldValid('confirmPassword') === true && (
+                  <Text style={{ fontSize: 14, color: SUCCESS_COLOR }}>✓</Text>
+                )}
+              </View>
+              <TextInput
+                style={[styles.input, {
+                  borderColor: getBorderColor('confirmPassword'),
+                  backgroundColor: GLASS,
+                  color: WHITE,
+                }]}
                 placeholder="Répétez votre mot de passe"
                 placeholderTextColor={LAV_DIM}
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={(val) => {
+                  setConfirmPassword(val);
+                  v.updateFields({ firstName: name, email, password, confirmPassword: val }, 'confirmPassword');
+                }}
+                onBlur={() => v.touch('confirmPassword')}
                 secureTextEntry
                 returnKeyType="done"
                 onSubmitEditing={handleSignUp}
               />
-              {confirmPassword.length > 0 && confirmPassword !== password && (
-                <Text style={styles.matchError}>Les mots de passe ne correspondent pas</Text>
+              {v.errors.confirmPassword && v.isFieldValid('confirmPassword') === false && (
+                <Text style={styles.fieldError}>{v.errors.confirmPassword}</Text>
               )}
             </View>
 
-            {error ? (
-              <Text style={styles.errorText}>{error}</Text>
-            ) : null}
+            {/* Erreur serveur */}
+            {serverError ? <Text style={styles.errorText}>{serverError}</Text> : null}
 
+            {/* Bouton */}
             <Pressable
               style={({ pressed }) => [
                 styles.submitButton,
-                { backgroundColor: GOLD, shadowColor: GOLD, opacity: pressed || isLoading ? 0.8 : 1 },
+                {
+                  backgroundColor: GOLD,
+                  shadowColor: GOLD,
+                  opacity: pressed || isLoading ? 0.75 : 1,
+                },
               ]}
               onPress={handleSignUp}
               disabled={isLoading}
@@ -188,17 +287,18 @@ export default function SignUpScreen() {
             <Text style={[styles.dividerText, { color: LAV_DIM }]}>ou</Text>
             <View style={[styles.dividerLine, { backgroundColor: BORDER }]} />
           </View>
-          {/* Bouton Google */}
+
+          {/* Google */}
           <GoogleSignInButton
             label="S'inscrire avec Google"
             onSuccess={async (user: User) => {
-              // Utiliser signup() pour mettre à jour le contexte et naviguer
               await signup(user.email ?? '', '');
             }}
-            onError={(err) => setError(err)}
+            onError={(err) => setServerError(err)}
           />
           <View style={{ height: 24 }} />
-          {/* Sign in link */}
+
+          {/* Lien connexion */}
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: LAV_DIM }]}>Vous avez déjà un compte ? </Text>
             <Pressable onPress={() => router.push('/(auth)/signin' as never)}>
@@ -211,118 +311,122 @@ export default function SignUpScreen() {
   );
 }
 
-function makeStyles(isDark: boolean) {
-  const CARD   = isDark ? '#2A2540' : '#FFFFFF';
-  const CARD2  = isDark ? '#201C38' : '#F5F0E8';
-  const TEXT1  = isDark ? '#F0EBE0' : '#1C1410';
-  const TEXT2  = isDark ? 'rgba(240,235,224,0.65)' : 'rgba(60,40,20,0.65)';
-  const TEXT3  = isDark ? 'rgba(240,235,224,0.70)' : 'rgba(60,40,20,0.70)';
-  const GOLD_C = isDark ? '#C8A96E' : '#8B6914';
-  const BORD   = isDark ? 'rgba(200,169,110,0.40)' : 'rgba(139,105,20,0.30)';
-  const BORD2  = isDark ? 'rgba(200,169,110,0.30)' : 'rgba(139,105,20,0.20)';
+function makeStyles() {
   return StyleSheet.create({
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  backButton: {
-    marginTop: 16,
-    marginBottom: 8,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-  },
-  backArrow: { fontSize: 22 },
-  header: {
-    marginBottom: 32,
-    marginTop: 8,
-  },
-  title: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 30,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  form: {
-    gap: 16,
-    marginBottom: 32,
-  },
-  field: { gap: 6 },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  input: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-  },
-  strengthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-  },
-  strengthBar: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-  },
-  strengthLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    width: 40,
-  },
-  matchError: {
-    fontSize: 12,
-    color: '#F87171',
-    marginTop: 2,
-  },
-  errorText: {
-    fontSize: 13,
-    textAlign: 'center',
-    color: '#F87171',
-    lineHeight: 18,
-  },
-  submitButton: {
-    borderRadius: 999,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-    minHeight: 52,
-    justifyContent: 'center',
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 13, fontWeight: '500' },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: { fontSize: 14 },
-  footerLink: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
+    scroll: {
+      flexGrow: 1,
+      paddingHorizontal: 24,
+      paddingBottom: 40,
+    },
+    backButton: {
+      marginTop: 16,
+      marginBottom: 8,
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+    },
+    backArrow: { fontSize: 22 },
+    header: {
+      marginBottom: 32,
+      marginTop: 8,
+    },
+    title: {
+      fontFamily: 'PlayfairDisplay-Medium',
+      fontSize: 30,
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    form: {
+      gap: 16,
+      marginBottom: 32,
+    },
+    field: { gap: 6 },
+    labelRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    input: {
+      borderRadius: 14,
+      borderWidth: 1.5,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 15,
+    },
+    strengthRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginTop: 6,
+    },
+    strengthTrack: {
+      flex: 1,
+      height: 5,
+      borderRadius: 3,
+      overflow: 'hidden',
+    },
+    strengthFill: {
+      height: '100%',
+      borderRadius: 3,
+    },
+    strengthLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      width: 42,
+      textAlign: 'right',
+    },
+    fieldError: {
+      fontSize: 12,
+      color: ERROR_COLOR,
+      marginTop: 2,
+      lineHeight: 16,
+    },
+    errorText: {
+      fontSize: 13,
+      textAlign: 'center',
+      color: ERROR_COLOR,
+      lineHeight: 18,
+    },
+    submitButton: {
+      borderRadius: 999,
+      paddingVertical: 16,
+      alignItems: 'center',
+      marginTop: 8,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 6,
+      minHeight: 52,
+      justifyContent: 'center',
+    },
+    submitButtonText: {
+      fontSize: 16,
+      fontWeight: '800',
+    },
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+      gap: 12,
+    },
+    dividerLine: { flex: 1, height: 1 },
+    dividerText: { fontSize: 13, fontWeight: '500' },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    footerText: { fontSize: 14 },
+    footerLink: {
+      fontSize: 14,
+      fontWeight: '700',
+    },
   });
 }
