@@ -40,8 +40,8 @@ export default function SignInScreen() {
     setIsLoading(true);
     try {
       const result = await loginWithEmail(email.trim(), password);
+      // login() dans user-context gère la navigation vers /(tabs) via setTimeout
       await login(result.user.email ?? email, password);
-      router.replace('/(tabs)');
     } catch (e: any) {
       setError(e?.message ?? 'Email ou mot de passe incorrect.');
     } finally {

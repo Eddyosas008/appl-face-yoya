@@ -54,8 +54,8 @@ export default function SignUpScreen() {
     setIsLoading(true);
     try {
       const result = await registerWithEmail(email.trim(), password, name.trim() || undefined);
+      // signup() dans user-context gère la navigation vers /onboarding via setTimeout
       await signup(result.user.email ?? email, password);
-      router.replace('/onboarding' as never);
     } catch (e: any) {
       setError(e?.message ?? 'Erreur lors de la création du compte.');
     } finally {
@@ -191,7 +191,10 @@ export default function SignUpScreen() {
           {/* Bouton Google */}
           <GoogleSignInButton
             label="S'inscrire avec Google"
-            onSuccess={(_user: User) => router.replace('/onboarding' as never)}
+            onSuccess={async (user: User) => {
+              // Utiliser signup() pour mettre à jour le contexte et naviguer
+              await signup(user.email ?? '', '');
+            }}
             onError={(err) => setError(err)}
           />
           <View style={{ height: 24 }} />

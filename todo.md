@@ -929,3 +929,14 @@
 - [x] Recommandation IA quotidienne sur l'accueil (route LLM backend + composant AIDailyCard)
 - [x] Sélecteur de thèmes visuels : Nuit Profonde / Forêt Zen / Océan Calme / Aurore Rose
 - [x] Partage de progression : carte récapitulative (streak, sessions, minutes, express) via expo-sharing
+
+## Phase 83 : Corrections flux d'authentification
+
+- [x] Diagnostiquer le blocage post-connexion (double système auth + race condition)
+- [x] Réécrire user-context.tsx : login/signup/logout gèrent la navigation via setTimeout
+- [x] Supprimer les router.replace manuels dans signin.tsx
+- [x] Supprimer les router.replace manuels dans signup.tsx
+- [x] Corriger le callback Google OAuth dans signup.tsx
+- [x] Vérifier que logout() navigue correctement vers /(auth)/welcome
+- [x] Tests serveur : inscription, connexion, mauvais mot de passe — tous OK
+- [x] 0 erreur TypeScript globale

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 import type { UserProfile, EmotionalCheckIn, JournalEntry, SessionHistory } from '@/shared/wellness-types';
 
 interface UserContextType {
@@ -81,36 +82,73 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  /**
+   * Appelé après une connexion réussie côté backend.
+   * Met à jour le state ET navigue vers la destination correcte.
+   */
   async function login(email: string, _password: string) {
-    // Mock login — in production, call backend API
-    const newProfile = { ...DEFAULT_PROFILE, firstName: email.split('@')[0] };
+    const firstName = email.split('@')[0];
+    const newProfile = { ...DEFAULT_PROFILE, firstName };
+    // Persister d'abord dans AsyncStorage
+    await Promise.all([
+      AsyncStorage.setItem('yoya_auth', JSON.stringify(true)),
+      AsyncStorage.setItem('yoya_profile', JSON.stringify(newProfile)),
+    ]);
+    // Mettre à jour le state React
     setProfile(newProfile);
     setIsAuthenticated(true);
-    await AsyncStorage.setItem('yoya_auth', JSON.stringify(true));
-    await AsyncStorage.setItem('yoya_profile', JSON.stringify(newProfile));
+    // Naviguer après la mise à jour du state
+    // On utilise un petit délai pour laisser React propager le state
+    setTimeout(() => {
+      router.replace('/(tabs)');
+    }, 50);
   }
 
+  /**
+   * Appelé après une inscription réussie côté backend.
+   * Met à jour le state ET navigue vers l'onboarding.
+   */
   async function signup(email: string, _password: string) {
-    const newProfile = { ...DEFAULT_PROFILE, firstName: email.split('@')[0], joinedAt: new Date() };
+    const firstName = email.split('@')[0];
+    const newProfile = { ...DEFAULT_PROFILE, firstName, joinedAt: new Date() };
+    // Persister d'abord dans AsyncStorage
+    await Promise.all([
+      AsyncStorage.setItem('yoya_auth', JSON.stringify(true)),
+      AsyncStorage.setItem('yoya_profile', JSON.stringify(newProfile)),
+    ]);
+    // Mettre à jour le state React
     setProfile(newProfile);
     setIsAuthenticated(true);
-    await AsyncStorage.setItem('yoya_auth', JSON.stringify(true));
-    await AsyncStorage.setItem('yoya_profile', JSON.stringify(newProfile));
+    // Naviguer vers l'onboarding après la mise à jour du state
+    setTimeout(() => {
+      router.replace('/onboarding');
+    }, 50);
   }
 
   async function logout() {
+    // Nettoyer AsyncStorage d'abord
+    await AsyncStorage.multiRemove(['yoya_auth', 'yoya_onboarded', 'yoya_profile']);
+    // Mettre à jour le state
     setIsAuthenticated(false);
     setIsOnboarded(false);
     setProfile(null);
-    await AsyncStorage.multiRemove(['yoya_auth', 'yoya_onboarded']);
+    // Naviguer vers l'écran de bienvenue
+    setTimeout(() => {
+      router.replace('/(auth)/welcome');
+    }, 50);
   }
 
   async function completeOnboarding(data: Partial<UserProfile>) {
     const updatedProfile = { ...(profile || DEFAULT_PROFILE), ...data };
+    // Persister d'abord
+    await Promise.all([
+      AsyncStorage.setItem('yoya_profile', JSON.stringify(updatedProfile)),
+      AsyncStorage.setItem('yoya_onboarded', JSON.stringify(true)),
+    ]);
+    // Mettre à jour le state
     setProfile(updatedProfile);
     setIsOnboarded(true);
-    await AsyncStorage.setItem('yoya_profile', JSON.stringify(updatedProfile));
-    await AsyncStorage.setItem('yoya_onboarded', JSON.stringify(true));
+    // La navigation est gérée par onboarding.tsx après l'appel à completeOnboarding
   }
 
   async function addCheckIn(checkIn: Omit<EmotionalCheckIn, 'id' | 'userId' | 'createdAt'>) {
