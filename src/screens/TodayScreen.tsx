@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card, ProgressCircle } from '../components';
+import { Button, Card, DailyCheckIn, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
 import { programs } from '../data/programs';
@@ -50,15 +50,18 @@ const dailyTips = [
   "Célébrez chaque petite victoire - la régularité mérite d'être récompensée !",
 ];
 
-import { MainTabScreenNavigationProp } from '../types';
+import { FaceFeelRating, MainTabScreenNavigationProp } from '../types';
 
 interface TodayScreenProps {
   navigation: MainTabScreenNavigationProp;
 }
 
 export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
-  const { user, checkAndResetWeeklyProgress } = useStore();
-  const { profile, preferences, progress } = user;
+  const { user, checkAndResetWeeklyProgress, updateDailyEntry, dailyEntries } = useStore();
+  const { profile, preferences, progress, healthInfo } = user;
+  const todayKey = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todayEntry = dailyEntries.find((entry) => entry.date === todayKey);
+  const hasSafetyNotice = healthInfo.recentProcedures || healthInfo.contraindications.length > 0;
 
   // Reset weekly progress if a new week has started
   useEffect(() => {
@@ -77,14 +80,26 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
       const dayData = currentProgram.days.find((d) => d.day === currentDay);
       if (dayData && dayData.sessions.length > 0) {
         const session = dayData.sessions[0];
-        return session.exercises.map((se) => {
-          const exercise = exercises.find((e) => e.id === se.exerciseId);
-          return exercise;
-        }).filter(Boolean);
+        return session.exercises
+          .map((se) => exercises.find((exercise) => exercise.id === se.exerciseId))
+          .filter(
+            (exercise) =>
+              Boolean(exercise) &&
+              !exercise?.contraindications.some((item) =>
+                healthInfo.contraindications.includes(item)
+              )
+          );
       }
     }
-    // Default: suggest exercises based on preferences
-    return exercises.slice(0, 4);
+    // Default: recommend only exercises compatible with declared precautions.
+    return exercises
+      .filter(
+        (exercise) =>
+          !exercise.contraindications.some((item) =>
+            healthInfo.contraindications.includes(item)
+          )
+      )
+      .slice(0, 4);
   };
 
   const todayExercises = getTodayExercises();
@@ -107,12 +122,42 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
   };
 
   const handleStartSession = useCallback(() => {
+    if (todayExercises.length === 0) {
+      navigation.navigate('Safety');
+      return;
+    }
+
     navigation.navigate('SessionPlayer', {
       programId: currentProgram?.id,
       day: currentDay,
-      exerciseIds: todayExercises.map((e) => e?.id).filter(Boolean),
+      exerciseIds: todayExercises.flatMap((exercise) =>
+        exercise ? [exercise.id] : []
+      ),
     });
   }, [navigation, currentProgram, currentDay, todayExercises]);
+
+  const handleFeelingChange = useCallback(
+    (feeling: FaceFeelRating) => {
+      updateDailyEntry({
+        date: todayKey,
+        morningFeel: feeling,
+      });
+    },
+    [todayKey, updateDailyEntry]
+  );
+
+  const routineFocus = useMemo(() => {
+    if (todayEntry?.morningFeel === 'tendu') {
+      return 'Aujourd’hui, privilégiez la lenteur et la détente.';
+    }
+    if (preferences.primaryGoals.includes('reduire_tensions')) {
+      return 'Votre routine privilégie le relâchement des tensions.';
+    }
+    if (preferences.focusZones.length > 0) {
+      return `Focus du jour : ${preferences.focusZones[0]}.`;
+    }
+    return 'Une routine courte et douce, à votre rythme.';
+  }, [preferences.focusZones, preferences.primaryGoals, todayEntry?.morningFeel]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -190,6 +235,33 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
           </View>
         </Card>
 
+        {/* Daily rhythm and safety guidance */}
+        <View style={styles.dailyRhythmSection}>
+          <View style={styles.routineFocusRow}>
+            <View style={styles.routineFocusIcon}>
+              <Ionicons name="sparkles" size={18} color={colors.accent.teal} />
+            </View>
+            <View style={styles.routineFocusTextWrap}>
+              <Text style={styles.routineFocusLabel}>Rituel personnalisé</Text>
+              <Text style={styles.routineFocusText}>{routineFocus}</Text>
+            </View>
+          </View>
+
+          {hasSafetyNotice && (
+            <View style={styles.safetyNotice}>
+              <Ionicons name="shield-checkmark" size={18} color={colors.accent.gold} />
+              <Text style={styles.safetyNoticeText}>
+                Des précautions sont enregistrées : seuls les exercices compatibles sont proposés.
+              </Text>
+            </View>
+          )}
+
+          <DailyCheckIn
+            value={todayEntry?.morningFeel}
+            onChange={handleFeelingChange}
+          />
+        </View>
+
         {/* Today's Session Card */}
         <Card variant="default" padding="large" style={styles.sessionCard}>
           <View style={styles.sessionHeader}>
@@ -232,7 +304,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
           </View>
 
           <Button
-            title="Commencer la séance"
+            title={todayExercises.length > 0 ? 'Commencer la séance' : 'Voir les précautions'}
             onPress={handleStartSession}
             fullWidth
             icon={
@@ -418,6 +490,56 @@ const styles = StyleSheet.create({
   totalMinutes: {
     ...typography.h3,
     color: colors.text.primary,
+  },
+  // Daily rhythm
+  dailyRhythmSection: {
+    marginBottom: spacing.xl,
+  },
+  routineFocusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  routineFocusIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.accent.teal + '18',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  routineFocusTextWrap: {
+    flex: 1,
+  },
+  routineFocusLabel: {
+    ...typography.caption,
+    color: colors.accent.teal,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  routineFocusText: {
+    ...typography.body,
+    color: colors.text.primary,
+    marginTop: 2,
+  },
+  safetyNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.accent.gold + '12',
+    borderWidth: 1,
+    borderColor: colors.accent.gold + '3D',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+  },
+  safetyNoticeText: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    flex: 1,
+    marginLeft: spacing.sm,
   },
   // Session Card
   sessionCard: {

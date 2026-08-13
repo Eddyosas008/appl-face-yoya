@@ -82,6 +82,7 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const restTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleStepCompleteRef = useRef<() => void>(() => undefined);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -101,10 +102,6 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const currentExercise = sessionExercises[currentExerciseIndex];
   const currentStep = currentExercise?.steps[currentStepIndex];
   const totalDuration = sessionExercises.reduce((sum, ex) => sum + ex.duration, 0);
-
-  // Timer effect - uses ref to avoid stale closure over handleStepComplete
-  const handleStepCompleteRef = useRef(handleStepComplete);
-  handleStepCompleteRef.current = handleStepComplete;
 
   useEffect(() => {
     if (sessionState !== 'exercise' || isPaused || timeRemaining <= 0) return;
@@ -187,6 +184,8 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
       }
     }
   }, [currentStepIndex, currentExercise, currentExerciseIndex, sessionExercises]);
+
+  handleStepCompleteRef.current = handleStepComplete;
 
   const fadeTransition = (callback: () => void) => {
     Animated.sequence([

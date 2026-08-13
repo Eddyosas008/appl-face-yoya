@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet, Text, LogBox } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, LogBox, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
@@ -13,6 +13,8 @@ import { colors, typography } from './src/theme';
 if (!__DEV__) {
   LogBox.ignoreAllLogs();
 }
+
+const RootContainer = Platform.OS === 'web' ? View : GestureHandlerRootView;
 
 function AppContent() {
   const { isConnected } = useNetworkStatus();
@@ -68,13 +70,13 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <RootContainer style={styles.root}>
       <ErrorBoundary>
         <AppProvider>
           <AppContent />
         </AppProvider>
       </ErrorBoundary>
-    </GestureHandlerRootView>
+    </RootContainer>
   );
 }
 

@@ -1,5 +1,6 @@
 export { default as Button } from './Button';
 export { default as Card } from './Card';
+export { default as DailyCheckIn } from './DailyCheckIn';
 export { default as ProgressCircle } from './ProgressCircle';
 export { default as BadgeComponent } from './Badge';
 export { default as ExerciseCard } from './ExerciseCard';

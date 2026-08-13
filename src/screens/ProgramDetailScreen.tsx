@@ -54,6 +54,18 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
   const program = getProgramById(programId);
+  const isCurrentProgram = user.progress.currentProgramId === programId;
+  const isCompleted = user.progress.completedPrograms.includes(programId);
+  const currentDay = user.progress.currentProgramProgress?.currentDay || 1;
+  const completedDays = user.progress.currentProgramProgress?.completedDays;
+  const completedDayCount = completedDays?.length ?? 0;
+
+  // This hook must run before the potential early return below.
+  const progress = useMemo(() => {
+    if (!program || isCompleted) return program ? 1 : 0;
+    if (!isCurrentProgram) return 0;
+    return completedDayCount / program.duration;
+  }, [completedDayCount, isCompleted, isCurrentProgram, program]);
 
   if (!program) {
     return (
@@ -67,17 +79,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
     );
   }
 
-  const isCurrentProgram = user.progress.currentProgramId === programId;
-  const isCompleted = user.progress.completedPrograms.includes(programId);
-  const currentDay = user.progress.currentProgramProgress?.currentDay || 1;
-  const completedDays = user.progress.currentProgramProgress?.completedDays || [];
-
-  // Calculate progress
-  const progress = useMemo(() => {
-    if (isCompleted) return 1;
-    if (!isCurrentProgram) return 0;
-    return completedDays.length / program.duration;
-  }, [isCompleted, isCurrentProgram, completedDays, program.duration]);
+  const completedDaysForProgram = completedDays ?? [];
 
   const handleStartProgram = () => {
     if (user.settings.hapticEnabled) {
@@ -129,7 +131,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
 
   const getDayStatus = (day: number): 'completed' | 'current' | 'upcoming' | 'locked' => {
     if (!isCurrentProgram) return day === 1 ? 'upcoming' : 'locked';
-    if (completedDays.includes(day)) return 'completed';
+    if (completedDaysForProgram.includes(day)) return 'completed';
     if (day === currentDay) return 'current';
     if (day < currentDay) return 'upcoming'; // Skipped days can still be done
     return 'locked';
@@ -137,7 +139,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
 
   const canStartDay = (day: number): boolean => {
     if (!isCurrentProgram) return false;
-    return day <= currentDay || completedDays.includes(day - 1);
+    return day <= currentDay || completedDaysForProgram.includes(day - 1);
   };
 
   return (
@@ -250,8 +252,8 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
                 />
               </View>
               <Text style={styles.progressText}>
-                {completedDays.length} jour{completedDays.length > 1 ? 's' : ''} complété
-                {completedDays.length > 1 ? 's' : ''} sur {program.duration}
+                {completedDayCount} jour{completedDayCount > 1 ? 's' : ''} complété
+                {completedDayCount > 1 ? 's' : ''} sur {program.duration}
               </Text>
             </View>
           )}
@@ -402,7 +404,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
 
                     {canStartDay(day.day) && (
                       <Button
-                        title={completedDays.includes(day.day) ? 'Refaire ce jour' : 'Commencer'}
+                        title={completedDaysForProgram.includes(day.day) ? 'Refaire ce jour' : 'Commencer'}
                         onPress={() => {
                           const exerciseIds = day.sessions[0]?.exercises.map((e) => e.exerciseId) || [];
                           navigation.navigate('SessionPlayer', {
@@ -411,7 +413,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
                             exerciseIds,
                           });
                         }}
-                        variant={completedDays.includes(day.day) ? 'secondary' : 'primary'}
+                        variant={completedDaysForProgram.includes(day.day) ? 'secondary' : 'primary'}
                         size="small"
                         style={styles.startDayButton}
                       />
