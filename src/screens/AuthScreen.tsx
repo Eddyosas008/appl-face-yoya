@@ -7,19 +7,29 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { colors, spacing, borderRadius } from '../theme';
 import { Button } from '../components';
 import { AuthService } from '../services';
 import { useStore } from '../store/useStore';
+import { RootStackNavigationProp } from '../types';
 
 import { validateEmail as validateEmailInput, validatePassword as validatePasswordInput } from '../utils/validation';
 
+// Extrait un message lisible depuis une erreur inconnue (Supabase, Error, string...)
+const getErrorMessage = (error: unknown): string | undefined => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const { message } = error as { message?: unknown };
+    return typeof message === 'string' ? message : undefined;
+  }
+  return undefined;
+};
+
 interface AuthScreenProps {
-  navigation: any;
+  navigation: RootStackNavigationProp;
   onAuthSuccess?: () => void;
 }
 
@@ -72,8 +82,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
           },
         ]
       );
-    } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Une erreur est survenue lors de la création du compte');
+    } catch (error) {
+      Alert.alert('Erreur', getErrorMessage(error) || 'Une erreur est survenue lors de la création du compte');
     } finally {
       setLoading(false);
     }
@@ -95,8 +105,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
     try {
       await AuthService.signInWithEmail(email, password);
       onAuthSuccess?.();
-    } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Identifiants incorrects');
+    } catch (error) {
+      Alert.alert('Erreur', getErrorMessage(error) || 'Identifiants incorrects');
     } finally {
       setLoading(false);
     }
@@ -107,8 +117,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
     try {
       await AuthService.signInAnonymously();
       onAuthSuccess?.();
-    } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Une erreur est survenue');
+    } catch (error) {
+      Alert.alert('Erreur', getErrorMessage(error) || 'Une erreur est survenue');
     } finally {
       setLoading(false);
     }
@@ -132,8 +142,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ navigation, onAuthSucces
             try {
               await AuthService.resetPassword(email);
               Alert.alert('Email envoyé', 'Consultez votre boîte mail pour réinitialiser votre mot de passe');
-            } catch (error: any) {
-              Alert.alert('Erreur', error.message);
+            } catch (error) {
+              Alert.alert('Erreur', getErrorMessage(error));
             }
           },
         },

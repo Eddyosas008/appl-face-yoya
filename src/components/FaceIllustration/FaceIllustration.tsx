@@ -211,7 +211,7 @@ export const FaceIllustration: React.FC<FaceIllustrationProps> = ({
         })
       : mouthPath(MOUTH_SHAPES.neutral);
     const mouthInnerOpacity = spec.jawOpen
-      ? clampInterp(t, spec.jawOpen, (v) => Math.min(0.6, v / 10))
+      ? clampInterp(t, spec.jawOpen, (v) => Math.min(0.6, Math.max(0, (v - 2) / 12)))
       : 0;
 
     // Surlignage qui pulse doucement

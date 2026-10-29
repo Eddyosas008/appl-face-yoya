@@ -27,7 +27,7 @@ export const DEFAULT_FACE_PALETTE: FacePalette = {
   skin: '#EBC9A9',
   skinShade: '#D3A47F',
   blush: '#F2A48E',
-  hair: '#2F3D2F',
+  hair: '#3A4B3A',
   feature: '#4A3A30',
   lips: '#C9776A',
   top: colors.accent.greenDark,

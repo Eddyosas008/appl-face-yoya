@@ -4,7 +4,7 @@ import { useRef, useCallback, useEffect } from 'react';
  * Returns a debounced version of the callback.
  * Prevents rapid-fire API calls or expensive operations.
  */
-export const useDebounce = <T extends (...args: any[]) => any>(
+export const useDebounce = <T extends (...args: never[]) => unknown>(
   callback: T,
   delay: number
 ): T => {

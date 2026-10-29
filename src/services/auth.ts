@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { DatabaseService } from './database';
-import { User } from '../types';
+import { User, SessionHistory, DailyEntry } from '../types';
 
 export interface AuthUser {
   id: string;
@@ -137,8 +137,8 @@ export class AuthService {
 
   static async migrateLocalDataToCloud(
     localUser: User,
-    sessionHistory: any[],
-    dailyEntries: any[]
+    sessionHistory: SessionHistory[],
+    dailyEntries: DailyEntry[]
   ) {
     try {
       const currentUser = await this.getCurrentUser();

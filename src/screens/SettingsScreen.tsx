@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card, Button } from '../components';
+import { Card } from '../components';
 import { useStore } from '../store/useStore';
 import NotificationService from '../services/notifications';
 
@@ -126,7 +126,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
     updatePreferences({ reminderEnabled: value });
   };
 
-  const handleTimeChange = async (event: any, selectedTime?: Date) => {
+  const handleTimeChange = async (_event: unknown, selectedTime?: Date) => {
     setShowTimePicker(Platform.OS === 'ios');
 
     if (selectedTime) {

@@ -115,6 +115,10 @@ export const BreathingCircle: React.FC<BreathingCircleProps> = ({
     return () => {
       pulseAnim.setValue(1);
     };
+    // scaleAnim / opacityAnim / pulseAnim sont des refs Animated stables
+    // (useRef) : les ajouter n'apporte rien et l'effet ne doit réagir
+    // qu'au changement de phase ou d'activité.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, isActive]);
 
   const innerSize = size * 0.7;
@@ -212,6 +216,9 @@ export const GuidedBreathing: React.FC<GuidedBreathingProps> = ({
     // Start with first phase
     setCurrentPhase('inhale');
     setCountdown(inhaleSeconds);
+    // Volontairement limité à `isActive` : ajouter `inhaleSeconds`
+    // redémarrerait la respiration guidée en plein cycle si la prop change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
   useEffect(() => {
@@ -247,6 +254,10 @@ export const GuidedBreathing: React.FC<GuidedBreathingProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
+    // `phaseTimes` est recréé à chaque rendu et les callbacks parents ne sont
+    // pas forcément mémoïsés : les ajouter réinitialiserait le setInterval à
+    // chaque rendu et fausserait le compte à rebours (comportement inchangé).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPhase, currentCycle, countdown, isActive]);
 
   return (

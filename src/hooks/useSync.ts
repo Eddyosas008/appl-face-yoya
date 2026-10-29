@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AppState } from 'react-native';
-import { AuthService, SyncService } from '../services';
+import { AuthService, SyncService, AuthUser } from '../services';
 import { useStore } from '../store/useStore';
 
 export const useSync = () => {
   const [syncStatus, setSyncStatus] = useState(SyncService.getSyncStatus());
-  const [authUser, setAuthUser] = useState<any>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const { user, sessionHistory, dailyEntries } = useStore();
 
   useEffect(() => {
@@ -23,6 +23,10 @@ export const useSync = () => {
     });
 
     return unsubscribe;
+    // Abonnement unique au montage : ajouter `syncFromCloud` (qui dépend de
+    // `authUser`) réabonnerait le listener à chaque changement d'auth et
+    // déclencherait des synchronisations supplémentaires.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -43,6 +47,9 @@ export const useSync = () => {
     return () => {
       subscription.remove();
     };
+    // `syncFromCloud` ne change que lorsque `authUser` change : la dépendance
+    // explicite sur `authUser` suffit et évite de réabonner inutilement AppState.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser]);
 
   const syncToCloud = useCallback(async () => {

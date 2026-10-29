@@ -124,6 +124,10 @@ export function useDataCache<T>(
     load();
 
     return () => { cancelled = true; };
+    // Volontairement limité à `key` : `refresh` dépend de `fetcher`, souvent
+    // une fonction inline recréée à chaque rendu, ce qui relancerait le
+    // chargement en boucle. Le cache ne doit être rechargé qu'au changement de clé.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]); // Only re-run when key changes
 
   const invalidate = useCallback(() => {

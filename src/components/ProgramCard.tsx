@@ -6,6 +6,7 @@ import { DifficultyLevel, Program } from '../types';
 import { DIFFICULTY_LABELS } from '../data/labels';
 import Card from './Card';
 import ProgressCircle from './ProgressCircle';
+import { FaceZoneThumb } from './FaceIllustration';
 
 interface ProgramCardProps {
   program: Program;
@@ -94,6 +95,15 @@ const ProgramCardInner: React.FC<ProgramCardProps> = ({
               {DIFFICULTY_LABELS[program.difficulty]}
             </Text>
           </View>
+
+          {/* Zones travaillées */}
+          {program.zones.length > 0 && (
+            <View style={styles.zonesRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              {program.zones.slice(0, 6).map((zone) => (
+                <FaceZoneThumb key={zone} zone={zone} size={22} style={styles.zoneThumb} />
+              ))}
+            </View>
+          )}
 
           {/* Description */}
           <Text style={styles.description} numberOfLines={2}>
@@ -206,6 +216,14 @@ const styles = StyleSheet.create({
   description: {
     ...typography.bodySmall,
     color: colors.text.tertiary,
+  },
+  zonesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  zoneThumb: {
+    marginRight: spacing.xs,
   },
   progressContainer: {
     justifyContent: 'center',

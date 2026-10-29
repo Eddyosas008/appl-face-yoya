@@ -23,7 +23,7 @@ type FilterType = 'all' | 'debutant' | 'intermediaire' | 'short';
 
 export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const { user, startProgram } = useStore();
+  const { user } = useStore();
   const { progress } = user;
 
   // Get current program
@@ -68,11 +68,6 @@ export const ProgramsScreen: React.FC<ProgramsScreenProps> = ({ navigation }) =>
   const handleProgramPress = useCallback((programId: string) => {
     navigation.navigate('ProgramDetail', { programId });
   }, [navigation]);
-
-  const handleStartProgram = useCallback((programId: string) => {
-    startProgram(programId);
-    navigation.navigate('ProgramDetail', { programId });
-  }, [startProgram, navigation]);
 
   const filters: { id: FilterType; label: string }[] = [
     { id: 'all', label: 'Tous' },

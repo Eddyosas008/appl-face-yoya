@@ -1,6 +1,6 @@
 # Face Yoga App
 
-Application mobile de Face Yoga - Bien-être facial naturel
+Application mobile de Face Yoga – bien-être facial naturel. React Native + Expo (SDK 51), TypeScript strict, 100 % hors-ligne par défaut, synchronisation Supabase optionnelle.
 
 ## Vision
 
@@ -10,94 +10,97 @@ Une application de face yoga qui aide l'utilisateur à :
 - Réduire les tensions faciales (mâchoire, front, cou)
 - S'ancrer dans une pratique durable, simple et non culpabilisante
 
+> Le face yoga est une pratique complémentaire qui ne remplace pas un avis médical.
+
 ## Fonctionnalités
 
-### V1 - MVP
-- **Onboarding personnalisé** : Configuration des objectifs, zones ciblées, contre-indications
-- **4 programmes guidés** :
-  - Découverte (7 jours)
-  - Anti-Âge Doux (28 jours)
-  - Détente Mâchoire & Cou (21 jours)
-  - Routine Express (5 min/jour)
-- **30 exercices** classés par zones (Front, Yeux, Joues, Bouche, Ovale, Cou)
-- **Suivi de progression** : Streaks, badges, statistiques
-- **Sécurité** : Gestion des contre-indications, écran de précautions
+- **Onboarding personnalisé** : objectifs, zones ciblées, durée, contre-indications, horaire
+- **30 exercices illustrés** classés par zone (front, yeux, joues, bouche, ovale, cou), chacun avec
+  une **illustration animée** du mouvement (sourcils, yeux, joues, bouche, mâchoire, tête, points de
+  contact des doigts) et une vignette de zone
+- **4 programmes guidés** : Découverte (7 j), Anti-Âge Doux (28 j), Détente Mâchoire & Cou (21 j), Routine Express
+- **Lecteur de séance** : minuteur par étape avec anneau de progression, consignes de respiration,
+  pause, repos guidé entre les exercices, ressenti de fin de séance
+- **Séances personnalisées** : sélection multiple d'exercices dans la bibliothèque, favoris
+- **Sécurité** : filtrage des exercices selon les contre-indications et les actes récents, écran de
+  précautions, avertissements contextuels
+- **Suivi** : streak bienveillant, objectif hebdomadaire, badges, journal (ressentis, hydratation,
+  sommeil, photos), statistiques détaillées
+- **Rappels** : notifications locales quotidiennes
+- **Accessibilité** : labels, rôles et états sur tous les contrôles, réglage « animations » respecté
 
-### Écrans principaux
-1. **Aujourd'hui** - Séance du jour et accès rapide
-2. **Programmes** - Liste et progression des programmes
-3. **Bibliothèque** - Tous les exercices filtrables
-4. **Journal** - Suivi, calendrier, badges
-5. **Profil** - Paramètres et préférences
+## Écrans
 
-## Tech Stack
+1. **Aujourd'hui** – séance du jour (avec aperçu animé du premier exercice), check-in, astuce
+2. **Programmes** – liste, programme en cours, détail jour par jour avec reprise
+3. **Exercices** – bibliothèque filtrable (zone, niveau, favoris, complétés), créateur de séance
+4. **Journal** – aperçu, calendrier, badges, galerie de progression
+5. **Profil** – statistiques, préférences, notifications, sécurité, paramètres
 
-- **Framework** : React Native avec Expo
-- **Navigation** : React Navigation 6
-- **State Management** : Zustand
-- **Storage** : AsyncStorage
-- **UI** : Composants personnalisés, thème sombre
+## Stack technique
 
-## Installation
+- **Framework** : React Native 0.74 / Expo SDK 51
+- **Navigation** : React Navigation 6 (Bottom Tabs + Native Stack)
+- **État** : Zustand (persisté dans AsyncStorage)
+- **Illustrations** : react-native-svg + Animated (`src/components/FaceIllustration`)
+- **Backend optionnel** : Supabase (auth + sync), schéma dans `supabase/`
+- **Qualité** : TypeScript strict, ESLint, Jest + Testing Library
+
+## Démarrage
 
 ```bash
-# Cloner le repository
-git clone <repo-url>
-cd face-yoga-app
-
-# Installer les dépendances
 npm install
+cp .env.example .env     # optionnel : clés Supabase publiques
+npm start                # puis i (iOS), a (Android) ou w (web)
+```
 
-# Lancer l'application
-npm start
+## Scripts
+
+| Commande | Rôle |
+|---|---|
+| `npm start` | Serveur de développement Expo |
+| `npm test` | Tests unitaires (Jest) |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Vérification des types |
+| `npx expo install --check` | Cohérence des dépendances Expo |
+| `npx expo export --platform ios` | Validation du bundle Metro |
+
+## Publication
+
+La configuration des stores (permissions en français, manifeste de confidentialité iOS, permissions
+Android minimales, icônes, EAS) est décrite dans [`docs/APP_STORE_CHECKLIST.md`](docs/APP_STORE_CHECKLIST.md).
+
+```bash
+eas build -p ios --profile production
+eas build -p android --profile production
 ```
 
 ## Structure du projet
 
 ```
 src/
-├── components/       # Composants réutilisables
-├── data/            # Données statiques (exercices, programmes, badges)
-├── navigation/      # Configuration de la navigation
-├── screens/         # Écrans de l'application
-├── store/           # State management (Zustand)
-├── theme/           # Couleurs, typographie, spacing
-└── types/           # Types TypeScript
+├── components/        # Composants réutilisables (dont FaceIllustration/)
+├── data/              # Exercices, programmes, badges, labels partagés
+├── hooks/             # Hooks (réseau, synchro, reset hebdomadaire…)
+├── navigation/        # Tabs + stack
+├── providers/         # AppProvider
+├── screens/           # Écrans
+├── services/          # Notifications, stockage, Supabase, synchro
+├── store/             # Zustand
+├── theme/             # Couleurs, typographie, espacements
+├── types/             # Types TypeScript
+└── utils/             # Dates locales, sécurité, validation, responsive
 
 docs/
-├── PERSONAS.md      # 4 personas utilisateurs détaillés
-└── PRODUCT_SPEC.md  # Spécification produit complète
+├── PERSONAS.md            # Personas utilisateurs
+├── PRODUCT_SPEC.md        # Spécification produit
+├── WEB_VALIDATION.md      # Validation web
+└── APP_STORE_CHECKLIST.md # Checklist de publication
 ```
 
-## Principes de Design
+## Principes de design
 
-### UX
-- **Bienveillance** : Pas de culpabilisation, messages positifs
-- **Simplicité** : Actions claires, navigation intuitive
-- **Sécurité** : Contre-indications respectées, avertissements visibles
-
-### Éthique
-- Pratique complémentaire, non médicale
-- Zéro injonction esthétique
-- Disclaimer toujours visible
-
-## Personnalisation
-
-L'app s'adapte aux :
-- **Objectifs** : Détente, tonification, prévention...
-- **Zones prioritaires** : Front, yeux, mâchoire...
-- **Contre-indications** : ATM, cervicales, post-chirurgie...
-- **Temps disponible** : 5, 10, 15, ou 20 minutes
-
-## Documentation
-
-- [Personas & Usages](docs/PERSONAS.md)
-- [Spécification Produit](docs/PRODUCT_SPEC.md)
-
-## Disclaimer
-
-Le face yoga est une pratique complémentaire de bien-être qui ne remplace pas un avis médical. Il s'inscrit dans une hygiène de vie globale et ne peut prétendre à des résultats médicaux ou esthétiques garantis.
-
-## License
-
-Propriétaire - Tous droits réservés
+- **Bienveillance** : pas de culpabilisation, messages positifs
+- **Simplicité** : actions claires, navigation intuitive
+- **Sécurité** : contre-indications respectées, avertissements visibles
+- **Éthique** : pratique complémentaire, non médicale ; zéro injonction esthétique

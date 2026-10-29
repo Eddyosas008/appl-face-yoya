@@ -2,6 +2,10 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useSync } from '../hooks/useSync';
 import { useWeeklyReset } from '../hooks/useWeeklyReset';
+import { SyncService } from '../services';
+
+// Données renvoyées par une synchronisation depuis le cloud (null si échec / non connecté)
+type CloudSyncResult = Awaited<ReturnType<typeof SyncService.syncFromCloud>>;
 
 // ============================================
 // APP CONTEXT
@@ -20,8 +24,8 @@ interface AppContextType {
   isAuthenticated: boolean;
   isAnonymous: boolean;
   syncToCloud: () => Promise<boolean | undefined>;
-  syncFromCloud: () => Promise<any>;
-  performFullSync: () => Promise<any>;
+  syncFromCloud: () => Promise<CloudSyncResult>;
+  performFullSync: () => Promise<CloudSyncResult>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);

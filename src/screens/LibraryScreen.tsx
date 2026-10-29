@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  FlatList,
   TouchableOpacity,
   SafeAreaView,
   TextInput,
@@ -12,9 +11,10 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { ExerciseCard, EmptyState } from '../components';
+import { ExerciseCard, EmptyState, FaceZoneThumb } from '../components';
 import { useStore } from '../store/useStore';
-import { exercises, getExercisesByZone, getSafeExercises } from '../data/exercises';
+import { exercises } from '../data/exercises';
+import { filterExercisesForHealth } from '../utils/safety';
 import { FaceZone, DifficultyLevel, MainTabScreenNavigationProp } from '../types';
 
 interface LibraryScreenProps {
@@ -51,10 +51,11 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const { user, favoriteExercises, toggleFavoriteExercise } = useStore();
 
-  // Get safe exercises based on user's contraindications
-  const safeExercises = useMemo(() => {
-    return getSafeExercises(user.healthInfo.contraindications);
-  }, [user.healthInfo.contraindications]);
+  // Exercices compatibles avec le profil de santé (contre-indications + actes récents)
+  const safeExercises = useMemo(
+    () => filterExercisesForHealth(exercises, user.healthInfo),
+    [user.healthInfo]
+  );
 
   // Filter exercises
   const filteredExercises = useMemo(() => {
@@ -91,9 +92,10 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
   }, [safeExercises, selectedZone, selectedDifficulty, specialFilter, searchQuery, favoriteExercises, user.progress.completedExercises]);
 
   // Check if exercise is completed
-  const isExerciseCompleted = (exerciseId: string): boolean => {
-    return user.progress.completedExercises.includes(exerciseId);
-  };
+  const isExerciseCompleted = useCallback(
+    (exerciseId: string): boolean => user.progress.completedExercises.includes(exerciseId),
+    [user.progress.completedExercises]
+  );
 
   const handleExercisePress = useCallback((exerciseId: string) => {
     navigation.navigate('ExerciseDetail', { exerciseId });
@@ -204,8 +206,6 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
       </View>
     </View>
   ), [isSelectionMode, isSelected, isFavorite, handleExercisePress, handleToggleFavorite, toggleExerciseSelection, isExerciseCompleted]);
-
-  const keyExtractor = useCallback((item: typeof exercises[0]) => item.id, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -344,15 +344,25 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({ navigation }) => {
               accessibilityLabel={`Zone ${option.label}`}
               accessibilityState={{ selected: selectedZone === option.id }}
             >
-              <Ionicons
-                name={option.icon}
-                size={16}
-                color={
-                  selectedZone === option.id
-                    ? colors.background.primary
-                    : colors.text.secondary
-                }
-              />
+              {option.id === 'all' ? (
+                <Ionicons
+                  name={option.icon}
+                  size={16}
+                  color={
+                    selectedZone === option.id
+                      ? colors.background.primary
+                      : colors.text.secondary
+                  }
+                />
+              ) : (
+                <FaceZoneThumb
+                  zone={option.id}
+                  size={20}
+                  highlightColor={
+                    selectedZone === option.id ? colors.background.primary : colors.accent.green
+                  }
+                />
+              )}
               <Text
                 style={[
                   styles.filterLabel,
@@ -735,22 +745,6 @@ const styles = StyleSheet.create({
     ...typography.label,
     color: colors.background.primary,
     marginLeft: spacing.sm,
-  },
-  // Empty State
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing.huge,
-  },
-  emptyStateTitle: {
-    ...typography.h4,
-    color: colors.text.secondary,
-    marginTop: spacing.md,
-  },
-  emptyStateText: {
-    ...typography.body,
-    color: colors.text.muted,
-    marginTop: spacing.sm,
-    textAlign: 'center',
   },
 });
 

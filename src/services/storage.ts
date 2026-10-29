@@ -56,7 +56,7 @@ export class StorageService {
       const finalFileName = fileName || `${type}_${timestamp}.${extension}`;
       const filePath = `${userId}/${type}/${finalFileName}`;
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(this.BUCKET_NAME)
         .upload(filePath, arrayBuffer, {
           contentType: 'image/jpeg',

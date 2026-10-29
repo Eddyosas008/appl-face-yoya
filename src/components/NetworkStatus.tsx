@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
-  View,
   Text,
   StyleSheet,
   Animated,
@@ -48,6 +47,10 @@ export const NetworkStatusBar: React.FC<NetworkStatusProps> = ({ isConnected }) 
         clearTimeout(hideTimeout.current);
       }
     };
+    // slideAnim est une ref stable ; wasDisconnected est volontairement exclu :
+    // l'effet ne doit se déclencher qu'au changement de connexion, sinon la
+    // bannière "Connexion rétablie" serait replanifiée/annulée en boucle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   if (!showBar) return null;

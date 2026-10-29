@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { colors, spacing, typography } from '../theme';
 import { Card, ProgressCircle, BadgeComponent, MenuItem, ToggleItem } from '../components';
 import { useStore } from '../store/useStore';
 import { getNextBadgeToEarn, getBadgeProgress } from '../data/badges';

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card } from '../components';
+import { Button, FaceIllustration } from '../components';
 import { useStore } from '../store/useStore';
 import { UserGoal, FaceZone, Contraindication } from '../types';
 
@@ -129,7 +129,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   const renderWelcome = () => (
     <View style={styles.stepContainer}>
       <View style={styles.welcomeImagePlaceholder}>
-        <Ionicons name="leaf" size={80} color={colors.accent.green} />
+        <FaceIllustration zone="global" size={170} animated />
       </View>
       <Text style={styles.welcomeTitle}>Face Yoga</Text>
       <Text style={styles.welcomeSubtitle}>
@@ -506,15 +506,11 @@ const styles = StyleSheet.create({
   },
   // Welcome styles
   welcomeImagePlaceholder: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: colors.background.elevated,
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    marginTop: spacing.huge,
-    marginBottom: spacing.xxl,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.xl,
   },
   welcomeTitle: {
     ...typography.h1,

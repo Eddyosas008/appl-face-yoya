@@ -284,9 +284,13 @@ Voir `src/data/badges.ts` pour la liste complète.
 - [x] Bibliothèque de 30 exercices
 - [x] Suivi de progression simple
 - [x] Système de badges
-- [x] Gestion des contre-indications
-- [ ] Player de séance
-- [ ] Notifications locales
+- [x] Gestion des contre-indications (contre-indications + actes récents, appliquée partout)
+- [x] Player de séance (minuteur par étape, respiration, pause, repos guidé)
+- [x] Illustrations animées du visage pour chacun des 30 exercices
+- [x] Notifications locales (rappels quotidiens)
+- [x] Favoris et séances personnalisées (sélection multiple dans la bibliothèque)
+- [x] Statistiques détaillées (activité hebdomadaire, zones, exploration)
+- [x] Préparation App Store / Play Store (permissions, confidentialité, EAS)
 
 ### V2 - IA Légère
 - [ ] Suggestions automatiques basées sur l'historique

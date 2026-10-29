@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card, ProgressCircle } from '../components';
+import { Button, Card, FaceZoneThumb, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
 import { getProgramById } from '../data/programs';
 import { getExerciseById } from '../data/exercises';
@@ -303,6 +303,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
           <View style={styles.zonesRow}>
             {program.zones.map((zone) => (
               <View key={zone} style={styles.zoneBadge}>
+                <FaceZoneThumb zone={zone} size={22} style={styles.zoneBadgeThumb} />
                 <Text style={styles.zoneBadgeText}>{ZONE_SHORT_LABELS[zone]}</Text>
               </View>
             ))}
@@ -641,12 +642,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   zoneBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.background.tertiary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
+  },
+  zoneBadgeThumb: {
+    marginRight: spacing.xs,
   },
   zoneBadgeText: {
     ...typography.labelSmall,

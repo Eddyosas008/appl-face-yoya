@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { SessionHistory, DailyEntry, CompletedExercise } from '../../types';
+import { SessionHistory, DailyEntry } from '../../types';
 
 // ============================================
 // SESSION & DAILY ENTRIES SLICE
@@ -36,7 +36,7 @@ export const createSessionSlice: StateCreator<
     return sessionId;
   },
 
-  completeSession: (sessionData, addMinutes) => {
+  completeSession: (sessionData, _addMinutes) => {
     set((state) => {
       const newSession: SessionHistory = {
         ...sessionData,

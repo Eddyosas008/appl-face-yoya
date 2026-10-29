@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { logger } from '../utils/logger';
 
 // Configure notification handling
 Notifications.setNotificationHandler({
@@ -85,7 +86,7 @@ export async function requestPermissions(): Promise<boolean> {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('Notification permissions not granted');
+      logger.info('Notification permissions not granted');
       return false;
     }
 
@@ -159,7 +160,7 @@ export async function scheduleDailyReminder(
     // Store the notification ID
     await storeNotificationId('daily_reminder', 'reminder', notificationId);
 
-    console.log('Daily reminder scheduled for', hour, ':', minute);
+    logger.debug('Daily reminder scheduled for', hour, ':', minute);
     return notificationId;
   } catch (error) {
     console.error('Error scheduling daily reminder:', error);
@@ -192,7 +193,7 @@ export async function scheduleStreakReminder(): Promise<string | null> {
 
     await storeNotificationId('streak_reminder', 'streak', notificationId);
 
-    console.log('Streak reminder scheduled');
+    logger.debug('Streak reminder scheduled');
     return notificationId;
   } catch (error) {
     console.error('Error scheduling streak reminder:', error);
@@ -316,7 +317,7 @@ export async function cancelAllNotifications(): Promise<void> {
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
     await AsyncStorage.removeItem(NOTIFICATION_IDS_KEY);
-    console.log('All notifications cancelled');
+    logger.debug('All notifications cancelled');
   } catch (error) {
     console.error('Error cancelling all notifications:', error);
   }
@@ -339,14 +340,14 @@ export function setupNotificationListeners(
 ): () => void {
   const receivedSubscription = Notifications.addNotificationReceivedListener(
     (notification) => {
-      console.log('Notification received:', notification);
+      logger.debug('Notification received:', notification);
       onNotificationReceived?.(notification);
     }
   );
 
   const responseSubscription = Notifications.addNotificationResponseReceivedListener(
     (response) => {
-      console.log('Notification response:', response);
+      logger.debug('Notification response:', response);
       onNotificationResponse?.(response);
     }
   );

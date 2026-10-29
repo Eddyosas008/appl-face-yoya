@@ -31,12 +31,13 @@ async function withRetry<T>(
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       return await operation();
-    } catch (error: any) {
-      lastError = error;
-      const isRetryable = error?.message?.includes('network') ||
-        error?.message?.includes('timeout') ||
-        error?.message?.includes('fetch') ||
-        error?.code === 'PGRST301';
+    } catch (error) {
+      lastError = error as Error;
+      const { message, code } = (error ?? {}) as { message?: string; code?: string };
+      const isRetryable = message?.includes('network') ||
+        message?.includes('timeout') ||
+        message?.includes('fetch') ||
+        code === 'PGRST301';
 
       if (!isRetryable || attempt === MAX_RETRIES) {
         throw error;

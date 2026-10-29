@@ -1,18 +1,33 @@
 import { AuthService } from './auth';
 import { DatabaseService } from './database';
-import { User, SessionHistory, DailyEntry } from '../types';
+import {
+  User,
+  SessionHistory,
+  DailyEntry,
+  UserProfile,
+  UserPreferences,
+  UserHealthInfo,
+  UserProgress,
+  UserSettings,
+} from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
 
 const LAST_SYNC_KEY = '@face_yoga_last_sync';
 const SYNC_QUEUE_KEY = '@face_yoga_sync_queue';
 
-interface SyncQueueItem {
-  type: 'session' | 'daily_entry' | 'profile' | 'preferences' | 'health_info' | 'progress' | 'settings';
-  data: any;
-  timestamp: string;
-}
+// Union discriminée : chaque type de file d'attente transporte la donnée
+// attendue par la méthode DatabaseService correspondante.
+type SyncQueueItem =
+  | { type: 'session'; data: Omit<SessionHistory, 'id'>; timestamp: string }
+  | { type: 'daily_entry'; data: Partial<DailyEntry> & { date: string }; timestamp: string }
+  | { type: 'profile'; data: Partial<UserProfile>; timestamp: string }
+  | { type: 'preferences'; data: Partial<UserPreferences>; timestamp: string }
+  | { type: 'health_info'; data: Partial<UserHealthInfo>; timestamp: string }
+  | { type: 'progress'; data: Partial<UserProgress>; timestamp: string }
+  | { type: 'settings'; data: Partial<UserSettings>; timestamp: string };
 
 export class SyncService {
   private static syncStatus: SyncStatus = 'idle';
@@ -88,7 +103,7 @@ export class SyncService {
   ) {
     const currentUser = await AuthService.getCurrentUser();
     if (!currentUser) {
-      console.log('No authenticated user, skipping sync');
+      logger.info('No authenticated user, skipping sync');
       return false;
     }
 
@@ -141,7 +156,7 @@ export class SyncService {
   static async syncFromCloud() {
     const currentUser = await AuthService.getCurrentUser();
     if (!currentUser) {
-      console.log('No authenticated user, skipping sync');
+      logger.info('No authenticated user, skipping sync');
       return null;
     }
 
