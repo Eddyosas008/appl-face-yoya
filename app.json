@@ -3,9 +3,13 @@
     "name": "Face Yoga",
     "slug": "face-yoga-app",
     "version": "1.0.0",
+    "scheme": "faceyoga",
+    "description": "Face Yoga : des routines quotidiennes courtes et guidées pour détendre, tonifier et prendre soin de votre visage, en toute sécurité.",
+    "primaryColor": "#4ade80",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "backgroundColor": "#0d1a0d",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -16,26 +20,98 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.faceyoga.app"
+      "bundleIdentifier": "com.faceyoga.app",
+      "buildNumber": "1",
+      "requireFullScreen": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "CFBundleDisplayName": "Face Yoga",
+        "CFBundleDevelopmentRegion": "fr",
+        "CFBundleLocalizations": ["fr"],
+        "NSPhotoLibraryUsageDescription": "Face Yoga accède à vos photos pour choisir un avatar et suivre votre progression dans la galerie.",
+        "NSPhotoLibraryAddUsageDescription": "Face Yoga peut enregistrer vos photos de progression dans votre galerie.",
+        "NSCameraUsageDescription": "Face Yoga utilise l'appareil photo pour prendre des photos de progression et votre avatar.",
+        "NSUserNotificationsUsageDescription": "Face Yoga envoie des rappels bienveillants pour votre routine quotidienne.",
+        "UIViewControllerBasedStatusBarAppearance": true
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+            "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": ["E174.1"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a2e1a"
       },
-      "package": "com.faceyoga.app"
+      "package": "com.faceyoga.app",
+      "versionCode": 1,
+      "allowBackup": false,
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "Face Yoga",
+      "shortName": "Face Yoga",
+      "lang": "fr",
+      "themeColor": "#0d1a0d",
+      "backgroundColor": "#0d1a0d"
     },
     "plugins": [
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4ade80",
+          "defaultChannel": "reminders"
+        }
+      ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "L'application a besoin d'accéder à vos photos pour votre avatar et galerie de progression."
+          "photosPermission": "Face Yoga accède à vos photos pour choisir un avatar et suivre votre progression dans la galerie.",
+          "cameraPermission": "Face Yoga utilise l'appareil photo pour prendre des photos de progression et votre avatar.",
+          "microphonePermission": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "supportEmail": "support@faceyoga.app",
+      "privacyPolicyUrl": "https://faceyoga.app/confidentialite",
+      "termsUrl": "https://faceyoga.app/conditions"
+    }
   }
 }

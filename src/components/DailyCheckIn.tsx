@@ -1,42 +1,40 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from './Card';
 import { colors, borderRadius, spacing, typography } from '../theme';
 import { FaceFeelRating } from '../types';
+import { FACE_FEEL_OPTIONS } from '../data/labels';
 
 interface DailyCheckInProps {
   value?: FaceFeelRating;
   onChange: (value: FaceFeelRating) => void;
+  title?: string;
+  subtitle?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
-const feelings: Array<{
-  id: FaceFeelRating;
-  label: string;
-  emoji: string;
-  accessibilityLabel: string;
-}> = [
-  { id: 'tendu', label: 'Tendu', emoji: '😣', accessibilityLabel: 'Mon visage est tendu' },
-  { id: 'normal', label: 'Neutre', emoji: '😐', accessibilityLabel: 'Mon visage se sent neutre' },
-  { id: 'detendu', label: 'Détendu', emoji: '😌', accessibilityLabel: 'Mon visage est détendu' },
-  { id: 'revitalise', label: 'En forme', emoji: '✨', accessibilityLabel: 'Mon visage se sent en forme' },
-];
-
-export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ value, onChange }) => {
+export const DailyCheckIn: React.FC<DailyCheckInProps> = ({
+  value,
+  onChange,
+  title = 'Votre ressenti du jour',
+  subtitle = 'Une réponse suffit pour ajuster votre pratique.',
+  style,
+}) => {
   return (
-    <Card variant="outlined" padding="medium" style={styles.card}>
+    <Card variant="outlined" padding="medium" style={[styles.card, style]}>
       <View style={styles.heading}>
         <View style={styles.iconWrap}>
           <Ionicons name="heart" size={18} color={colors.accent.coral} />
         </View>
         <View style={styles.headingText}>
-          <Text style={styles.title}>Votre ressenti du jour</Text>
-          <Text style={styles.subtitle}>Une réponse suffit pour ajuster votre pratique.</Text>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
       </View>
 
       <View style={styles.options} accessibilityRole="radiogroup">
-        {feelings.map((feeling) => {
+        {FACE_FEEL_OPTIONS.map((feeling) => {
           const isSelected = value === feeling.id;
           return (
             <TouchableOpacity
@@ -44,8 +42,8 @@ export const DailyCheckIn: React.FC<DailyCheckInProps> = ({ value, onChange }) =
               style={[styles.option, isSelected && styles.optionSelected]}
               onPress={() => onChange(feeling.id)}
               accessibilityRole="radio"
-              accessibilityLabel={feeling.accessibilityLabel}
-              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={feeling.description ?? feeling.label}
+              accessibilityState={{ checked: isSelected, selected: isSelected }}
               activeOpacity={0.8}
             >
               <Text style={styles.emoji}>{feeling.emoji}</Text>

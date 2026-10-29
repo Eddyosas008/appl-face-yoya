@@ -6,20 +6,28 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Animated,
-  Dimensions,
   ScrollView,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card, BreathingCircle } from '../components';
+import {
+  Button,
+  Card,
+  BreathingCircle,
+  FaceIllustration,
+  FaceZoneThumb,
+  ProgressCircle,
+  getMotionCaption,
+} from '../components';
 import { useStore } from '../store/useStore';
 import { exercises, getExerciseById } from '../data/exercises';
 import { programs } from '../data/programs';
-import { Exercise, ExerciseStep, FaceFeelRating, RootStackNavigationProp, RootStackRouteProp } from '../types';
-
-const { width, height } = Dimensions.get('window');
+import { FACE_FEEL_OPTIONS, ZONE_LABELS } from '../data/labels';
+import { getLocalDateKey } from '../utils/date';
+import { Exercise, FaceFeelRating, RootStackNavigationProp, RootStackRouteProp } from '../types';
 
 interface SessionPlayerScreenProps {
   navigation: RootStackNavigationProp;
@@ -73,14 +81,20 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
+  // Liste finale réellement enregistrée en fin de séance (affichée sur l'écran de fin).
+  const [savedExerciseIds, setSavedExerciseIds] = useState<string[]>([]);
   const [sessionStartTime] = useState(Date.now());
   const [selectedFeeling, setSelectedFeeling] = useState<FaceFeelRating | null>(null);
   const [restCountdown, setRestCountdown] = useState(5);
 
+  // Tailles responsives de l'illustration et du minuteur
+  const { width: windowWidth } = useWindowDimensions();
+  const contentWidth = windowWidth - spacing.xl * 2;
+  const illustrationSize = Math.round(Math.min(180, Math.max(124, contentWidth * 0.5)));
+  const timerSize = Math.round(Math.min(116, Math.max(88, contentWidth * 0.36)));
+
   // Animation refs
-  const progressAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
   const restTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleStepCompleteRef = useRef<() => void>(() => undefined);
 
@@ -93,15 +107,12 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
     };
   }, []);
 
-  // Get breathing phase from current step
-  const getBreathingPhase = (): 'inhale' | 'hold' | 'exhale' | 'rest' => {
-    if (!currentStep?.breathingCue) return 'rest';
-    return currentStep.breathingCue;
-  };
-
   const currentExercise = sessionExercises[currentExerciseIndex];
   const currentStep = currentExercise?.steps[currentStepIndex];
   const totalDuration = sessionExercises.reduce((sum, ex) => sum + ex.duration, 0);
+  const stepProgress = currentStep?.duration
+    ? Math.min(1, Math.max(0, 1 - timeRemaining / currentStep.duration))
+    : 0;
 
   useEffect(() => {
     if (sessionState !== 'exercise' || isPaused || timeRemaining <= 0) return;
@@ -120,18 +131,6 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
     return () => clearInterval(timer);
   }, [sessionState, isPaused, timeRemaining]);
 
-  // Progress animation
-  useEffect(() => {
-    if (currentStep?.duration && currentStep.duration > 0) {
-      const progress = 1 - timeRemaining / currentStep.duration;
-      Animated.timing(progressAnim, {
-        toValue: progress,
-        duration: 100,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [timeRemaining, currentStep]);
-
   // Rest countdown timer
   useEffect(() => {
     if (sessionState !== 'rest') return;
@@ -149,6 +148,81 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
     return () => clearInterval(timer);
   }, [sessionState]);
 
+  const fadeTransition = useCallback(
+    (callback: () => void) => {
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      setTimeout(callback, 200);
+    },
+    [fadeAnim]
+  );
+
+  /**
+   * Termine la séance et l'enregistre.
+   * `finalCompleted` est passé explicitement : l'état `completedExercises`
+   * capturé par la fermeture peut être périmé (le dernier exercice n'y est
+   * pas encore), ce qui enregistrait une séance avec une liste incomplète.
+   */
+  const handleSessionComplete = useCallback(
+    (finalCompleted: string[]) => {
+      setSavedExerciseIds(finalCompleted);
+      setSessionState('completed');
+
+      if (user.settings.hapticEnabled) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
+      // Calculate session duration
+      const sessionDuration = Math.round((Date.now() - sessionStartTime) / 60000);
+
+      // Save session
+      completeSession({
+        date: new Date().toISOString(),
+        programId,
+        programDay: day,
+        exercises: finalCompleted.map((id) => ({
+          exerciseId: id,
+          completedAt: new Date().toISOString(),
+          duration: getExerciseById(id)?.duration || 0,
+          skipped: false,
+        })),
+        totalDuration: sessionDuration,
+      });
+
+      // Update program progress if applicable
+      if (programId && day) {
+        updateProgramProgress(day);
+      }
+
+      // Increment streak
+      incrementStreak();
+
+      // Check for new badges
+      checkAndAwardBadges();
+    },
+    [
+      user.settings.hapticEnabled,
+      sessionStartTime,
+      completeSession,
+      programId,
+      day,
+      updateProgramProgress,
+      incrementStreak,
+      checkAndAwardBadges,
+    ]
+  );
+
   const handleStepComplete = useCallback(() => {
     if (user.settings.hapticEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -162,83 +236,40 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
         const nextStep = currentExercise.steps[currentStepIndex + 1];
         setTimeRemaining(nextStep.duration || 5);
       });
-    } else {
-      // Exercise complete
+    } else if (currentExerciseIndex < sessionExercises.length - 1) {
+      // Exercise complete: show rest screen then next exercise
       setCompletedExercises((prev) => [...prev, currentExercise.id]);
-
-      if (currentExerciseIndex < sessionExercises.length - 1) {
-        // Show rest screen then next exercise
-        setSessionState('rest');
-        restTimeoutRef.current = setTimeout(() => {
-          fadeTransition(() => {
-            setCurrentExerciseIndex((prev) => prev + 1);
-            setCurrentStepIndex(0);
-            setSessionState('exercise');
-            const nextExercise = sessionExercises[currentExerciseIndex + 1];
-            setTimeRemaining(nextExercise.steps[0].duration || 5);
-          });
-        }, 5000); // 5 second rest
-      } else {
-        // Session complete
-        handleSessionComplete();
-      }
+      setSessionState('rest');
+      restTimeoutRef.current = setTimeout(() => {
+        fadeTransition(() => {
+          setCurrentExerciseIndex((prev) => prev + 1);
+          setCurrentStepIndex(0);
+          setSessionState('exercise');
+          const nextExercise = sessionExercises[currentExerciseIndex + 1];
+          setTimeRemaining(nextExercise.steps[0].duration || 5);
+        });
+      }, 5000); // 5 second rest
+    } else {
+      // Last exercise complete: build the final list explicitly so the
+      // final exercise is included in the saved session.
+      const finalCompleted = completedExercises.includes(currentExercise.id)
+        ? completedExercises
+        : [...completedExercises, currentExercise.id];
+      setCompletedExercises(finalCompleted);
+      handleSessionComplete(finalCompleted);
     }
-  }, [currentStepIndex, currentExercise, currentExerciseIndex, sessionExercises]);
+  }, [
+    user.settings.hapticEnabled,
+    currentStepIndex,
+    currentExercise,
+    currentExerciseIndex,
+    sessionExercises,
+    completedExercises,
+    fadeTransition,
+    handleSessionComplete,
+  ]);
 
   handleStepCompleteRef.current = handleStepComplete;
-
-  const fadeTransition = (callback: () => void) => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    setTimeout(callback, 200);
-  };
-
-  const handleSessionComplete = () => {
-    setSessionState('completed');
-
-    if (user.settings.hapticEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-
-    // Calculate session duration
-    const sessionDuration = Math.round((Date.now() - sessionStartTime) / 60000);
-
-    // Save session
-    completeSession({
-      date: new Date().toISOString(),
-      programId,
-      programDay: day,
-      exercises: completedExercises.map((id) => ({
-        exerciseId: id,
-        completedAt: new Date().toISOString(),
-        duration: getExerciseById(id)?.duration || 0,
-        skipped: false,
-      })),
-      totalDuration: sessionDuration,
-    });
-
-    // Update program progress if applicable
-    if (programId && day) {
-      updateProgramProgress(day);
-    }
-
-    // Increment streak
-    incrementStreak();
-
-    // Check for new badges
-    checkAndAwardBadges();
-  };
 
   const startSession = () => {
     setSessionState('exercise');
@@ -266,7 +297,8 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
         setTimeRemaining(nextExercise.steps[0].duration || 5);
       });
     } else {
-      handleSessionComplete();
+      // Dernier exercice passé : on enregistre la liste courante, sans l'exercice ignoré.
+      handleSessionComplete(completedExercises);
     }
   };
 
@@ -315,7 +347,12 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
 
       <View style={styles.introContent}>
         <View style={styles.introIconContainer}>
-          <Ionicons name="leaf" size={64} color={colors.accent.green} />
+          <FaceIllustration
+            exerciseId={sessionExercises[0]?.id}
+            zone={sessionExercises[0]?.zone}
+            size={136}
+            animated={user.settings.showAnimations}
+          />
         </View>
 
         <Text style={styles.introTitle}>Prêt(e) pour votre séance ?</Text>
@@ -424,43 +461,48 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
         {/* Exercise name */}
         <Text style={styles.exerciseName}>{currentExercise.name}</Text>
         <View style={styles.exerciseZoneBadge}>
-          <Text style={styles.exerciseZoneText}>
-            {currentExercise.zone.charAt(0).toUpperCase() + currentExercise.zone.slice(1)}
-          </Text>
+          <Text style={styles.exerciseZoneText}>{ZONE_LABELS[currentExercise.zone]}</Text>
         </View>
 
-        {/* Timer circle */}
-        <View
-          style={styles.timerContainer}
-          accessible
-          accessibilityRole="timer"
-          accessibilityLabel={`${formatTime(timeRemaining)} restantes${currentStep?.breathingCue ? `, ${getBreathingText()}` : ''}`}
-          accessibilityLiveRegion="polite"
-        >
-          <View style={styles.timerCircle}>
-            <Animated.View
-              style={[
-                styles.timerProgress,
-                {
-                  transform: [
-                    {
-                      rotate: progressAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                  ],
-                },
-              ]}
+        {/* Illustration animée du mouvement + minuteur de l'étape */}
+        <View style={styles.heroRow}>
+          <FaceIllustration
+            exerciseId={currentExercise.id}
+            zone={currentExercise.zone}
+            size={illustrationSize}
+            animated={user.settings.showAnimations}
+            paused={isPaused}
+          />
+          <View
+            style={styles.timerColumn}
+            accessible
+            accessibilityRole="timer"
+            accessibilityLabel={`${formatTime(timeRemaining)} restantes${isPaused ? ', en pause' : ''}${currentStep?.breathingCue ? `, ${getBreathingText()}` : ''}`}
+            accessibilityLiveRegion="polite"
+          >
+            <ProgressCircle
+              progress={stepProgress}
+              size={timerSize}
+              strokeWidth={8}
+              color={isPaused ? colors.accent.gold : colors.accent.green}
+              backgroundColor={colors.background.elevated}
+              showPercentage={false}
+              centerContent={
+                <View style={styles.timerInner}>
+                  <Text style={styles.timerText}>{formatTime(timeRemaining)}</Text>
+                  {isPaused ? (
+                    <Text style={styles.pausedText}>Pause</Text>
+                  ) : currentStep?.breathingCue ? (
+                    <Text style={styles.breathingText}>{getBreathingText()}</Text>
+                  ) : null}
+                </View>
+              }
             />
-            <View style={styles.timerInner}>
-              <Text style={styles.timerText}>{formatTime(timeRemaining)}</Text>
-              {currentStep?.breathingCue && (
-                <Text style={styles.breathingText}>{getBreathingText()}</Text>
-              )}
-            </View>
           </View>
         </View>
+        <Text style={styles.motionCaption} numberOfLines={2}>
+          {getMotionCaption(currentExercise.id, currentExercise.zone)}
+        </Text>
 
         {/* Current step */}
         <Card variant="elevated" padding="large" style={styles.stepCard}>
@@ -476,14 +518,6 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
           </View>
           <Text style={styles.stepInstruction}>{currentStep?.instruction}</Text>
         </Card>
-
-        {/* Exercise visualization placeholder */}
-        <View style={styles.visualizationContainer}>
-          <View style={styles.visualizationPlaceholder}>
-            <Ionicons name="person" size={80} color={colors.text.muted} />
-            <Text style={styles.visualizationText}>Zone : {currentExercise.zone}</Text>
-          </View>
-        </View>
       </ScrollView>
 
       {/* Controls */}
@@ -539,7 +573,9 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
   );
 
   // Render rest screen
-  const renderRest = () => (
+  const renderRest = () => {
+    const nextExercise = sessionExercises[currentExerciseIndex + 1];
+    return (
     <View style={styles.restContainer}>
       <View style={styles.restContent}>
         <BreathingCircle
@@ -556,14 +592,21 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
         </View>
 
         <View style={styles.nextExercisePreview}>
+          {nextExercise && (
+            <FaceZoneThumb
+              zone={nextExercise.zone}
+              exerciseId={nextExercise.id}
+              size={46}
+              style={styles.nextExerciseThumb}
+            />
+          )}
           <Text style={styles.nextExerciseLabel}>Exercice suivant</Text>
-          <Text style={styles.nextExerciseName}>
-            {sessionExercises[currentExerciseIndex + 1]?.name || 'Terminé'}
-          </Text>
+          <Text style={styles.nextExerciseName}>{nextExercise?.name || 'Terminé'}</Text>
         </View>
       </View>
     </View>
-  );
+    );
+  };
 
   // Render completed screen
   const renderCompleted = () => {
@@ -590,7 +633,7 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
 
             <View style={styles.completedStatItem}>
               <Ionicons name="fitness" size={24} color={colors.accent.green} />
-              <Text style={styles.completedStatValue}>{completedExercises.length}</Text>
+              <Text style={styles.completedStatValue}>{savedExerciseIds.length}</Text>
               <Text style={styles.completedStatLabel}>Exercices</Text>
             </View>
 
@@ -604,13 +647,8 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
           {/* How do you feel */}
           <View style={styles.feelingSection}>
             <Text style={styles.feelingTitle}>Comment se sent votre visage ?</Text>
-            <View style={styles.feelingsRow}>
-              {[
-                { id: 'tendu' as FaceFeelRating, emoji: '😣', label: 'Tendu' },
-                { id: 'normal' as FaceFeelRating, emoji: '😐', label: 'Normal' },
-                { id: 'detendu' as FaceFeelRating, emoji: '😌', label: 'Détendu' },
-                { id: 'revitalise' as FaceFeelRating, emoji: '✨', label: 'Revitalisé' },
-              ].map((feeling) => (
+            <View style={styles.feelingsRow} accessibilityRole="radiogroup">
+              {FACE_FEEL_OPTIONS.map((feeling) => (
                 <TouchableOpacity
                   key={feeling.id}
                   style={[
@@ -618,15 +656,18 @@ export const SessionPlayerScreen: React.FC<SessionPlayerScreenProps> = ({
                     selectedFeeling === feeling.id && styles.feelingButtonSelected,
                   ]}
                   accessibilityRole="radio"
-                  accessibilityLabel={feeling.label}
-                  accessibilityState={{ selected: selectedFeeling === feeling.id }}
+                  accessibilityLabel={feeling.description ?? feeling.label}
+                  accessibilityState={{
+                    checked: selectedFeeling === feeling.id,
+                    selected: selectedFeeling === feeling.id,
+                  }}
                   onPress={() => {
                     if (user.settings.hapticEnabled) {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }
                     setSelectedFeeling(feeling.id);
-                    // Save feeling to daily entry
-                    const today = new Date().toISOString().split('T')[0];
+                    // Save feeling to daily entry (clé du jour local)
+                    const today = getLocalDateKey();
                     useStore.getState().updateDailyEntry({
                       date: today,
                       eveningFeel: feeling.id,
@@ -695,13 +736,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   introIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.accent.green + '20',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    justifyContent: 'center',
+    marginBottom: spacing.lg,
   },
   introTitle: {
     ...typography.h2,
@@ -841,36 +878,43 @@ const styles = StyleSheet.create({
     ...typography.labelSmall,
     color: colors.accent.green,
   },
-  timerContainer: {
-    marginBottom: spacing.xl,
-  },
-  timerCircle: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: colors.background.tertiary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 6,
-    borderColor: colors.accent.green,
-  },
-  timerProgress: {
-    position: 'absolute',
+  heroRow: {
     width: '100%',
-    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  timerColumn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   timerInner: {
     alignItems: 'center',
   },
   timerText: {
-    ...typography.h1,
+    ...typography.h2,
     color: colors.text.primary,
-    fontSize: 48,
+    fontSize: 26,
+    lineHeight: 30,
   },
   breathingText: {
-    ...typography.label,
+    ...typography.labelSmall,
     color: colors.accent.teal,
-    marginTop: spacing.xs,
+    marginTop: 2,
+  },
+  pausedText: {
+    ...typography.labelSmall,
+    color: colors.accent.gold,
+    marginTop: 2,
+  },
+  motionCaption: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.lg,
   },
   stepCard: {
     width: '100%',
@@ -902,23 +946,6 @@ const styles = StyleSheet.create({
     ...typography.bodyLarge,
     color: colors.text.primary,
     lineHeight: 26,
-  },
-  visualizationContainer: {
-    width: '100%',
-    aspectRatio: 1.5,
-    marginBottom: spacing.xl,
-  },
-  visualizationPlaceholder: {
-    flex: 1,
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  visualizationText: {
-    ...typography.caption,
-    color: colors.text.muted,
-    marginTop: spacing.md,
   },
   controlsContainer: {
     flexDirection: 'row',
@@ -972,6 +999,9 @@ const styles = StyleSheet.create({
   restCountdownLabel: {
     ...typography.caption,
     color: colors.text.tertiary,
+  },
+  nextExerciseThumb: {
+    marginBottom: spacing.sm,
   },
   nextExercisePreview: {
     backgroundColor: colors.background.tertiary,

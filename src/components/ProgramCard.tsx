@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Program } from '../types';
+import { DifficultyLevel, Program } from '../types';
+import { DIFFICULTY_LABELS } from '../data/labels';
 import Card from './Card';
 import ProgressCircle from './ProgressCircle';
 
@@ -14,13 +15,7 @@ interface ProgramCardProps {
   showProgress?: boolean;
 }
 
-const difficultyLabels: { [key: string]: string } = {
-  debutant: 'Débutant',
-  intermediaire: 'Intermédiaire',
-  avance: 'Avancé',
-};
-
-const difficultyColors: { [key: string]: string } = {
+const difficultyColors: Record<DifficultyLevel, string> = {
   debutant: colors.accent.green,
   intermediaire: colors.accent.gold,
   avance: colors.accent.coral,
@@ -96,7 +91,7 @@ const ProgramCardInner: React.FC<ProgramCardProps> = ({
                 { color: difficultyColors[program.difficulty] },
               ]}
             >
-              {difficultyLabels[program.difficulty]}
+              {DIFFICULTY_LABELS[program.difficulty]}
             </Text>
           </View>
 

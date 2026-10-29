@@ -14,10 +14,10 @@ import {
   Contraindication,
   FaceZone,
   UserGoal,
-  FaceFeelRating,
 } from '../types';
 import { badgeDefinitions, checkBadgeEarned } from '../data/badges';
 import { getExerciseById } from '../data/exercises';
+import { getLocalDateKey, getLocalMondayKey } from '../utils/date';
 
 // ============================================
 // ÉTAT INITIAL DE L'UTILISATEUR
@@ -467,7 +467,7 @@ export const useStore = create<AppState>()(
         }),
 
       getTodayEntry: () => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateKey();
         return get().dailyEntries.find((e) => e.date === today);
       },
 
@@ -587,12 +587,9 @@ export const useStore = create<AppState>()(
 
       checkAndResetWeeklyProgress: () => {
         const state = get();
-        const now = new Date();
-        const currentMonday = new Date(now);
-        const dayOfWeek = currentMonday.getDay();
-        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        currentMonday.setDate(currentMonday.getDate() - diff);
-        const mondayStr = currentMonday.toISOString().split('T')[0];
+        // Clé du lundi LOCAL (YYYY-MM-DD) : stable toute la semaine quel que
+        // soit le fuseau horaire, donc idempotente sur appels répétés.
+        const mondayStr = getLocalMondayKey();
 
         if (state.lastWeekResetDate !== mondayStr) {
           set((s) => ({

@@ -6,30 +6,20 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Card, ProgressCircle, EmptyState } from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
-import { RootStackNavigationProp } from '../types';
+import { ZONE_SHORT_LABELS } from '../data/labels';
+import { FaceZone, RootStackNavigationProp } from '../types';
 
 interface StatsScreenProps {
   navigation: RootStackNavigationProp;
 }
 
-const zoneLabels: { [key: string]: string } = {
-  front: 'Front',
-  yeux: 'Yeux',
-  joues: 'Joues',
-  bouche: 'Bouche',
-  ovale: 'Ovale',
-  cou: 'Cou',
-  global: 'Global',
-};
-
-const zoneColors: { [key: string]: string } = {
+const zoneColors: Record<FaceZone, string> = {
   front: colors.accent.green,
   yeux: colors.accent.teal,
   joues: colors.accent.coral,
@@ -40,7 +30,6 @@ const zoneColors: { [key: string]: string } = {
 };
 
 export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
-  const { width } = useWindowDimensions();
   const { user, sessionHistory, favoriteExercises } = useStore();
   const { progress } = user;
 
@@ -48,18 +37,18 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
 
   // Calculate zone statistics
   const zoneStats = useMemo(() => {
-    const zones: { [key: string]: number } = {};
+    const zones = new Map<FaceZone, number>();
 
     sessionHistory.forEach((session) => {
       session.exercises.forEach((ex) => {
         const exercise = exercises.find((e) => e.id === ex.exerciseId);
         if (exercise && !ex.skipped) {
-          zones[exercise.zone] = (zones[exercise.zone] || 0) + 1;
+          zones.set(exercise.zone, (zones.get(exercise.zone) || 0) + 1);
         }
       });
     });
 
-    return Object.entries(zones)
+    return Array.from(zones.entries())
       .map(([zone, count]) => ({ zone, count }))
       .sort((a, b) => b.count - a.count);
   }, [sessionHistory]);
@@ -122,7 +111,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
     if (zoneStats.length > 0) {
       result.push({
         icon: 'heart',
-        text: `Zone la plus travaillée : ${zoneLabels[zoneStats[0].zone]}`,
+        text: `Zone la plus travaillée : ${ZONE_SHORT_LABELS[zoneStats[0].zone]}`,
         color: colors.accent.coral,
       });
     }
@@ -238,7 +227,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
           <>
             <Text style={styles.sectionTitle}>Zones travaillées</Text>
             <Card variant="default" padding="large" style={styles.zonesCard}>
-              {zoneStats.slice(0, 5).map((stat, index) => {
+              {zoneStats.slice(0, 5).map((stat) => {
                 const total = zoneStats.reduce((sum, s) => sum + s.count, 0);
                 const percentage = Math.round((stat.count / total) * 100);
                 return (
@@ -250,7 +239,7 @@ export const StatsScreen: React.FC<StatsScreenProps> = ({ navigation }) => {
                           { backgroundColor: zoneColors[stat.zone] },
                         ]}
                       />
-                      <Text style={styles.zoneName}>{zoneLabels[stat.zone]}</Text>
+                      <Text style={styles.zoneName}>{ZONE_SHORT_LABELS[stat.zone]}</Text>
                     </View>
                     <View style={styles.zoneBarContainer}>
                       <View

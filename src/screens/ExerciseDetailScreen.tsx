@@ -6,54 +6,30 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card } from '../components';
+import { Button, Card, FaceIllustration } from '../components';
 import { useStore } from '../store/useStore';
 import { getExerciseById } from '../data/exercises';
-import { Exercise, RootStackNavigationProp, RootStackRouteProp } from '../types';
-
-const { width } = Dimensions.get('window');
+import {
+  CONTRAINDICATION_LABELS,
+  DIFFICULTY_LABELS,
+  ZONE_LABELS,
+} from '../data/labels';
+import { isExerciseSafeForHealth } from '../utils/safety';
+import { DifficultyLevel, RootStackNavigationProp, RootStackRouteProp } from '../types';
 
 interface ExerciseDetailScreenProps {
   navigation: RootStackNavigationProp;
   route: RootStackRouteProp<'ExerciseDetail'>;
 }
 
-const zoneLabels: { [key: string]: string } = {
-  front: 'Front',
-  yeux: 'Contour des yeux',
-  joues: 'Joues',
-  bouche: 'Bouche',
-  ovale: 'Ovale du visage',
-  cou: 'Cou & Mâchoire',
-  global: 'Global',
-};
-
-const difficultyLabels: { [key: string]: string } = {
-  debutant: 'Débutant',
-  intermediaire: 'Intermédiaire',
-  avance: 'Avancé',
-};
-
-const difficultyColors: { [key: string]: string } = {
+const difficultyColors: Record<DifficultyLevel, string> = {
   debutant: colors.accent.green,
   intermediaire: colors.accent.gold,
   avance: colors.accent.coral,
-};
-
-const contraindicationLabels: { [key: string]: string } = {
-  atm: 'Troubles ATM',
-  douleurs_cervicales: 'Douleurs cervicales',
-  post_chirurgie: 'Post-chirurgie',
-  injections_recentes: 'Injections récentes',
-  paralysie_faciale: 'Paralysie faciale',
-  hypertension: 'Hypertension',
-  glaucome: 'Glaucome',
-  problemes_dentaires: 'Problèmes dentaires',
 };
 
 export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
@@ -80,9 +56,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
 
   const isCompleted = user.progress.completedExercises.includes(exerciseId);
   const isFavorite = favoriteExercises.includes(exerciseId);
-  const hasContraindication = exercise.contraindications.some((c) =>
-    user.healthInfo.contraindications.includes(c)
-  );
+  const hasContraindication = !isExerciseSafeForHealth(exercise, user.healthInfo);
 
   const handleToggleFavorite = () => {
     if (user.settings.hapticEnabled) {
@@ -170,11 +144,15 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Exercise Image/Visualization */}
+        {/* Illustration animée du mouvement */}
         <View style={styles.visualContainer}>
-          <View style={styles.visualPlaceholder}>
-            <Ionicons name="body" size={80} color={colors.text.muted} />
-          </View>
+          <FaceIllustration
+            exerciseId={exercise.id}
+            zone={exercise.zone}
+            size={200}
+            animated={user.settings.showAnimations}
+            showCaption
+          />
         </View>
 
         {/* Exercise Info */}
@@ -185,7 +163,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
           <View style={styles.badgesRow}>
             <View style={styles.zoneBadge}>
               <Ionicons name="location" size={14} color={colors.accent.green} />
-              <Text style={styles.zoneBadgeText}>{zoneLabels[exercise.zone]}</Text>
+              <Text style={styles.zoneBadgeText}>{ZONE_LABELS[exercise.zone]}</Text>
             </View>
 
             <View
@@ -200,7 +178,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
                   { color: difficultyColors[exercise.difficulty] },
                 ]}
               >
-                {difficultyLabels[exercise.difficulty]}
+                {DIFFICULTY_LABELS[exercise.difficulty]}
               </Text>
             </View>
           </View>
@@ -365,7 +343,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({
                   <View key={index} style={styles.contraindicationItem}>
                     <Ionicons name="alert-circle" size={18} color={colors.accent.coral} />
                     <Text style={styles.contraindicationText}>
-                      {contraindicationLabels[ci] || ci}
+                      {CONTRAINDICATION_LABELS[ci]}
                     </Text>
                   </View>
                 ))}
@@ -442,14 +420,12 @@ const styles = StyleSheet.create({
   // Visual
   visualContainer: {
     width: '100%',
-    aspectRatio: 1.5,
-    marginBottom: spacing.lg,
-  },
-  visualPlaceholder: {
-    flex: 1,
-    backgroundColor: colors.background.tertiary,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: spacing.lg,
+    marginBottom: spacing.lg,
+    backgroundColor: colors.background.secondary,
+    borderBottomLeftRadius: borderRadius.xxl,
+    borderBottomRightRadius: borderRadius.xxl,
   },
   // Info Section
   infoSection: {

@@ -13,36 +13,27 @@ import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
 import { Button, Card, ProgressCircle } from '../components';
 import { useStore } from '../store/useStore';
-import { programs, getProgramById } from '../data/programs';
+import { getProgramById } from '../data/programs';
 import { getExerciseById } from '../data/exercises';
+import { DIFFICULTY_LABELS, ZONE_SHORT_LABELS } from '../data/labels';
+import { filterExercisesForHealth } from '../utils/safety';
 
-import { RootStackNavigationProp, RootStackRouteProp } from '../types';
+import {
+  DifficultyLevel,
+  Exercise,
+  RootStackNavigationProp,
+  RootStackRouteProp,
+} from '../types';
 
 interface ProgramDetailScreenProps {
   navigation: RootStackNavigationProp;
   route: RootStackRouteProp<'ProgramDetail'>;
 }
 
-const difficultyLabels: { [key: string]: string } = {
-  debutant: 'Débutant',
-  intermediaire: 'Intermédiaire',
-  avance: 'Avancé',
-};
-
-const difficultyColors: { [key: string]: string } = {
+const difficultyColors: Record<DifficultyLevel, string> = {
   debutant: colors.accent.green,
   intermediaire: colors.accent.gold,
   avance: colors.accent.coral,
-};
-
-const zoneLabels: { [key: string]: string } = {
-  front: 'Front',
-  yeux: 'Yeux',
-  joues: 'Joues',
-  bouche: 'Bouche',
-  ovale: 'Ovale',
-  cou: 'Cou',
-  global: 'Global',
 };
 
 export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
@@ -50,7 +41,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
   route,
 }) => {
   const programId = route.params.programId;
-  const { user, startProgram, completeProgram } = useStore();
+  const { user, startProgram } = useStore();
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
   const program = getProgramById(programId);
@@ -105,20 +96,46 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
     }
   };
 
+  /**
+   * Exercices d'un jour du programme, filtrés selon le profil santé
+   * (même règle que l'écran Aujourd'hui).
+   */
+  const getSafeExerciseIdsForDay = (dayNumber: number): string[] => {
+    const dayData = program.days.find((d) => d.day === dayNumber);
+    const session = dayData?.sessions[0];
+    if (!session) return [];
+    const planned = session.exercises
+      .map((e) => getExerciseById(e.exerciseId))
+      .filter((exercise): exercise is Exercise => Boolean(exercise));
+    return filterExercisesForHealth(planned, user.healthInfo).map((exercise) => exercise.id);
+  };
+
+  const startDaySession = (dayNumber: number) => {
+    const exerciseIds = getSafeExerciseIdsForDay(dayNumber);
+    if (exerciseIds.length === 0) {
+      Alert.alert(
+        'Séance non disponible',
+        'Aucun exercice de cette séance n’est compatible avec vos précautions de santé. Mettez à jour vos informations ou consultez les précautions.',
+        [
+          { text: 'Fermer', style: 'cancel' },
+          { text: 'Voir les précautions', onPress: () => navigation.navigate('Safety') },
+        ]
+      );
+      return;
+    }
+
+    navigation.navigate('SessionPlayer', {
+      programId,
+      day: dayNumber,
+      exerciseIds,
+    });
+  };
+
   const handleContinueProgram = () => {
     if (user.settings.hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-
-    const dayData = program.days.find((d) => d.day === currentDay);
-    if (dayData && dayData.sessions.length > 0) {
-      const exerciseIds = dayData.sessions[0].exercises.map((e) => e.exerciseId);
-      navigation.navigate('SessionPlayer', {
-        programId,
-        day: currentDay,
-        exerciseIds,
-      });
-    }
+    startDaySession(currentDay);
   };
 
   const handleDayPress = (day: number) => {
@@ -228,7 +245,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
                     { color: difficultyColors[program.difficulty] },
                   ]}
                 >
-                  {difficultyLabels[program.difficulty]}
+                  {DIFFICULTY_LABELS[program.difficulty]}
                 </Text>
               </View>
             </View>
@@ -286,7 +303,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
           <View style={styles.zonesRow}>
             {program.zones.map((zone) => (
               <View key={zone} style={styles.zoneBadge}>
-                <Text style={styles.zoneBadgeText}>{zoneLabels[zone]}</Text>
+                <Text style={styles.zoneBadgeText}>{ZONE_SHORT_LABELS[zone]}</Text>
               </View>
             ))}
           </View>
@@ -405,14 +422,7 @@ export const ProgramDetailScreen: React.FC<ProgramDetailScreenProps> = ({
                     {canStartDay(day.day) && (
                       <Button
                         title={completedDaysForProgram.includes(day.day) ? 'Refaire ce jour' : 'Commencer'}
-                        onPress={() => {
-                          const exerciseIds = day.sessions[0]?.exercises.map((e) => e.exerciseId) || [];
-                          navigation.navigate('SessionPlayer', {
-                            programId,
-                            day: day.day,
-                            exerciseIds,
-                          });
-                        }}
+                        onPress={() => startDaySession(day.day)}
                         variant={completedDaysForProgram.includes(day.day) ? 'secondary' : 'primary'}
                         size="small"
                         style={styles.startDayButton}

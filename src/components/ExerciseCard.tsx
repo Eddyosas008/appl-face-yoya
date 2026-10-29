@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Exercise } from '../types';
+import { DifficultyLevel, Exercise } from '../types';
+import { DIFFICULTY_LABELS, ZONE_SHORT_LABELS } from '../data/labels';
 import Card from './Card';
+import { FaceZoneThumb } from './FaceIllustration';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -16,33 +18,7 @@ interface ExerciseCardProps {
   onToggleFavorite?: (exerciseId: string) => void;
 }
 
-const zoneLabels: { [key: string]: string } = {
-  front: 'Front',
-  yeux: 'Yeux',
-  joues: 'Joues',
-  bouche: 'Bouche',
-  ovale: 'Ovale',
-  cou: 'Cou',
-  global: 'Global',
-};
-
-const zoneIcons: { [key: string]: keyof typeof Ionicons.glyphMap } = {
-  front: 'ellipse-outline',
-  yeux: 'eye-outline',
-  joues: 'happy-outline',
-  bouche: 'chatbubble-outline',
-  ovale: 'scan-outline',
-  cou: 'body-outline',
-  global: 'body-outline',
-};
-
-const difficultyLabels: { [key: string]: string } = {
-  debutant: 'Débutant',
-  intermediaire: 'Intermédiaire',
-  avance: 'Avancé',
-};
-
-const difficultyColors: { [key: string]: string } = {
+const difficultyColors: Record<DifficultyLevel, string> = {
   debutant: colors.accent.green,
   intermediaire: colors.accent.gold,
   avance: colors.accent.coral,
@@ -75,11 +51,7 @@ const ExerciseCardInner: React.FC<ExerciseCardProps> = ({
       >
         <View style={styles.compactContent}>
           <View style={styles.compactIconContainer}>
-            <Ionicons
-              name={zoneIcons[exercise.zone]}
-              size={20}
-              color={colors.accent.green}
-            />
+            <FaceZoneThumb zone={exercise.zone} exerciseId={exercise.id} size={30} />
           </View>
           <View style={styles.compactTextContainer}>
             <Text style={styles.compactTitle} numberOfLines={1}>
@@ -109,17 +81,13 @@ const ExerciseCardInner: React.FC<ExerciseCardProps> = ({
       variant="default"
       padding="medium"
       style={styles.card}
-      accessibilityLabel={`${exercise.name}, ${zoneLabels[exercise.zone]}, ${difficultyLabels[exercise.difficulty]}, ${formatDuration(exercise.duration)}`}
+      accessibilityLabel={`${exercise.name}, ${ZONE_SHORT_LABELS[exercise.zone]}, ${DIFFICULTY_LABELS[exercise.difficulty]}, ${formatDuration(exercise.duration)}`}
     >
       <View style={styles.content}>
-        {/* Image placeholder */}
+        {/* Vignette du visage avec la zone travaillée */}
         <View style={styles.imageContainer}>
           <View style={styles.imagePlaceholder}>
-            <Ionicons
-              name={zoneIcons[exercise.zone]}
-              size={32}
-              color={colors.accent.green}
-            />
+            <FaceZoneThumb zone={exercise.zone} exerciseId={exercise.id} size={50} />
           </View>
         </View>
 
@@ -132,13 +100,13 @@ const ExerciseCardInner: React.FC<ExerciseCardProps> = ({
           <View style={styles.metaContainer}>
             {showZone && (
               <View style={styles.zoneBadge}>
-                <Text style={styles.zoneText}>{zoneLabels[exercise.zone]}</Text>
+                <Text style={styles.zoneText}>{ZONE_SHORT_LABELS[exercise.zone]}</Text>
               </View>
             )}
 
             <View style={[styles.difficultyBadge, { backgroundColor: diffColor + '20' }]}>
               <Text style={[styles.difficultyText, { color: diffColor }]}>
-                {difficultyLabels[exercise.difficulty]}
+                {DIFFICULTY_LABELS[exercise.difficulty]}
               </Text>
             </View>
 
@@ -215,6 +183,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.elevated,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   infoContainer: {
     flex: 1,
@@ -290,6 +259,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
+    overflow: 'hidden',
   },
   compactTextContainer: {
     flex: 1,

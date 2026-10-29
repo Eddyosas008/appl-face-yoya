@@ -14,10 +14,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card, ProgressCircle, BadgeComponent, EmptyState } from '../components';
+import { Card, BadgeComponent, EmptyState, DailyCheckIn } from '../components';
 import { useStore } from '../store/useStore';
 import { FaceFeelRating, MainTabScreenNavigationProp } from '../types';
 import { sanitizeNotes } from '../utils/validation';
+import { getLocalDateKey } from '../utils/date';
 
 interface JournalScreenProps {
   navigation: MainTabScreenNavigationProp;
@@ -25,24 +26,22 @@ interface JournalScreenProps {
 
 type ViewMode = 'overview' | 'calendar' | 'achievements';
 
-export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
+export const JournalScreen: React.FC<JournalScreenProps> = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [dailyNote, setDailyNote] = useState('');
-  const [selectedFeeling, setSelectedFeeling] = useState<FaceFeelRating | null>(null);
 
-  const { user, sessionHistory, dailyEntries, updateDailyEntry, getTodayEntry } = useStore();
+  const { user, sessionHistory, updateDailyEntry, getTodayEntry } = useStore();
   const { progress, settings } = user;
 
   // Get today's entry
   const todayEntry = getTodayEntry();
 
-  // Initialize state from today's entry
+  // Initialize notes draft from today's entry
   React.useEffect(() => {
     if (todayEntry) {
       setDailyNote(todayEntry.notes || '');
-      setSelectedFeeling(todayEntry.morningFeel || null);
     }
   }, [todayEntry]);
 
@@ -116,10 +115,8 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
     if (settings.hapticEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    setSelectedFeeling(feeling);
-    const today = new Date().toISOString().split('T')[0];
     updateDailyEntry({
-      date: today,
+      date: getLocalDateKey(),
       morningFeel: feeling,
     });
   }, [settings.hapticEnabled, updateDailyEntry]);
@@ -128,7 +125,7 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
     if (settings.hapticEnabled) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     const sanitizedNote = sanitizeNotes(dailyNote);
     updateDailyEntry({
       date: today,
@@ -246,35 +243,14 @@ export const JournalScreen: React.FC<JournalScreenProps> = ({ navigation }) => {
         </Card>
       </TouchableOpacity>
 
-      {/* How Face Feels */}
-      <Text style={styles.sectionTitle}>Comment se sent votre visage ?</Text>
-      <View style={styles.feelingsRow}>
-        {([
-          { id: 'tendu' as FaceFeelRating, label: 'Tendu', emoji: '😣' },
-          { id: 'normal' as FaceFeelRating, label: 'Normal', emoji: '😐' },
-          { id: 'detendu' as FaceFeelRating, label: 'Détendu', emoji: '😌' },
-          { id: 'revitalise' as FaceFeelRating, label: 'Revitalisé', emoji: '✨' },
-        ]).map((feeling) => (
-          <TouchableOpacity
-            key={feeling.id}
-            style={[
-              styles.feelingButton,
-              selectedFeeling === feeling.id && styles.feelingButtonSelected,
-            ]}
-            onPress={() => handleFeelingSelect(feeling.id)}
-          >
-            <Text style={styles.feelingEmoji}>{feeling.emoji}</Text>
-            <Text
-              style={[
-                styles.feelingLabel,
-                selectedFeeling === feeling.id && styles.feelingLabelSelected,
-              ]}
-            >
-              {feeling.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* How Face Feels (même composant que l'écran Aujourd'hui) */}
+      <DailyCheckIn
+        title="Comment se sent votre visage ?"
+        subtitle="Votre ressenti du matin, enregistré dans le journal."
+        value={todayEntry?.morningFeel}
+        onChange={handleFeelingSelect}
+        style={styles.checkInCard}
+      />
     </>
   );
 
@@ -667,35 +643,9 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.md,
   },
-  // Feelings Row
-  feelingsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  // Daily check-in
+  checkInCard: {
     marginBottom: spacing.xl,
-  },
-  feelingButton: {
-    alignItems: 'center',
-    backgroundColor: colors.background.tertiary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.lg,
-    minWidth: 72,
-  },
-  feelingEmoji: {
-    fontSize: 24,
-    marginBottom: spacing.xs,
-  },
-  feelingLabel: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  feelingButtonSelected: {
-    backgroundColor: colors.accent.green + '20',
-    borderWidth: 2,
-    borderColor: colors.accent.green,
-  },
-  feelingLabelSelected: {
-    color: colors.accent.green,
   },
   // Calendar
   calendarHeader: {
@@ -811,16 +761,6 @@ const styles = StyleSheet.create({
     width: '25%',
     alignItems: 'center',
     marginBottom: spacing.lg,
-  },
-  emptyBadgesCard: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  emptyBadgesText: {
-    ...typography.body,
-    color: colors.text.muted,
-    textAlign: 'center',
-    marginTop: spacing.md,
   },
   // Statistics
   statisticsCard: {

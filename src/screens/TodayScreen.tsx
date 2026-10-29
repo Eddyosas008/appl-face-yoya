@@ -1,20 +1,34 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  AccessibilityInfo,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Button, Card, DailyCheckIn, ProgressCircle } from '../components';
+import {
+  Button,
+  Card,
+  DailyCheckIn,
+  FaceIllustration,
+  FaceZoneThumb,
+  ProgressCircle,
+} from '../components';
 import { useStore } from '../store/useStore';
 import { exercises } from '../data/exercises';
 import { programs } from '../data/programs';
+import { ZONE_LABELS } from '../data/labels';
 import { adaptive } from '../utils/responsive';
+import { getLocalDateKey } from '../utils/date';
+import { filterExercisesForHealth } from '../utils/safety';
+import { Exercise, FaceFeelRating, MainTabScreenNavigationProp } from '../types';
 
 // Daily tips for face yoga practice
 const dailyTips = [
@@ -50,60 +64,79 @@ const dailyTips = [
   "Célébrez chaque petite victoire - la régularité mérite d'être récompensée !",
 ];
 
-import { FaceFeelRating, MainTabScreenNavigationProp } from '../types';
-
 interface TodayScreenProps {
   navigation: MainTabScreenNavigationProp;
 }
 
+interface TodaySession {
+  exercises: Exercise[];
+  /** Nombre d'exercices du jour retirés pour raisons de sécurité. */
+  removedCount: number;
+  isProgramDay: boolean;
+}
+
 export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
-  const { user, checkAndResetWeeklyProgress, updateDailyEntry, dailyEntries } = useStore();
+  const { user, updateDailyEntry, dailyEntries } = useStore();
   const { profile, preferences, progress, healthInfo } = user;
-  const todayKey = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Clé du jour LOCAL. L'onglet reste monté indéfiniment : on la recalcule
+  // au focus de l'écran et au retour de l'app au premier plan, sinon après
+  // minuit le check-in lirait/écrirait l'entrée de la veille.
+  const [todayKey, setTodayKey] = useState(() => getLocalDateKey());
+  const refreshTodayKey = useCallback(() => {
+    const nextKey = getLocalDateKey();
+    setTodayKey((prev) => (prev === nextKey ? prev : nextKey));
+  }, []);
+
+  useFocusEffect(refreshTodayKey);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (status: AppStateStatus) => {
+      if (status === 'active') refreshTodayKey();
+    });
+    return () => subscription.remove();
+  }, [refreshTodayKey]);
+
   const todayEntry = dailyEntries.find((entry) => entry.date === todayKey);
   const hasSafetyNotice = healthInfo.recentProcedures || healthInfo.contraindications.length > 0;
 
-  // Reset weekly progress if a new week has started
-  useEffect(() => {
-    checkAndResetWeeklyProgress();
-  }, []);
-
   // Get current program info
-  const currentProgram = progress.currentProgramId
-    ? programs.find((p) => p.id === progress.currentProgramId)
-    : null;
+  const currentProgramId = progress.currentProgramId;
+  const currentProgram = useMemo(
+    () => (currentProgramId ? programs.find((p) => p.id === currentProgramId) ?? null : null),
+    [currentProgramId]
+  );
   const currentDay = progress.currentProgramProgress?.currentDay || 1;
+  const hasProgramProgress = Boolean(progress.currentProgramProgress);
 
-  // Get today's session exercises
-  const getTodayExercises = () => {
-    if (currentProgram && progress.currentProgramProgress) {
+  // Today's session exercises, filtered for the user's health profile.
+  const todaySession = useMemo<TodaySession>(() => {
+    if (currentProgram && hasProgramProgress) {
       const dayData = currentProgram.days.find((d) => d.day === currentDay);
       if (dayData && dayData.sessions.length > 0) {
-        const session = dayData.sessions[0];
-        return session.exercises
+        const planned = dayData.sessions[0].exercises
           .map((se) => exercises.find((exercise) => exercise.id === se.exerciseId))
-          .filter(
-            (exercise) =>
-              Boolean(exercise) &&
-              !exercise?.contraindications.some((item) =>
-                healthInfo.contraindications.includes(item)
-              )
-          );
+          .filter((exercise): exercise is Exercise => Boolean(exercise));
+        const safe = filterExercisesForHealth(planned, healthInfo);
+        return {
+          exercises: safe,
+          removedCount: planned.length - safe.length,
+          isProgramDay: true,
+        };
       }
     }
     // Default: recommend only exercises compatible with declared precautions.
-    return exercises
-      .filter(
-        (exercise) =>
-          !exercise.contraindications.some((item) =>
-            healthInfo.contraindications.includes(item)
-          )
-      )
-      .slice(0, 4);
-  };
+    return {
+      exercises: filterExercisesForHealth(exercises, healthInfo).slice(0, 4),
+      removedCount: 0,
+      isProgramDay: false,
+    };
+  }, [currentProgram, currentDay, hasProgramProgress, healthInfo]);
 
-  const todayExercises = getTodayExercises();
-  const totalDuration = todayExercises.reduce((sum, ex) => sum + (ex?.duration || 0), 0);
+  const todayExercises = todaySession.exercises;
+  const removedCount = todaySession.removedCount;
+  const canStartSession = todayExercises.length > 0;
+  const totalDuration = todayExercises.reduce((sum, ex) => sum + ex.duration, 0);
 
   // Quick stats
   const weekProgress = progress.weeklyProgress / progress.weeklyGoal;
@@ -122,19 +155,18 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
   };
 
   const handleStartSession = useCallback(() => {
-    if (todayExercises.length === 0) {
-      navigation.navigate('Safety');
-      return;
-    }
+    if (!canStartSession) return;
 
     navigation.navigate('SessionPlayer', {
       programId: currentProgram?.id,
       day: currentDay,
-      exerciseIds: todayExercises.flatMap((exercise) =>
-        exercise ? [exercise.id] : []
-      ),
+      exerciseIds: todayExercises.map((exercise) => exercise.id),
     });
-  }, [navigation, currentProgram, currentDay, todayExercises]);
+  }, [navigation, currentProgram, currentDay, todayExercises, canStartSession]);
+
+  const handleOpenSafety = useCallback(() => {
+    navigation.navigate('Safety');
+  }, [navigation]);
 
   const handleFeelingChange = useCallback(
     (feeling: FaceFeelRating) => {
@@ -154,7 +186,7 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
       return 'Votre routine privilégie le relâchement des tensions.';
     }
     if (preferences.focusZones.length > 0) {
-      return `Focus du jour : ${preferences.focusZones[0]}.`;
+      return `Focus du jour : ${ZONE_LABELS[preferences.focusZones[0]]}.`;
     }
     return 'Une routine courte et douce, à votre rythme.';
   }, [preferences.focusZones, preferences.primaryGoals, todayEntry?.morningFeel]);
@@ -180,9 +212,13 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
             accessibilityRole="button"
             accessibilityLabel="Voir mon profil"
           >
-            <View style={styles.avatarPlaceholder}>
-              <Ionicons name="person" size={20} color={colors.text.secondary} />
-            </View>
+            {profile.avatarUrl ? (
+              <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={20} color={colors.text.secondary} />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -265,47 +301,78 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
         {/* Today's Session Card */}
         <Card variant="default" padding="large" style={styles.sessionCard}>
           <View style={styles.sessionHeader}>
-            <View>
+            {todayExercises[0] && (
+              <FaceIllustration
+                exerciseId={todayExercises[0].id}
+                zone={todayExercises[0].zone}
+                size={78}
+                animated={user.settings.showAnimations}
+                style={styles.sessionHero}
+              />
+            )}
+            <View style={styles.sessionTitleWrap}>
               <Text style={styles.sessionLabel}>Séance du jour</Text>
               {currentProgram ? (
-                <Text style={styles.programName}>
-                  {currentProgram.name} - Jour {currentDay}
+                <Text style={styles.programName} numberOfLines={2}>
+                  {currentProgram.name} · Jour {currentDay}
                 </Text>
               ) : (
                 <Text style={styles.programName}>Routine personnalisée</Text>
               )}
-            </View>
-            <View style={styles.sessionMeta}>
-              <Ionicons name="time-outline" size={16} color={colors.text.secondary} />
-              <Text style={styles.sessionDuration}>
-                {Math.ceil(totalDuration / 60)} min
-              </Text>
+              <View style={styles.sessionMeta}>
+                <Ionicons name="time-outline" size={14} color={colors.text.secondary} />
+                <Text style={styles.sessionDuration}>
+                  {Math.ceil(totalDuration / 60)} min · {todayExercises.length} exercice
+                  {todayExercises.length > 1 ? 's' : ''}
+                </Text>
+              </View>
             </View>
           </View>
 
           {/* Session Preview */}
           <View style={styles.sessionPreview}>
             <View style={styles.exercisePreviewRow}>
-              {todayExercises.slice(0, 4).map((exercise, index) => (
-                <View key={exercise?.id || index} style={styles.exercisePreviewItem}>
-                  <View style={styles.exercisePreviewIcon}>
-                    <Ionicons
-                      name="leaf"
-                      size={16}
-                      color={colors.accent.green}
-                    />
-                  </View>
+              {todayExercises.slice(0, 4).map((exercise) => (
+                <View key={exercise.id} style={styles.exercisePreviewItem}>
+                  <FaceZoneThumb
+                    zone={exercise.zone}
+                    exerciseId={exercise.id}
+                    size={22}
+                    style={styles.exercisePreviewIcon}
+                  />
                   <Text style={styles.exercisePreviewName} numberOfLines={1}>
-                    {exercise?.name || 'Exercice'}
+                    {exercise.name}
                   </Text>
                 </View>
               ))}
             </View>
+
+            {removedCount > 0 && canStartSession && (
+              <View style={styles.safetyAdjustment} accessibilityRole="text">
+                <Ionicons name="shield-checkmark-outline" size={16} color={colors.accent.gold} />
+                <Text style={styles.safetyAdjustmentText}>
+                  {removedCount} exercice{removedCount > 1 ? 's' : ''} retiré
+                  {removedCount > 1 ? 's' : ''} pour votre sécurité
+                </Text>
+              </View>
+            )}
+
+            {!canStartSession && (
+              <View style={styles.blockedNotice} accessibilityRole="alert">
+                <Ionicons name="alert-circle" size={18} color={colors.accent.coral} />
+                <Text style={styles.blockedNoticeText}>
+                  {todaySession.isProgramDay
+                    ? 'Tous les exercices de cette séance sont incompatibles avec vos précautions de santé. Mettez à jour vos informations ou choisissez un autre programme.'
+                    : 'Aucun exercice compatible avec vos précautions de santé n’a été trouvé. Mettez à jour vos informations pour obtenir une routine adaptée.'}
+                </Text>
+              </View>
+            )}
           </View>
 
           <Button
-            title={todayExercises.length > 0 ? 'Commencer la séance' : 'Voir les précautions'}
+            title="Commencer la séance"
             onPress={handleStartSession}
+            disabled={!canStartSession}
             fullWidth
             icon={
               <Ionicons
@@ -316,6 +383,16 @@ export const TodayScreen: React.FC<TodayScreenProps> = ({ navigation }) => {
               />
             }
           />
+
+          {!canStartSession && (
+            <Button
+              title="Voir les précautions"
+              onPress={handleOpenSafety}
+              variant="outline"
+              fullWidth
+              style={styles.safetyButton}
+            />
+          )}
         </Card>
 
         {/* Quick Tips */}
@@ -451,6 +528,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  avatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.background.elevated,
+  },
   // Stats Card
   statsCard: {
     marginBottom: spacing.lg,
@@ -547,9 +630,14 @@ const styles = StyleSheet.create({
   },
   sessionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: spacing.lg,
+  },
+  sessionHero: {
+    marginRight: spacing.md,
+  },
+  sessionTitleWrap: {
+    flex: 1,
   },
   sessionLabel: {
     ...typography.caption,
@@ -565,14 +653,11 @@ const styles = StyleSheet.create({
   sessionMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.elevated,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
+    marginTop: spacing.xs,
   },
   sessionDuration: {
-    ...typography.label,
-    color: colors.text.primary,
+    ...typography.bodySmall,
+    color: colors.text.secondary,
     marginLeft: spacing.xs,
   },
   sessionPreview: {
@@ -599,6 +684,37 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.secondary,
     maxWidth: 100,
+  },
+  safetyAdjustment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  safetyAdjustmentText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginLeft: spacing.xs,
+    flex: 1,
+  },
+  blockedNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.accent.coral + '12',
+    borderWidth: 1,
+    borderColor: colors.accent.coral + '3D',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.sm,
+  },
+  blockedNoticeText: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    flex: 1,
+    marginLeft: spacing.sm,
+  },
+  safetyButton: {
+    marginTop: spacing.sm,
   },
   // Section
   section: {
