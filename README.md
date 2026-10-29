@@ -16,8 +16,9 @@ Une application de face yoga qui aide l'utilisateur à :
 
 - **Onboarding personnalisé** : objectifs, zones ciblées, durée, contre-indications, horaire
 - **30 exercices illustrés** classés par zone (front, yeux, joues, bouche, ovale, cou), chacun avec
-  une **illustration animée** du mouvement (sourcils, yeux, joues, bouche, mâchoire, tête, points de
-  contact des doigts) et une vignette de zone
+  une **illustration animée** du mouvement (sourcils, yeux avec iris et clignement, joues, lèvres
+  bicolores, mâchoire, tête, respiration, doigts avec trajectoires fléchées) et une vignette de zone ;
+  **carnation du visage** au choix dans les réglages (claire, médium, hâlée, foncée)
 - **4 programmes guidés** : Découverte (7 j), Anti-Âge Doux (28 j), Détente Mâchoire & Cou (21 j), Routine Express
 - **Lecteur de séance** : minuteur par étape avec anneau de progression, consignes de respiration,
   pause, repos guidé entre les exercices, ressenti de fin de séance

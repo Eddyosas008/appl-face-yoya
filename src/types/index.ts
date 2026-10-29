@@ -191,6 +191,8 @@ export interface UserSettings {
   hapticEnabled: boolean;
   showAnimations: boolean;
   dataCollection: boolean;
+  /** Carnation du visage illustré (local uniquement, non synchronisé). */
+  illustrationTone?: 'light' | 'medium' | 'tan' | 'deep';
 }
 
 // ============================================

@@ -14,7 +14,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, borderRadius, typography } from '../theme';
-import { Card } from '../components';
+import { Card, FaceIllustration, FACE_TONES, FACE_TONE_LABELS } from '../components';
+import type { FaceTone } from '../components';
 import { useStore } from '../store/useStore';
 import NotificationService from '../services/notifications';
 
@@ -289,6 +290,47 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) =>
                 />
               }
             />
+
+            {/* Carnation du visage illustré */}
+            <View style={styles.toneRow}>
+              <FaceIllustration
+                zone="global"
+                size={64}
+                animated={settings.showAnimations}
+                showGuides={false}
+                style={styles.tonePreview}
+              />
+              <View style={styles.toneContent}>
+                <Text style={styles.settingTitle}>Carnation de l’illustration</Text>
+                <Text style={styles.settingSubtitle}>Le visage animé des exercices vous ressemble</Text>
+                <View style={styles.toneSwatches}>
+                  {(Object.keys(FACE_TONES) as FaceTone[]).map((toneKey) => {
+                    const active = (settings.illustrationTone ?? 'medium') === toneKey;
+                    return (
+                      <TouchableOpacity
+                        key={toneKey}
+                        onPress={() => {
+                          if (settings.hapticEnabled) {
+                            Haptics.selectionAsync();
+                          }
+                          updateSettings({ illustrationTone: toneKey });
+                        }}
+                        style={[
+                          styles.toneSwatch,
+                          { backgroundColor: FACE_TONES[toneKey].skin },
+                          active && styles.toneSwatchActive,
+                        ]}
+                        accessibilityRole="radio"
+                        accessibilityLabel={`Carnation ${FACE_TONE_LABELS[toneKey]}`}
+                        accessibilityState={{ selected: active, checked: active }}
+                      >
+                        {active && <Ionicons name="checkmark" size={14} color={FACE_TONES[toneKey].feature} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
           </Card>
         </View>
 
@@ -545,6 +587,36 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.tertiary,
     marginTop: 2,
+  },
+  // Carnation
+  toneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+  },
+  tonePreview: {
+    marginRight: spacing.md,
+  },
+  toneContent: {
+    flex: 1,
+  },
+  toneSwatches: {
+    flexDirection: 'row',
+    marginTop: spacing.sm,
+  },
+  toneSwatch: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  toneSwatchActive: {
+    borderColor: colors.accent.green,
   },
   // Duration Grid
   durationGrid: {

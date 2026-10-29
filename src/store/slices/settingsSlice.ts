@@ -12,6 +12,7 @@ const initialSettings: UserSettings = {
   hapticEnabled: true,
   showAnimations: true,
   dataCollection: false,
+  illustrationTone: 'medium',
 };
 
 export interface SettingsSlice {

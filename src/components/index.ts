@@ -16,4 +16,11 @@ export { SkeletonLoader, CardSkeleton, ListItemSkeleton } from './SkeletonLoader
 export { MenuItem } from './MenuItem';
 export { ToggleItem } from './ToggleItem';
 export { SectionHeader } from './SectionHeader';
-export { FaceIllustration, FaceZoneThumb, getMotionCaption } from './FaceIllustration';
+export {
+  FaceIllustration,
+  FaceZoneThumb,
+  FACE_TONES,
+  FACE_TONE_LABELS,
+  getMotionCaption,
+} from './FaceIllustration';
+export type { FaceTone } from './FaceIllustration';

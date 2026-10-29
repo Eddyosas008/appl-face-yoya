@@ -4,20 +4,22 @@
 // Petite illustration (cartes d'exercices, aperçus) : le visage neutre avec
 // la zone travaillée surlignée. Aucune animation, rendu très léger.
 
-import React from 'react';
+import React, { useId } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
 import Svg from 'react-native-svg';
 import { FaceZone } from '../../types';
 import { FACE_VB_HEIGHT, FACE_VB_WIDTH, getMotionForExercise } from './motions';
 import {
-  DEFAULT_FACE_PALETTE,
+  FaceDefs,
   FacePalette,
+  FaceTone,
   Head,
   HighlightShapes,
   Shoulders,
   StaticFeatures,
   ZONE_TO_HIGHLIGHT,
 } from './faceParts';
+import { svgSafeId, useFacePalette } from './useFacePalette';
 
 interface FaceZoneThumbProps {
   zone: FaceZone;
@@ -25,6 +27,8 @@ interface FaceZoneThumbProps {
   exerciseId?: string;
   size?: number;
   highlightColor?: string;
+  /** Force une carnation (sinon : réglage utilisateur). */
+  tone?: FaceTone;
   palette?: Partial<FacePalette>;
   style?: StyleProp<ViewStyle>;
 }
@@ -34,10 +38,12 @@ export const FaceZoneThumb: React.FC<FaceZoneThumbProps> = ({
   exerciseId,
   size = 56,
   highlightColor,
+  tone,
   palette: paletteOverride,
   style,
 }) => {
-  const palette = { ...DEFAULT_FACE_PALETTE, ...paletteOverride };
+  const palette = useFacePalette(paletteOverride, tone);
+  const uid = svgSafeId(useId());
   const zones = exerciseId ? getMotionForExercise(exerciseId, zone).highlight : ZONE_TO_HIGHLIGHT[zone];
   // On cadre un peu plus serré sur le visage pour les petites tailles
   const viewBox = `10 20 ${FACE_VB_WIDTH - 20} ${FACE_VB_HEIGHT - 40}`;
@@ -46,9 +52,10 @@ export const FaceZoneThumb: React.FC<FaceZoneThumbProps> = ({
   return (
     <View style={style} pointerEvents="none">
       <Svg width={size} height={height} viewBox={viewBox}>
-        <Shoulders palette={palette} />
-        <Head palette={palette} />
-        <StaticFeatures palette={palette} />
+        <FaceDefs palette={palette} uid={uid} />
+        <Shoulders palette={palette} uid={uid} />
+        <Head palette={palette} uid={uid} />
+        <StaticFeatures palette={palette} uid={uid} />
         <HighlightShapes zones={zones} color={highlightColor ?? palette.highlight} />
         {/* Second passage léger pour renforcer la lisibilité du surlignage */}
         <HighlightShapes zones={zones} color={highlightColor ?? palette.highlight} />

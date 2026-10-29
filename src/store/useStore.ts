@@ -68,6 +68,7 @@ const initialUserSettings: UserSettings = {
   hapticEnabled: true,
   showAnimations: true,
   dataCollection: false,
+  illustrationTone: 'medium',
 };
 
 const initialUser: User = {
