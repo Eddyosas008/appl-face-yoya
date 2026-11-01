@@ -8,9 +8,9 @@ Ce document liste ce qui est **déjà en place dans le dépôt** et ce qui reste
 | Vérification | Commande | État |
 |---|---|---|
 | Typage strict | `npx tsc --noEmit` | ✅ 0 erreur |
-| Tests unitaires | `npm test` | ✅ 7 suites |
+| Tests unitaires | `npm test` | ✅ 7 suites, 109 tests |
 | Lint | `npm run lint` | ✅ 0 erreur |
-| Cohérence des dépendances Expo | `npx expo install --check` | ✅ alignées sur SDK 51 |
+| Cohérence des dépendances Expo | `npx expo install --check` | ✅ alignées sur SDK 58 (RN 0.88, React 19) |
 | Bundle Metro (iOS/Android/Web) | `npx expo export --platform ios` | ✅ |
 
 Lancer ces 5 commandes avant chaque build de production.
@@ -42,6 +42,16 @@ eas submit -p android        # première soumission manuelle via la Play Console
 
 Le fichier `eas.json` définit trois profils : `development` (dev client), `preview`
 (APK + simulateur iOS, distribution interne) et `production` (incrément automatique des numéros de build).
+Les mises à jour OTA (EAS Update / `expo-updates`) ne sont pas configurées : ajoutez `expo-updates`
+et un `channel` par profil si vous en avez besoin.
+
+### Tester sans compte développeur
+
+- **Expo Go** (gratuit) : `npm start` puis scan du QR code. Expo Go ne supporte que le SDK courant,
+  d'où l'alignement du projet sur le SDK 58.
+- **APK Android** : `eas build -p android --profile preview` produit un APK installable directement.
+- **iOS sur appareil** : nécessite un compte Apple Developer (99 $/an) pour `eas build -p ios --profile preview`
+  en distribution interne (ad hoc) ou TestFlight.
 
 ## 4. À faire dans les consoles (non automatisable)
 

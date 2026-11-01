@@ -7,6 +7,9 @@ import {
 } from 'react-native';
 import { colors, spacing, borderRadius, shadows } from '../theme';
 
+// Les styles RN sont readonly depuis RN 0.8x ; on construit un objet mutable puis on l'expose en ViewStyle.
+type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
 interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
@@ -25,7 +28,7 @@ export const Card: React.FC<CardProps> = ({
   accessibilityLabel,
 }) => {
   const getCardStyle = (): ViewStyle => {
-    const base: ViewStyle = {
+    const base: Mutable<ViewStyle> = {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
     };

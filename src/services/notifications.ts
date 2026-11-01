@@ -151,9 +151,9 @@ export async function scheduleDailyReminder(
         data: { type: 'reminder' },
       },
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour,
         minute,
-        repeats: true,
       },
     });
 
@@ -185,9 +185,9 @@ export async function scheduleStreakReminder(): Promise<string | null> {
         data: { type: 'streak' },
       },
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour: 20,
         minute: 0,
-        repeats: true,
       },
     });
 

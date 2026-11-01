@@ -8,6 +8,9 @@ import {
 } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
+// Les styles RN sont readonly depuis RN 0.8x ; on construit un objet mutable puis on l'expose en ViewStyle.
+type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
 interface ButtonProps {
   title: string;
   onPress: () => void;
@@ -34,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
 }) => {
   const getButtonStyle = (): ViewStyle => {
-    const base: ViewStyle = {
+    const base: Mutable<ViewStyle> = {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -85,7 +88,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextStyle = (): TextStyle => {
-    const base: TextStyle = {
+    const base: Mutable<TextStyle> = {
       ...typography.button,
     };
 

@@ -1,6 +1,6 @@
 # Face Yoga App
 
-Application mobile de Face Yoga – bien-être facial naturel. React Native + Expo (SDK 51), TypeScript strict, 100 % hors-ligne par défaut, synchronisation Supabase optionnelle.
+Application mobile de Face Yoga – bien-être facial naturel. React Native + Expo (SDK 58), TypeScript strict, 100 % hors-ligne par défaut, synchronisation Supabase optionnelle.
 
 ## Vision
 
@@ -40,8 +40,8 @@ Une application de face yoga qui aide l'utilisateur à :
 
 ## Stack technique
 
-- **Framework** : React Native 0.74 / Expo SDK 51
-- **Navigation** : React Navigation 6 (Bottom Tabs + Native Stack)
+- **Framework** : React Native 0.88 / Expo SDK 58 (React 19, nouvelle architecture)
+- **Navigation** : React Navigation 7 (Bottom Tabs + Native Stack)
 - **État** : Zustand (persisté dans AsyncStorage)
 - **Illustrations** : react-native-svg + Animated (`src/components/FaceIllustration`)
 - **Backend optionnel** : Supabase (auth + sync), schéma dans `supabase/`
@@ -54,6 +54,10 @@ npm install
 cp .env.example .env     # optionnel : clés Supabase publiques
 npm start                # puis i (iOS), a (Android) ou w (web)
 ```
+
+Sur téléphone : installez **Expo Go** (App Store / Play Store, version SDK 58) et scannez le QR code
+affiché par `npm start`. Pour une build native installable sans Expo Go :
+`eas build -p android --profile preview` (APK) ou `eas build -p ios --profile preview` (simulateur).
 
 ## Scripts
 

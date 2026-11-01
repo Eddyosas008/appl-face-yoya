@@ -16,6 +16,7 @@ jest.mock('expo-notifications', () => ({
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   setNotificationChannelAsync: jest.fn(),
   AndroidImportance: { HIGH: 4, DEFAULT: 3 },
+  SchedulableTriggerInputTypes: { DAILY: 'daily', DATE: 'date', TIME_INTERVAL: 'timeInterval' },
 }));
 
 // Mock expo-haptics
@@ -26,8 +27,3 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
-
-// Mock react-native-reanimated
-jest.mock('react-native-reanimated', () =>
-  require('react-native-reanimated/mock')
-);

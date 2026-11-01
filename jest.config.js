@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'react-native',
+  preset: 'jest-expo',
   setupFiles: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',

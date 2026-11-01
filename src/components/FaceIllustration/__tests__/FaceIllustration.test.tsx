@@ -37,50 +37,50 @@ describe('Carnations', () => {
     });
   });
 
-  it('rend le visage avec la carnation forcée ou celle des réglages', () => {
-    const { unmount } = render(<FaceIllustration zone="global" tone="deep" animated={false} size={80} />);
-    unmount();
+  it('rend le visage avec la carnation forcée ou celle des réglages', async () => {
+    const first = await render(<FaceIllustration zone="global" tone="deep" animated={false} size={80} />);
+    await first.unmount();
     useStore.getState().updateSettings({ illustrationTone: 'tan' });
     expect(useStore.getState().user.settings.illustrationTone).toBe('tan');
-    const second = render(<FaceZoneThumb zone="joues" size={40} />);
-    second.unmount();
+    const second = await render(<FaceZoneThumb zone="joues" size={40} />);
+    await second.unmount();
     useStore.getState().updateSettings({ illustrationTone: 'medium' });
   });
 });
 
 describe('FaceIllustration rendering', () => {
-  it('rend une pose statique avec la consigne', () => {
-    const { getByText, getByTestId } = render(
+  it('rend une pose statique avec la consigne', async () => {
+    const { getByText, getByTestId } = await render(
       <FaceIllustration exerciseId="ex-bouche-001" animated={false} showCaption testID="face" />
     );
     expect(getByTestId('face')).toBeTruthy();
     expect(getByText(/grand « O »/)).toBeTruthy();
   });
 
-  it('rend chaque exercice sans erreur (animation désactivée)', () => {
-    exercises.forEach((exercise) => {
-      const { unmount } = render(
+  it('rend chaque exercice sans erreur (animation désactivée)', async () => {
+    for (const exercise of exercises) {
+      const { unmount } = await render(
         <FaceIllustration exerciseId={exercise.id} zone={exercise.zone} animated={false} size={120} />
       );
-      unmount();
-    });
+      await unmount();
+    }
   });
 
-  it('démarre et arrête la boucle animée sans fuite', () => {
+  it('démarre et arrête la boucle animée sans fuite', async () => {
     jest.useFakeTimers();
-    const { unmount } = render(<FaceIllustration exerciseId="ex-front-003" animated size={120} />);
-    act(() => {
+    const { unmount } = await render(<FaceIllustration exerciseId="ex-front-003" animated size={120} />);
+    await act(async () => {
       jest.advanceTimersByTime(500);
     });
-    unmount();
+    await unmount();
     jest.useRealTimers();
   });
 
-  it('rend une vignette par zone', () => {
+  it('rend une vignette par zone', async () => {
     const zones = ['front', 'yeux', 'joues', 'bouche', 'ovale', 'cou', 'global'] as const;
-    zones.forEach((zone) => {
-      const { unmount } = render(<FaceZoneThumb zone={zone} size={48} />);
-      unmount();
-    });
+    for (const zone of zones) {
+      const { unmount } = await render(<FaceZoneThumb zone={zone} size={48} />);
+      await unmount();
+    }
   });
 });

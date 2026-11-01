@@ -170,7 +170,7 @@ export const FaceIllustration: React.FC<FaceIllustrationProps> = ({
               easing: Easing.linear,
               useNativeDriver: false,
             }),
-            { resetBeforeIteration: true }
+            { iterations: -1, resetBeforeIteration: true }
           )
         : Animated.loop(
             Animated.sequence([

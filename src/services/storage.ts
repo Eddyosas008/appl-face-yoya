@@ -24,11 +24,15 @@ export class StorageService {
 
   static async compressImage(uri: string, maxWidth = 800): Promise<string> {
     try {
-      const manipResult = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: maxWidth } }],
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
-      );
+      // API « contextuelle » d'expo-image-manipulator (SDK 52+) ; manipulateAsync est dépréciée.
+      const image = await ImageManipulator.ImageManipulator.manipulate(uri)
+        .resize({ width: maxWidth })
+        .renderAsync();
+      const manipResult = await image.saveAsync({
+        compress: 0.7,
+        format: ImageManipulator.SaveFormat.JPEG,
+      });
+      image.release();
       return manipResult.uri;
     } catch (error) {
       console.error('Error compressing image:', error);
